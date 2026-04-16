@@ -1,4 +1,7 @@
 import { Gem, Scissors, Paintbrush } from "lucide-react";
+import imgPorcelanato from "@/assets/service-porcelanato.jpg";
+import imgRevestimento from "@/assets/service-revestimento.jpg";
+import imgPintura from "@/assets/service-pintura.jpg";
 
 const services = [
   {
@@ -6,18 +9,24 @@ const services = [
     title: "Assentamento de Porcelanatos",
     description:
       "Colocação de pisos e revestimentos com precisão milimétrica, cortes 45° perfeitos e acabamento impecável.",
+    image: imgPorcelanato,
+    alt: "Piso de porcelanato assentado com precisão",
   },
   {
     icon: Scissors,
     title: "Revestimentos de Alto Padrão",
     description:
       "Aplicação de pastilhas, mármore, granito e revestimentos 3D com técnica refinada e alinhamento perfeito.",
+    image: imgRevestimento,
+    alt: "Banheiro com revestimento de porcelanato mármore",
   },
   {
     icon: Paintbrush,
     title: "Massa Corrida e Pintura",
     description:
       "Acabamento em gesso, massa corrida lisa e pintura profissional para ambientes sofisticados.",
+    image: imgPintura,
+    alt: "Profissional aplicando massa corrida na parede",
   },
 ];
 
@@ -37,17 +46,29 @@ const ServicesSection = () => {
           {services.map((service, index) => (
             <div
               key={index}
-              className="bg-background p-8 rounded-xl shadow-md border border-border hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              className="bg-background rounded-xl shadow-md border border-border hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
             >
-              <div className="w-14 h-14 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-6">
-                <service.icon className="w-7 h-7" />
+              <div className="aspect-[4/3] overflow-hidden">
+                <img
+                  src={service.image}
+                  alt={service.alt}
+                  width={640}
+                  height={480}
+                  loading="lazy"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                />
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-3">
-                {service.title}
-              </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                {service.description}
-              </p>
+              <div className="p-8">
+                <div className="w-14 h-14 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-6">
+                  <service.icon className="w-7 h-7" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-3">
+                  {service.title}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {service.description}
+                </p>
+              </div>
             </div>
           ))}
         </div>
