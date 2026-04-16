@@ -30,7 +30,7 @@ const ServicesSection = () => {
             Nossos Serviços
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Soluções completas para sua obra, do planejamento à execução.
+            Acabamento fino com precisão, estética e valorização do seu imóvel.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
