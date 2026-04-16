@@ -3,9 +3,9 @@ import { Home, Zap, Wrench } from "lucide-react";
 const services = [
   {
     icon: Home,
-    title: "Construção Civil",
+    title: "Acabamento fino, porcelanatos",
     description:
-      "Realizamos sua obra do zero, com planejamento detalhado e execução segura, garantindo estrutura e acabamento perfeitos.",
+      "Aplicação de porcelanatos, revestimentos finos e acabamentos de alta precisão para ambientes sofisticados.",
   },
   {
     icon: Zap,
