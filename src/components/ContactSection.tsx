@@ -1,3 +1,8 @@
+import { MessageCircle } from "lucide-react";
+
+const WHATSAPP_NUMBER = "5515996586470";
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Olá! Gostaria de solicitar um orçamento.")}`;
+
 const ContactSection = () => {
   return (
     <section id="contato" className="py-24 bg-background">
@@ -12,11 +17,18 @@ const ContactSection = () => {
               compromisso. Estamos prontos para transformar sua visão em
               realidade.
             </p>
-            <div className="flex flex-col gap-4 text-muted-foreground">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">📞</span>
-                <span className="font-medium">(XX) XXXXX-XXXX</span>
-              </div>
+            <div className="flex flex-col gap-4 text-muted-foreground mb-8">
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 hover:text-foreground transition-colors"
+              >
+                <span className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                  <MessageCircle className="w-5 h-5 text-white" />
+                </span>
+                <span className="font-medium">(15) 99658-6470</span>
+              </a>
               <div className="flex items-center gap-3">
                 <span className="text-2xl">📧</span>
                 <span className="font-medium">contato@netopedreiro.com.br</span>
@@ -26,6 +38,16 @@ const ContactSection = () => {
                 <span className="font-medium">Sua Cidade, Brasil</span>
               </div>
             </div>
+
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-8 py-4 bg-green-500 text-white font-bold rounded-lg shadow-lg hover:bg-green-600 transition-all duration-300"
+            >
+              <MessageCircle className="w-6 h-6" />
+              Chamar no WhatsApp
+            </a>
           </div>
           <div className="bg-card p-8 lg:p-10 rounded-2xl shadow-xl border border-border">
             <h3 className="text-2xl font-bold text-foreground mb-8 text-center">
@@ -72,6 +94,17 @@ const ContactSection = () => {
           </div>
         </div>
       </div>
+
+      {/* Floating WhatsApp button */}
+      <a
+        href={WHATSAPP_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg hover:bg-green-600 hover:scale-110 transition-all duration-300"
+        aria-label="WhatsApp"
+      >
+        <MessageCircle className="w-7 h-7 text-white" />
+      </a>
     </section>
   );
 };
