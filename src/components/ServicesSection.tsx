@@ -1,23 +1,23 @@
-import { Home, Zap, Wrench } from "lucide-react";
+import { Gem, Scissors, Paintbrush } from "lucide-react";
 
 const services = [
   {
-    icon: Home,
-    title: "Acabamento fino, porcelanatos",
+    icon: Gem,
+    title: "Assentamento de Porcelanatos",
     description:
-      "Aplicação de porcelanatos, revestimentos finos e acabamentos de alta precisão para ambientes sofisticados.",
+      "Colocação de pisos e revestimentos com precisão milimétrica, cortes 45° perfeitos e acabamento impecável.",
   },
   {
-    icon: Zap,
-    title: "Reformas Modernas",
+    icon: Scissors,
+    title: "Revestimentos de Alto Padrão",
     description:
-      "Atualize seu espaço com reformas inteligentes e esteticamente agradáveis. Design e funcionalidade unidos.",
+      "Aplicação de pastilhas, mármore, granito e revestimentos 3D com técnica refinada e alinhamento perfeito.",
   },
   {
-    icon: Wrench,
-    title: "Instalações",
+    icon: Paintbrush,
+    title: "Massa Corrida e Pintura",
     description:
-      "Pisos, revestimentos, esquadrias e outros materiais instalados com acabamento de alta precisão.",
+      "Acabamento em gesso, massa corrida lisa e pintura profissional para ambientes sofisticados.",
   },
 ];
 
