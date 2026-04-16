@@ -28,7 +28,7 @@ const Footer = () => {
             </div>
             <div className="text-center md:text-right">
               <p className="text-sm">
-                &copy; {new Date().getFullYear()} Neto Pedreiro. Todos os direitos reservados.
+                &copy; {new Date().getFullYear()} Neto Pedreiro.
               </p>
             </div>
           </div>
@@ -36,17 +36,21 @@ const Footer = () => {
       </div>
 
       {/* Developer credit bar */}
-      <div className="bg-secondary/20 py-3 border-t border-border">
-        <div className="container mx-auto px-6 flex flex-col sm:flex-row items-center justify-center gap-2 text-muted-foreground text-xs">
-          <span>Criado por <strong className="font-bold text-foreground">JVA Sistemas</strong></span>
-          <span className="hidden sm:inline">•</span>
+      <div className="bg-hero py-5 border-t border-hero-muted/20">
+        <div className="container mx-auto px-6 flex flex-col sm:flex-row items-center justify-center gap-3 text-hero-foreground text-sm tracking-wide">
+          <span className="font-semibold">
+            Criado por <strong className="font-black text-accent">JVA Sistemas</strong>
+          </span>
+          <span className="hidden sm:inline text-hero-muted">—</span>
+          <span className="text-hero-muted font-medium">Todos os Direitos Reservados</span>
+          <span className="hidden sm:inline text-hero-muted">—</span>
           <a
             href={WHATSAPP_JVA}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-2 font-semibold hover:text-accent transition-colors"
           >
-            <MessageCircle className="w-3.5 h-3.5" />
+            <MessageCircle className="w-4 h-4" />
             (15) 99733-2343
           </a>
         </div>
