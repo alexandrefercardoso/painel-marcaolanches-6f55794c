@@ -6974,14 +6974,19 @@ table.main thead th.right { text-align:right; }
                                                )}
                                              </span>
                                           </div>
-                                          {item.selected_complements && item.selected_complements.length > 0 && (
-                                            <div className="flex flex-col ml-8 text-[10px] text-muted-foreground italic bg-yellow-50/50 p-1 rounded">
-                                              {item.selected_complements.map((c: any, i: number) => (
-                                                <span key={i}>+ {c.name}</span>
-                                              ))}
-                                            </div>
-                                          )}
-                                        </li>
+                                           {item.selected_complements && item.selected_complements.length > 0 && (
+                                             <div className="flex flex-col ml-8 text-[10px] text-muted-foreground italic bg-yellow-50/50 p-1 rounded">
+                                               {item.selected_complements.map((c: any, i: number) => (
+                                                 <span key={i}>+ {c.name}</span>
+                                               ))}
+                                             </div>
+                                           )}
+                                           {item.notes && (
+                                             <div className="ml-8 text-[10px] text-yellow-900 bg-yellow-100 border border-yellow-300 rounded px-2 py-0.5">
+                                               <span className="font-bold">Obs:</span> {item.notes}
+                                             </div>
+                                           )}
+                                         </li>
                                       );
                                     })}
                                      {order.delivery_order_items.every((item: any) => {
