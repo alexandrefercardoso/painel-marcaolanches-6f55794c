@@ -6547,6 +6547,16 @@ table.main thead th.right { text-align:right; }
                                         ))}
                                       </div>
                                     )}
+                                    <Input
+                                      value={item.notes || ""}
+                                      onChange={(e) => {
+                                        const newItems = [...newDeliveryOrder.items];
+                                        newItems[idx] = { ...newItems[idx], notes: e.target.value };
+                                        setNewDeliveryOrder({ ...newDeliveryOrder, items: newItems });
+                                      }}
+                                      placeholder="Obs: sem cebola, ponto da carne..."
+                                      className="mt-1.5 h-6 text-[10px] px-2 py-1 bg-yellow-50 border-yellow-200 focus:border-yellow-400 placeholder:text-yellow-700/50 placeholder:italic"
+                                    />
                                   </div>
                                   <Button
                                     variant="ghost"
