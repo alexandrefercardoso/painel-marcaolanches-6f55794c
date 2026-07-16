@@ -5970,18 +5970,8 @@ table.main thead th.right { text-align:right; }
 
                         {/* Linha compacta sempre visível: Campos empilhados verticalmente */}
                         <div className="flex flex-col gap-3 pt-1">
-                          <div>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              className="h-9 w-full px-2 text-[11px] gap-1.5 border-orange-300 text-orange-600 hover:bg-orange-600 hover:text-white transition-all font-bold bg-orange-50/50 shadow-sm"
-                              onClick={handleCalcDeliveryFee}
-                            >
-                              <Navigation className="h-3.5 w-3.5" />
-                              CALCULAR TAXA
-                            </Button>
-                          </div>
+                          {/* Botão "CALCULAR TAXA / GPS" removido — a taxa vem do cadastro da empresa. */}
+
                           <div className="space-y-1">
                             <Label className="text-[10px] uppercase font-bold text-muted-foreground">Tipo Pedido</Label>
                             <Select value={newDeliveryOrder.order_type} onValueChange={(v: any) => {
