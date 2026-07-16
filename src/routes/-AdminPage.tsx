@@ -6782,14 +6782,19 @@ table.main thead th.right { text-align:right; }
                                        </span>
                                        <span className="text-muted-foreground font-medium">R$ {Number(item.total_price || 0).toFixed(2)}</span>
                                      </div>
-                                     {item.selected_complements && item.selected_complements.length > 0 && (
-                                       <div className="flex flex-col ml-4 text-[10px] text-muted-foreground italic bg-orange-50/50 p-1 rounded mt-0.5">
-                                         {item.selected_complements.map((c: any, i: number) => (
-                                           <span key={i}>+ {c.name}</span>
-                                         ))}
-                                       </div>
-                                     )}
-                                   </li>
+                                      {item.selected_complements && item.selected_complements.length > 0 && (
+                                        <div className="flex flex-col ml-4 text-[10px] text-muted-foreground italic bg-orange-50/50 p-1 rounded mt-0.5">
+                                          {item.selected_complements.map((c: any, i: number) => (
+                                            <span key={i}>+ {c.name}</span>
+                                          ))}
+                                        </div>
+                                      )}
+                                      {item.notes && (
+                                        <div className="ml-4 mt-0.5 text-[10px] text-yellow-800 bg-yellow-50 border border-yellow-200 rounded px-1.5 py-0.5">
+                                          <span className="font-bold">Obs:</span> {item.notes}
+                                        </div>
+                                      )}
+                                    </li>
                                  ))
                                )}
                              </ul>
