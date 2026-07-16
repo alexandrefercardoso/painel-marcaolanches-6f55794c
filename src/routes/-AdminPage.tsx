@@ -3845,7 +3845,8 @@ table.main thead th.right { text-align:right; }
           quantity: Number(item.quantity) || 1,
           unit_price: Number(item.unit_price) || 0,
           total_price: (Number(item.quantity) || 1) * (Number(item.unit_price) || 0),
-          selected_complements: selectedComplements as any
+          selected_complements: selectedComplements as any,
+          notes: (item.notes || item.observations || "").toString().trim() || null,
         };
       });
 
