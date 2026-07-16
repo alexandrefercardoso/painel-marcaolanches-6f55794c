@@ -11819,11 +11819,11 @@ table.main thead th.right { text-align:right; }
                           <Label>Cidade</Label>
                           <Input value={newCustomer.city} onChange={e => setNewCustomer({...newCustomer, city: e.target.value})} />
                         </div>
-                        <div className="col-span-1 space-y-2">
+                        <div className="col-span-2 space-y-2">
                           <Label>UF</Label>
                           <Input maxLength={2} placeholder="SP" value={newCustomer.state} onChange={e => setNewCustomer({...newCustomer, state: e.target.value.toUpperCase()})} />
                         </div>
-                        <div className="col-span-4 space-y-2">
+                        <div className="col-span-3 space-y-2">
                           <Label>Bairro</Label>
                           <Input value={newCustomer.neighborhood} onChange={e => setNewCustomer({...newCustomer, neighborhood: e.target.value})} />
                         </div>
