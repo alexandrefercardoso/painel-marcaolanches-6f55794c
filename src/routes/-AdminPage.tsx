@@ -2135,7 +2135,7 @@ table.main thead th.right { text-align:right; }
             items: (targetOrder.delivery_order_items || []).map((i: any) => ({
               name: i.product_name,
               quantity: i.quantity,
-              notes: i.observations,
+              notes: i.notes || i.observations,
               complements: i.selected_complements
             })),
             type: 'delivery'
