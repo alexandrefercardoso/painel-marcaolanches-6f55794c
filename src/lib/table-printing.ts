@@ -54,24 +54,31 @@ export async function processPrintingForTableOrder(sessionId: string, itemIds: s
     const printSeparately = isGroupedMode ? false : storeSettings?.print_item_separately === true;
     console.log(`[TablePrinting] Modo: ${printSeparately ? 'INDIVIDUAL (por item)' : 'AGRUPADO (por setor)'} | table_print_mode=${storeSettings?.table_print_mode} | print_item_separately=${storeSettings?.print_item_separately}`);
 
-    // Buscar comanda ativa do primeiro item (lote geralmente da mesma comanda)
-    const primeiroItem = itemsRaw?.[0] as any;
-    let comandaNumero: string | null = null;
-    if (primeiroItem?.comanda_id) {
-      const { data: comanda } = await supabase
+    // Buscar TODAS as comandas envolvidas nos itens (um cupom por comanda)
+    const comandaIds = Array.from(
+      new Set((itemsRaw || []).map((i: any) => i.comanda_id).filter(Boolean))
+    ) as string[];
+    const comandaMap: Record<string, string> = {};
+    if (comandaIds.length > 0) {
+      const { data: comandas } = await supabase
         .from("comandas" as any)
-        .select("numero, identificacao")
-        .eq("id", primeiroItem.comanda_id)
-        .single();
-      if (comanda) {
-        const c = comanda as any;
-        comandaNumero = `#${String(c.numero).padStart(3, '0')}${c.identificacao ? ' · ' + c.identificacao : ''}`;
-      }
+        .select("id, numero, identificacao")
+        .in("id", comandaIds);
+      (comandas || []).forEach((c: any) => {
+        comandaMap[c.id] = `#${String(c.numero).padStart(3, '0')}${c.identificacao ? ' · ' + c.identificacao : ''}`;
+      });
     }
 
-    const baseContent = {
+    // Agrupa itens por comanda_id (null = sem comanda)
+    const groupsByComanda = new Map<string | null, any[]>();
+    for (const it of items) {
+      const key = (it as any).comanda_id || null;
+      if (!groupsByComanda.has(key)) groupsByComanda.set(key, []);
+      groupsByComanda.get(key)!.push(it);
+    }
+
+    const baseSessionInfo = {
       order_number: `MESA ${session.restaurant_tables?.number || session.command_number || ""}`,
-      comanda_numero: comandaNumero,
       customer_name: session.client_name || "Mesa",
       waiter_name: session.waiters?.name || "N/A",
       order_type: "DINE_IN",
@@ -79,119 +86,105 @@ export async function processPrintingForTableOrder(sessionId: string, itemIds: s
       total: session.total_amount,
       created_at: new Date().toISOString(),
       printing_type: isCancellation ? "cancellation" : "full",
-      is_cancellation: isCancellation
+      is_cancellation: isCancellation,
     };
 
-    const mappedItems = items.map((item: any) => ({
-      name: item.product_name || "Produto",
-      quantity: item.quantity,
-      price: item.unit_price,
-      notes: item.observations,
-      complements: item.selected_complements,
-    }));
+    let totalJobsInserted = 0;
 
-    if (isCentralized) {
-      const printer =
-        printers.find((p) =>
-          p.name.toUpperCase().includes("CAIXA") ||
-          p.name.toUpperCase().includes("PDF") ||
-          p.name.toUpperCase().includes("VIRTUAL")
-        ) || printers[0];
+    // Processa cada comanda separadamente → gera um cupom por comanda
+    for (const [comandaId, groupItems] of groupsByComanda.entries()) {
+      const comandaNumero = comandaId ? comandaMap[comandaId] || null : null;
+      const baseContent = { ...baseSessionInfo, comanda_numero: comandaNumero };
 
-      console.log(`[TablePrinting] Centralizado → impressora: ${printer.name}`);
+      const mapItem = (item: any) => ({
+        name: item.product_name || "Produto",
+        quantity: item.quantity,
+        price: item.unit_price,
+        notes: item.observations,
+        complements: item.selected_complements,
+      });
+      const mappedItems = groupItems.map(mapItem);
 
-      if (printSeparately) {
-        for (const it of mappedItems) {
+      if (isCentralized) {
+        const printer =
+          printers.find((p) =>
+            p.name.toUpperCase().includes("CAIXA") ||
+            p.name.toUpperCase().includes("PDF") ||
+            p.name.toUpperCase().includes("VIRTUAL")
+          ) || printers[0];
+
+        const batches = printSeparately ? mappedItems.map((it) => [it]) : [mappedItems];
+        for (const batch of batches) {
           const { error } = await supabase.from("printing_jobs").insert([{
             printer_id: printer.id,
             status: "pending",
-            content: JSON.stringify({ ...baseContent, sector_name: "CAIXA GERAL", items: [it] }),
+            content: JSON.stringify({ ...baseContent, sector_name: "CAIXA GERAL", items: batch }),
           }]);
           if (error) console.error("[TablePrinting] Erro ao inserir job:", error);
+          else totalJobsInserted++;
         }
       } else {
-        const { error } = await supabase.from("printing_jobs").insert([{
-          printer_id: printer.id,
-          status: "pending",
-          content: JSON.stringify({ ...baseContent, sector_name: "CAIXA GERAL", items: mappedItems }),
-        }]);
-        if (error) console.error("[TablePrinting] Erro ao inserir job:", error);
-      }
+        const { data: sectors } = await supabase.from("printer_sectors").select("*");
+        const { data: mappings } = await supabase.from("category_printer_mappings").select("*");
+        const activeSectors = sectors || [];
+        const activeMappings = mappings || [];
 
-    } else {
-      const { data: sectors } = await supabase.from("printer_sectors").select("*");
-      const { data: mappings } = await supabase.from("category_printer_mappings").select("*");
+        for (const sector of activeSectors) {
+          let itemsToPrint: any[];
+          if (sector.name === "caixa") {
+            itemsToPrint = groupItems;
+          } else {
+            const linkedCategoryIds = activeMappings
+              .filter((m) => m.sector_id === sector.id)
+              .map((m) => m.category_id);
+            itemsToPrint = groupItems.filter((item: any) => {
+              const categoryId = item.products?.category_id || item.category_id;
+              return categoryId && linkedCategoryIds.includes(categoryId);
+            });
+          }
+          if (itemsToPrint.length === 0) continue;
 
-      const activeSectors = sectors || [];
-      const activeMappings = mappings || [];
-      let jobsInserted = 0;
+          let sectorPrinters = printers.filter((p) => p.sector_id === sector.id);
+          if (sectorPrinters.length === 0) sectorPrinters = [printers[0]];
 
-      for (const sector of activeSectors) {
-        let itemsToPrint: any[];
-
-        if (sector.name === "caixa") {
-          itemsToPrint = items;
-        } else {
-          const linkedCategoryIds = activeMappings
-            .filter((m) => m.sector_id === sector.id)
-            .map((m) => m.category_id);
-
-          itemsToPrint = items.filter((item: any) => {
-            const categoryId = item.products?.category_id || item.category_id;
-            return categoryId && linkedCategoryIds.includes(categoryId);
-          });
-        }
-
-        if (itemsToPrint.length === 0) continue;
-
-        let sectorPrinters = printers.filter((p) => p.sector_id === sector.id);
-        if (sectorPrinters.length === 0) {
-          console.log(`[TablePrinting] Setor "${sector.name}" sem impressora, usando fallback.`);
-          sectorPrinters = [printers[0]];
-        }
-
-        for (const printer of sectorPrinters) {
-          console.log(`[TablePrinting] Setor "${sector.name}" → impressora: ${printer.name} (${printSeparately ? 'individual' : 'agrupado'})`);
-
-          const mapItem = (item: any) => ({
-            name: item.product_name || "Produto",
-            quantity: item.quantity,
-            price: item.unit_price,
-            notes: item.observations,
-            complements: item.selected_complements,
-          });
-
-          const batches = printSeparately
-            ? itemsToPrint.map((it: any) => [mapItem(it)])
-            : [itemsToPrint.map(mapItem)];
-
-          for (const batch of batches) {
-            const { error } = await supabase.from("printing_jobs").insert([{
-              printer_id: printer.id,
-              status: "pending",
-              content: JSON.stringify({
-                ...baseContent,
-                sector_name: sector.name,
-                printing_type: isCancellation ? "cancellation" : "full",
-                items: batch,
-              }),
-            }]);
-
-            if (!error) jobsInserted++;
-            else console.error("[TablePrinting] Erro ao inserir job:", error);
+          for (const printer of sectorPrinters) {
+            const batches = printSeparately
+              ? itemsToPrint.map((it: any) => [mapItem(it)])
+              : [itemsToPrint.map(mapItem)];
+            for (const batch of batches) {
+              const { error } = await supabase.from("printing_jobs").insert([{
+                printer_id: printer.id,
+                status: "pending",
+                content: JSON.stringify({
+                  ...baseContent,
+                  sector_name: sector.name,
+                  printing_type: isCancellation ? "cancellation" : "full",
+                  items: batch,
+                }),
+              }]);
+              if (!error) totalJobsInserted++;
+              else console.error("[TablePrinting] Erro ao inserir job:", error);
+            }
           }
         }
       }
+    }
 
-      if (jobsInserted === 0) {
-        console.warn("[TablePrinting] Nenhum job gerado, usando fallback centralizado.");
-        const { error } = await supabase.from("printing_jobs").insert([{
-          printer_id: printers[0].id,
-          status: "pending",
-          content: JSON.stringify({ ...baseContent, sector_name: "GERAL", items: mappedItems }),
-        }]);
-        if (error) console.error("[TablePrinting] Erro no fallback:", error);
-      }
+    if (totalJobsInserted === 0) {
+      console.warn("[TablePrinting] Nenhum job gerado, usando fallback centralizado.");
+      const fallbackItems = items.map((item: any) => ({
+        name: item.product_name || "Produto",
+        quantity: item.quantity,
+        price: item.unit_price,
+        notes: item.observations,
+        complements: item.selected_complements,
+      }));
+      const { error } = await supabase.from("printing_jobs").insert([{
+        printer_id: printers[0].id,
+        status: "pending",
+        content: JSON.stringify({ ...baseSessionInfo, sector_name: "GERAL", items: fallbackItems }),
+      }]);
+      if (error) console.error("[TablePrinting] Erro no fallback:", error);
     }
 
     await supabase.from("table_order_items").update({ printed: true }).in("id", itemIds);
