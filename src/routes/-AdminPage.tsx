@@ -1712,72 +1712,14 @@ table.main thead th.right { text-align:right; }
   }, []);
 
   const handleCalcDeliveryFee = async (orderData?: any) => {
+    // GPS/geocoding removido a pedido do usuário.
+    // Aplica somente a taxa fixa cadastrada nas configurações da empresa (se houver).
     try {
-      const currentOrder = orderData || newDeliveryOrder;
-      
       if (storeSettings?.fixed_delivery_fee !== null && storeSettings?.fixed_delivery_fee !== undefined && Number(storeSettings.fixed_delivery_fee) >= 0) {
         const fixedFee = Number(storeSettings.fixed_delivery_fee);
         setNewDeliveryOrder(prev => ({ ...prev, delivery_fee: fixedFee }));
-        toast.success(`Taxa Fixa Aplicada: R$ ${fixedFee.toFixed(2)}`);
-        return;
       }
-      if (!currentOrder.customer_address) {
-        toast.error("Preencha o endereço primeiro");
-        return;
-      }
-      toast.loading("Calculando entrega...");
-      const searchCity = currentOrder.city || storeSettings?.city || '';
-      const searchState = currentOrder.state || storeSettings?.state || '';
-      const fullAddr = `${currentOrder.customer_address}${(currentOrder as any).neighborhood ? `, ${(currentOrder as any).neighborhood}` : ''}, ${searchCity} - ${searchState}, Brasil`;
-      const result = await geocodeAddress(fullAddr, {
-        street: currentOrder.customer_address,
-        neighborhood: (currentOrder as any).neighborhood,
-        city: searchCity,
-        state: searchState,
-      });
-      if (result) {
-        const { lat: latVal, lng: lngVal } = result;
-        let bestArea: any = null;
-        let minFee = Infinity;
-        for (const area of deliveryAreas) {
-          if (area.polygon_coords && Array.isArray(area.polygon_coords)) {
-            const vs = area.polygon_coords;
-            let inside = false;
-            for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-              const xi = vs[i][0], yi = vs[i][1];
-              const xj = vs[j][0], yj = vs[j][1];
-              const intersect = ((yi > lngVal) !== (yj > lngVal)) &&
-                (latVal < (xj - xi) * (lngVal - yi) / (yj - yi) + xi);
-              if (intersect) inside = !inside;
-            }
-            if (inside && area.fee < minFee) { minFee = area.fee; bestArea = area; }
-          } else if ((area as any).center_lat && (area as any).center_lng) {
-            const R = 6371;
-            const dLat = ((area as any).center_lat - latVal) * Math.PI / 180;
-            const dLon = ((area as any).center_lng - lngVal) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(latVal * Math.PI / 180) * Math.cos((area as any).center_lat * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            const dist = R * c;
-            if (dist <= ((area as any).radius_km || 1) && area.fee < minFee) { minFee = area.fee; bestArea = area; }
-          }
-        }
-        toast.dismiss();
-        if (bestArea) {
-          const calculatedFee = Number(bestArea.fee);
-          setNewDeliveryOrder(prev => ({ ...prev, delivery_fee: calculatedFee, notes: prev.notes || '' }));
-          toast.success(`Taxa: R$ ${calculatedFee.toFixed(2)}`);
-        } else {
-          setNewDeliveryOrder(prev => ({ ...prev, delivery_fee: 0 }));
-          toast.error("⚠️ ÁREA NÃO ATENDIDA: Este endereço está fora das suas áreas de entrega cadastradas.", { duration: 6000, position: "top-center" });
-        }
-      } else {
-        toast.dismiss();
-        toast.error("Não foi possível localizar este endereço.");
-      }
-    } catch (e) {
-      toast.dismiss();
-      toast.error("Erro ao validar.");
-    }
+    } catch {}
   };
 
 
