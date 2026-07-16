@@ -1158,6 +1158,35 @@ export function TableSessionDialog({ table, session, isOpen, onClose, onSuccess 
                             ))}
                           </div>
                         )}
+                        {item.observations && (
+                          <div className="mt-1 text-[10px] text-yellow-900 bg-yellow-100 border border-yellow-300 rounded px-2 py-0.5 italic">
+                            <span className="font-bold not-italic">Obs:</span> {item.observations}
+                          </div>
+                        )}
+                        {(item.status === 'pending' || item.production_status === 'new') && (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const current = item.observations || "";
+                              const value = window.prompt("Observação do item (ex: sem cebola, ponto da carne):", current);
+                              if (value === null) return;
+                              const trimmed = value.trim();
+                              const { error } = await supabase
+                                .from("table_order_items")
+                                .update({ observations: trimmed || null })
+                                .eq("id", item.id);
+                              if (error) {
+                                toast.error("Erro ao salvar observação");
+                                return;
+                              }
+                              setOrderItems(prev => prev.map(i => i.id === item.id ? { ...i, observations: trimmed || null } : i));
+                              toast.success("Observação salva!");
+                            }}
+                            className="mt-1 text-[10px] text-yellow-800 hover:text-yellow-900 underline underline-offset-2 font-semibold"
+                          >
+                            {item.observations ? "Editar observação" : "+ Adicionar observação"}
+                          </button>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-2">
