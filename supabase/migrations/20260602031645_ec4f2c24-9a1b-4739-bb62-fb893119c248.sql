@@ -1,0 +1,1 @@
+ALTER TABLE public.table_sessions ADD COLUMN payment_method TEXT;

@@ -1,0 +1,1 @@
+ALTER TABLE public.driver_trips ALTER COLUMN cashier_session_id DROP NOT NULL;

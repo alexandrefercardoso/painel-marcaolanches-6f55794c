@@ -1,0 +1,1 @@
+ALTER TABLE public.delivery_orders ADD COLUMN IF NOT EXISTS delivery_fee NUMERIC DEFAULT 0;

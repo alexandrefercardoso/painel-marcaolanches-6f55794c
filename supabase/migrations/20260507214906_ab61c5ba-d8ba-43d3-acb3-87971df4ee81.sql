@@ -1,0 +1,1 @@
+ALTER TABLE public.products ADD COLUMN price_2 DECIMAL(10,2);

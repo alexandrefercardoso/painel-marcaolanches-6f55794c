@@ -1,0 +1,1 @@
+ALTER TABLE public.product_tax_rules ADD COLUMN IF NOT EXISTS cclass_trib text;

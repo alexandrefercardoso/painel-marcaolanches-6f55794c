@@ -1,0 +1,1 @@
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS send_to_production BOOLEAN DEFAULT true;

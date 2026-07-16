@@ -1,0 +1,1 @@
+ALTER TABLE public.table_order_items ADD COLUMN selected_complements JSONB;

@@ -1,0 +1,1 @@
+ALTER TABLE public.printers ADD COLUMN IF NOT EXISTS show_preview BOOLEAN DEFAULT true;
