@@ -2220,7 +2220,7 @@ table.main thead th.right { text-align:right; }
       name: it.product_name || 'Produto',
       quantity: it.quantity,
       price: it.unit_price,
-      notes: it.observations || '',
+      notes: it.notes || it.observations || '',
       complements: it.selected_complements || [],
     }));
 
