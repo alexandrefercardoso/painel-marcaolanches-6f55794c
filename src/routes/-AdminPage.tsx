@@ -3661,6 +3661,16 @@ table.main thead th.right { text-align:right; }
       toast.error("Preencha o endereço para entrega.");
       return;
     }
+    // Validação de cidade: só entrega na mesma cidade cadastrada na empresa.
+    if (newDeliveryOrder.order_type === 'delivery') {
+      const norm = (s: any) => String(s || '').trim().toLowerCase();
+      const orderCity = norm((newDeliveryOrder as any).city);
+      const storeCity = norm(storeSettings?.city);
+      if (orderCity && storeCity && orderCity !== storeCity) {
+        toast.error(`Não é possível criar pedido: a cidade "${(newDeliveryOrder as any).city}" é diferente da cidade cadastrada na empresa ("${storeSettings?.city}").`, { duration: 7000 });
+        return;
+      }
+    }
     if (!newDeliveryOrder.customer_phone) {
       toast.error("Preencha o telefone do cliente.");
       return;
