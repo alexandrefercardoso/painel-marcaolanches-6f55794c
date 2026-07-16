@@ -1712,72 +1712,14 @@ table.main thead th.right { text-align:right; }
   }, []);
 
   const handleCalcDeliveryFee = async (orderData?: any) => {
+    // GPS/geocoding removido a pedido do usuário.
+    // Aplica somente a taxa fixa cadastrada nas configurações da empresa (se houver).
     try {
-      const currentOrder = orderData || newDeliveryOrder;
-      
       if (storeSettings?.fixed_delivery_fee !== null && storeSettings?.fixed_delivery_fee !== undefined && Number(storeSettings.fixed_delivery_fee) >= 0) {
         const fixedFee = Number(storeSettings.fixed_delivery_fee);
         setNewDeliveryOrder(prev => ({ ...prev, delivery_fee: fixedFee }));
-        toast.success(`Taxa Fixa Aplicada: R$ ${fixedFee.toFixed(2)}`);
-        return;
       }
-      if (!currentOrder.customer_address) {
-        toast.error("Preencha o endereço primeiro");
-        return;
-      }
-      toast.loading("Calculando entrega...");
-      const searchCity = currentOrder.city || storeSettings?.city || '';
-      const searchState = currentOrder.state || storeSettings?.state || '';
-      const fullAddr = `${currentOrder.customer_address}${(currentOrder as any).neighborhood ? `, ${(currentOrder as any).neighborhood}` : ''}, ${searchCity} - ${searchState}, Brasil`;
-      const result = await geocodeAddress(fullAddr, {
-        street: currentOrder.customer_address,
-        neighborhood: (currentOrder as any).neighborhood,
-        city: searchCity,
-        state: searchState,
-      });
-      if (result) {
-        const { lat: latVal, lng: lngVal } = result;
-        let bestArea: any = null;
-        let minFee = Infinity;
-        for (const area of deliveryAreas) {
-          if (area.polygon_coords && Array.isArray(area.polygon_coords)) {
-            const vs = area.polygon_coords;
-            let inside = false;
-            for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-              const xi = vs[i][0], yi = vs[i][1];
-              const xj = vs[j][0], yj = vs[j][1];
-              const intersect = ((yi > lngVal) !== (yj > lngVal)) &&
-                (latVal < (xj - xi) * (lngVal - yi) / (yj - yi) + xi);
-              if (intersect) inside = !inside;
-            }
-            if (inside && area.fee < minFee) { minFee = area.fee; bestArea = area; }
-          } else if ((area as any).center_lat && (area as any).center_lng) {
-            const R = 6371;
-            const dLat = ((area as any).center_lat - latVal) * Math.PI / 180;
-            const dLon = ((area as any).center_lng - lngVal) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(latVal * Math.PI / 180) * Math.cos((area as any).center_lat * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            const dist = R * c;
-            if (dist <= ((area as any).radius_km || 1) && area.fee < minFee) { minFee = area.fee; bestArea = area; }
-          }
-        }
-        toast.dismiss();
-        if (bestArea) {
-          const calculatedFee = Number(bestArea.fee);
-          setNewDeliveryOrder(prev => ({ ...prev, delivery_fee: calculatedFee, notes: prev.notes || '' }));
-          toast.success(`Taxa: R$ ${calculatedFee.toFixed(2)}`);
-        } else {
-          setNewDeliveryOrder(prev => ({ ...prev, delivery_fee: 0 }));
-          toast.error("⚠️ ÁREA NÃO ATENDIDA: Este endereço está fora das suas áreas de entrega cadastradas.", { duration: 6000, position: "top-center" });
-        }
-      } else {
-        toast.dismiss();
-        toast.error("Não foi possível localizar este endereço.");
-      }
-    } catch (e) {
-      toast.dismiss();
-      toast.error("Erro ao validar.");
-    }
+    } catch {}
   };
 
 
@@ -3718,6 +3660,16 @@ table.main thead th.right { text-align:right; }
     if (newDeliveryOrder.order_type === 'delivery' && !newDeliveryOrder.customer_address) {
       toast.error("Preencha o endereço para entrega.");
       return;
+    }
+    // Validação de cidade: só entrega na mesma cidade cadastrada na empresa.
+    if (newDeliveryOrder.order_type === 'delivery') {
+      const norm = (s: any) => String(s || '').trim().toLowerCase();
+      const orderCity = norm((newDeliveryOrder as any).city);
+      const storeCity = norm(storeSettings?.city);
+      if (orderCity && storeCity && orderCity !== storeCity) {
+        toast.error(`Não é possível criar pedido: a cidade "${(newDeliveryOrder as any).city}" é diferente da cidade cadastrada na empresa ("${storeSettings?.city}").`, { duration: 7000 });
+        return;
+      }
     }
     if (!newDeliveryOrder.customer_phone) {
       toast.error("Preencha o telefone do cliente.");
@@ -6028,18 +5980,8 @@ table.main thead th.right { text-align:right; }
 
                         {/* Linha compacta sempre visível: Campos empilhados verticalmente */}
                         <div className="flex flex-col gap-3 pt-1">
-                          <div>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              className="h-9 w-full px-2 text-[11px] gap-1.5 border-orange-300 text-orange-600 hover:bg-orange-600 hover:text-white transition-all font-bold bg-orange-50/50 shadow-sm"
-                              onClick={handleCalcDeliveryFee}
-                            >
-                              <Navigation className="h-3.5 w-3.5" />
-                              CALCULAR TAXA
-                            </Button>
-                          </div>
+                          {/* Botão "CALCULAR TAXA / GPS" removido — a taxa vem do cadastro da empresa. */}
+
                           <div className="space-y-1">
                             <Label className="text-[10px] uppercase font-bold text-muted-foreground">Tipo Pedido</Label>
                             <Select value={newDeliveryOrder.order_type} onValueChange={(v: any) => {
