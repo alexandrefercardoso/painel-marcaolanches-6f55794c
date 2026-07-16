@@ -94,7 +94,7 @@ export async function processPrintingForDeliveryOrder(orderId: string, isCancell
         name: item.product_name || "Produto",
         quantity: item.quantity,
         price: item.unit_price,
-        notes: item.observations || "",
+        notes: item.notes || item.observations || "",
         complements: item.selected_complements || [],
       })),
     };

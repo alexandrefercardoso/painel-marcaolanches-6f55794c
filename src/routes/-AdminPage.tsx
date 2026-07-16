@@ -2135,7 +2135,7 @@ table.main thead th.right { text-align:right; }
             items: (targetOrder.delivery_order_items || []).map((i: any) => ({
               name: i.product_name,
               quantity: i.quantity,
-              notes: i.observations,
+              notes: i.notes || i.observations,
               complements: i.selected_complements
             })),
             type: 'delivery'
@@ -2220,7 +2220,7 @@ table.main thead th.right { text-align:right; }
       name: it.product_name || 'Produto',
       quantity: it.quantity,
       price: it.unit_price,
-      notes: it.observations || '',
+      notes: it.notes || it.observations || '',
       complements: it.selected_complements || [],
     }));
 
@@ -3845,7 +3845,8 @@ table.main thead th.right { text-align:right; }
           quantity: Number(item.quantity) || 1,
           unit_price: Number(item.unit_price) || 0,
           total_price: (Number(item.quantity) || 1) * (Number(item.unit_price) || 0),
-          selected_complements: selectedComplements as any
+          selected_complements: selectedComplements as any,
+          notes: (item.notes || item.observations || "").toString().trim() || null,
         };
       });
 
@@ -6546,6 +6547,16 @@ table.main thead th.right { text-align:right; }
                                         ))}
                                       </div>
                                     )}
+                                    <Input
+                                      value={item.notes || ""}
+                                      onChange={(e) => {
+                                        const newItems = [...newDeliveryOrder.items];
+                                        newItems[idx] = { ...newItems[idx], notes: e.target.value };
+                                        setNewDeliveryOrder({ ...newDeliveryOrder, items: newItems });
+                                      }}
+                                      placeholder="Obs: sem cebola, ponto da carne..."
+                                      className="mt-1.5 h-6 text-[10px] px-2 py-1 bg-yellow-50 border-yellow-200 focus:border-yellow-400 placeholder:text-yellow-700/50 placeholder:italic"
+                                    />
                                   </div>
                                   <Button
                                     variant="ghost"
@@ -6771,14 +6782,19 @@ table.main thead th.right { text-align:right; }
                                        </span>
                                        <span className="text-muted-foreground font-medium">R$ {Number(item.total_price || 0).toFixed(2)}</span>
                                      </div>
-                                     {item.selected_complements && item.selected_complements.length > 0 && (
-                                       <div className="flex flex-col ml-4 text-[10px] text-muted-foreground italic bg-orange-50/50 p-1 rounded mt-0.5">
-                                         {item.selected_complements.map((c: any, i: number) => (
-                                           <span key={i}>+ {c.name}</span>
-                                         ))}
-                                       </div>
-                                     )}
-                                   </li>
+                                      {item.selected_complements && item.selected_complements.length > 0 && (
+                                        <div className="flex flex-col ml-4 text-[10px] text-muted-foreground italic bg-orange-50/50 p-1 rounded mt-0.5">
+                                          {item.selected_complements.map((c: any, i: number) => (
+                                            <span key={i}>+ {c.name}</span>
+                                          ))}
+                                        </div>
+                                      )}
+                                      {item.notes && (
+                                        <div className="ml-4 mt-0.5 text-[10px] text-yellow-800 bg-yellow-50 border border-yellow-200 rounded px-1.5 py-0.5">
+                                          <span className="font-bold">Obs:</span> {item.notes}
+                                        </div>
+                                      )}
+                                    </li>
                                  ))
                                )}
                              </ul>
@@ -6958,14 +6974,19 @@ table.main thead th.right { text-align:right; }
                                                )}
                                              </span>
                                           </div>
-                                          {item.selected_complements && item.selected_complements.length > 0 && (
-                                            <div className="flex flex-col ml-8 text-[10px] text-muted-foreground italic bg-yellow-50/50 p-1 rounded">
-                                              {item.selected_complements.map((c: any, i: number) => (
-                                                <span key={i}>+ {c.name}</span>
-                                              ))}
-                                            </div>
-                                          )}
-                                        </li>
+                                           {item.selected_complements && item.selected_complements.length > 0 && (
+                                             <div className="flex flex-col ml-8 text-[10px] text-muted-foreground italic bg-yellow-50/50 p-1 rounded">
+                                               {item.selected_complements.map((c: any, i: number) => (
+                                                 <span key={i}>+ {c.name}</span>
+                                               ))}
+                                             </div>
+                                           )}
+                                           {item.notes && (
+                                             <div className="ml-8 text-[10px] text-yellow-900 bg-yellow-100 border border-yellow-300 rounded px-2 py-0.5">
+                                               <span className="font-bold">Obs:</span> {item.notes}
+                                             </div>
+                                           )}
+                                         </li>
                                       );
                                     })}
                                      {order.delivery_order_items.every((item: any) => {
