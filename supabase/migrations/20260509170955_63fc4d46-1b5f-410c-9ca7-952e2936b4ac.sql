@@ -1,0 +1,1 @@
+ALTER TABLE public.store_settings ADD COLUMN IF NOT EXISTS default_driver_fee DECIMAL(10,2) DEFAULT 0;

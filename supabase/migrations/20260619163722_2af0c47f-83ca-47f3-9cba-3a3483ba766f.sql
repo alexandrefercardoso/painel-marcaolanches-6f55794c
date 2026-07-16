@@ -1,0 +1,1 @@
+ALTER TABLE public.fiscal_cclass_trib RENAME COLUMN cst TO cst_ibs_cbs;

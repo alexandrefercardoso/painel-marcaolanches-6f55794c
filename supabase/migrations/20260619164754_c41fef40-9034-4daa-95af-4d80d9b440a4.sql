@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS public.fiscal_cclass_trib CASCADE;
