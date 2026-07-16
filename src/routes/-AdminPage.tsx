@@ -4648,6 +4648,24 @@ table.main thead th.right { text-align:right; }
                   </span>
                 </Button>
 
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    const url = storeSettings?.digital_menu_url?.trim();
+                    if (!url) {
+                      toast.error("Cadastre o Link do Cardápio Digital em Gestão de Mesas → Configurações.");
+                      return;
+                    }
+                    const finalUrl = url.startsWith("http") ? url : `https://${url}`;
+                    window.open(finalUrl, "_blank", "noopener,noreferrer");
+                  }}
+                  className="h-9 w-9 rounded-full bg-gradient-to-br from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 shadow-md hover:shadow-lg transition-all"
+                  title="Testar Cardápio Digital (abrir link cadastrado)"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+
                 <div className="flex items-center gap-2 bg-orange-50 px-3 py-1.5 h-9 rounded-full border border-orange-100 shadow-sm">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                   <span className="text-[10px] font-black text-orange-700 uppercase tracking-tighter">
