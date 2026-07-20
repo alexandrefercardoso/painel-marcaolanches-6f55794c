@@ -120,6 +120,7 @@ import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/s
 import { CompanyForm } from "@/components/admin/CompanyForm";
 
 import { AppSidebar } from "@/components/admin/AppSidebar";
+import { AssignDriverButton } from "@/components/delivery/AssignDriverButton";
 import { ProductMovementsView } from "@/components/admin/ProductMovementsView";
 import { Clock as HeaderClock } from "@/components/admin/Clock";
 const TaxRulesManager = lazy(() => import("@/components/admin/TaxRulesManager").then(m => ({ default: m.TaxRulesManager })));
@@ -7080,7 +7081,22 @@ table.main thead th.right { text-align:right; }
                             </div>
                           </div>
                           
-                          
+
+                          {order.order_type === 'delivery' && order.status === 'ready' && (
+                            <div className="pt-2 border-t flex items-center justify-between gap-2 flex-wrap">
+                              <Label className="text-xs font-bold uppercase text-muted-foreground">
+                                Entregador (App MeuPedix)
+                              </Label>
+                              <AssignDriverButton
+                                orderId={order.id}
+                                driverId={order.driver_id}
+                                driverNameFallback={order.driver_id ? drivers.find(d => d.id === order.driver_id)?.name : null}
+                                adminUser={user}
+                                onAssigned={loadLargeData}
+                              />
+                            </div>
+                          )}
+
                           {order.order_type === 'delivery' && (
                             <div className="space-y-2 pt-2 border-t">
                               <Label className="text-xs font-bold uppercase text-muted-foreground">Motoqueiro</Label>
