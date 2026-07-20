@@ -65,10 +65,10 @@ export function LiveDeliveriesPanel({ alertThresholdMin = 20 }: Props) {
   rowsRef.current = rows;
 
   const fetchAll = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("delivery_orders")
       .select(
-        "id, order_number, delivery_address, driver_id, driver_status, delivery_started_at, delivered_at, delivery_proof_url, customer_name"
+        "id, order_number, delivery_address, customer_address, driver_id, driver_status, delivery_started_at, delivered_at, delivery_proof_url, customer_name"
       )
       .eq("driver_status", "a_caminho")
       .order("delivery_started_at", { ascending: true, nullsFirst: true })
@@ -80,7 +80,10 @@ export function LiveDeliveriesPanel({ alertThresholdMin = 20 }: Props) {
       return;
     }
 
-    const list = (data as DeliveryRow[]) || [];
+    const list = ((data as any[]) || []).map((r) => ({
+      ...r,
+      delivery_address: r.delivery_address ?? r.customer_address ?? null,
+    })) as DeliveryRow[];
     const driverIds = Array.from(
       new Set(list.map((r) => r.driver_id).filter(Boolean))
     ) as string[];
