@@ -136,6 +136,14 @@ export function TableDashboardOnly() {
         </div>
       </div>
 
+      {filterOccupied && sessions.length === 0 && (
+        <div className="p-10 text-center border-2 border-dashed rounded-3xl bg-muted/30">
+          <Coffee className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+          <p className="text-xs font-black uppercase text-muted-foreground">Nenhuma mesa em uso no momento</p>
+          <p className="text-[10px] text-muted-foreground mt-1">Clique em "Ver Todas" para abrir uma nova mesa</p>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {tables.filter(table => !filterOccupied || sessions.some(s => s.table_id === table.id)).map((table) => {
           const { color, status, session } = getTableStatus(table.id);
