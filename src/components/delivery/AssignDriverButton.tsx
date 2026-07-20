@@ -66,7 +66,7 @@ export function AssignDriverButton({
     }
     setAssigning(entregadorId);
     try {
-      const { error } = await supabase.rpc("atribuir_entregador", {
+      const { error } = await (supabase as any).rpc("atribuir_entregador", {
         p_pedido_id: orderId,
         p_entregador_id: entregadorId,
         p_admin_profile_id: adminUser.id,
