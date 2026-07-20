@@ -48,7 +48,7 @@ export function AssignDriverButton({
     setOpen(true);
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc("listar_motoqueiros_loja");
+      const { data, error } = await (supabase as any).rpc("listar_motoqueiros_loja");
       if (error) throw error;
       setMotoqueiros((data as any) || []);
     } catch (e: any) {
