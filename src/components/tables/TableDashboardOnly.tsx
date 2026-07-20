@@ -15,7 +15,7 @@ export function TableDashboardOnly() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [storeSettings, setStoreSettings] = useState<any>(null);
   const [activeCashierSession, setActiveCashierSession] = useState<any>(null);
-  const [filterOccupied, setFilterOccupied] = useState(false);
+  const [filterOccupied, setFilterOccupied] = useState(true);
 
   const fetchData = async () => {
     try {
