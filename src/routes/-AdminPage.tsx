@@ -121,6 +121,7 @@ import { CompanyForm } from "@/components/admin/CompanyForm";
 
 import { AppSidebar } from "@/components/admin/AppSidebar";
 import { AssignDriverButton } from "@/components/delivery/AssignDriverButton";
+import { LiveDeliveriesPanel } from "@/components/delivery/LiveDeliveriesPanel";
 import { ProductMovementsView } from "@/components/admin/ProductMovementsView";
 import { Clock as HeaderClock } from "@/components/admin/Clock";
 const TaxRulesManager = lazy(() => import("@/components/admin/TaxRulesManager").then(m => ({ default: m.TaxRulesManager })));
