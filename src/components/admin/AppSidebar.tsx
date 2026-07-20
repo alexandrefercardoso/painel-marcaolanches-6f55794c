@@ -113,6 +113,7 @@ export function AppSidebar({ activeTab, setActiveTab, storeSettings, userProfile
           { id: "delivery_module", label: "Atendimento", icon: Truck },
           { id: "tables_quick_view", label: "Mesas", icon: LayoutGrid },
           { id: "history_module", label: "Pedidos", icon: Search },
+          { id: "live_deliveries", label: "Entregas em Andamento", icon: Bike },
         ]),
         ...((storeSettings?.kds_enabled !== false && (userProfile?.is_kds_only || userProfile?.role === 'master')) ? [
           { id: "kitchen_dashboard", label: "Produção (KDS)", icon: Utensils }
