@@ -7092,7 +7092,7 @@ table.main thead th.right { text-align:right; }
                                 driverId={order.driver_id}
                                 driverNameFallback={order.driver_id ? drivers.find(d => d.id === order.driver_id)?.name : null}
                                 adminUser={user}
-                                onAssigned={fetchDeliveryOrders}
+                                onAssigned={loadLargeData}
                               />
                             </div>
                           )}
