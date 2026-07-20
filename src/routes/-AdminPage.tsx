@@ -427,10 +427,11 @@ export default function AdminPage({ user }: { user: any }) {
     };
   }, [user]);
   const firstAllowedTab = useMemo(() => {
-    if (isPrivileged) return "dashboard";
     if (user?.is_kds_only) return "kitchen_dashboard";
+    if (isPrivileged) return "delivery_module";
+    if (allowedModules.includes("atendimento" as any)) return "delivery_module";
     const entry = Object.entries(TAB_TO_MODULE).find(([, mod]) => allowedModules.includes(mod as any));
-    return entry ? entry[0] : "dashboard";
+    return entry ? entry[0] : "delivery_module";
   }, [isPrivileged, allowedModules, user?.is_kds_only]);
 
   const [activeTab, setActiveTab] = useState<string>(
