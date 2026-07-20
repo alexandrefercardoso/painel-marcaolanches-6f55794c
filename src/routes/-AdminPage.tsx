@@ -120,6 +120,7 @@ import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/s
 import { CompanyForm } from "@/components/admin/CompanyForm";
 
 import { AppSidebar } from "@/components/admin/AppSidebar";
+import { AssignDriverButton } from "@/components/delivery/AssignDriverButton";
 import { ProductMovementsView } from "@/components/admin/ProductMovementsView";
 import { Clock as HeaderClock } from "@/components/admin/Clock";
 const TaxRulesManager = lazy(() => import("@/components/admin/TaxRulesManager").then(m => ({ default: m.TaxRulesManager })));
