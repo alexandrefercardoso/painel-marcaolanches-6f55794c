@@ -7299,15 +7299,7 @@ table.main thead th.right { text-align:right; }
                                     )?.id || "";
                                   return (
                                     <Select
-                                      value={currentValue}
-                                      onOpenChange={async (isOpen) => {
-                                        if (!isOpen) return;
-                                        try {
-                                          await loadAppMotoqueiros();
-                                        } catch (e: any) {
-                                          toast.error(e?.message || "Erro ao listar motoqueiros");
-                                        }
-                                      }}
+                                      value={currentValue || undefined}
                                       onValueChange={async (v) => {
                                         if (!v) return;
                                         try {
@@ -7319,7 +7311,14 @@ table.main thead th.right { text-align:right; }
                                         }
                                       }}
                                     >
-                                      <SelectTrigger className="h-9">
+                                      <SelectTrigger
+                                        className="h-9"
+                                        onPointerDown={() => {
+                                          loadAppMotoqueiros().catch((e) =>
+                                            console.warn("[motoqueiros] load falhou:", e)
+                                          );
+                                        }}
+                                      >
                                         <SelectValue placeholder="Escolher motoqueiro..." />
                                       </SelectTrigger>
                                       <SelectContent>
@@ -7329,23 +7328,13 @@ table.main thead th.right { text-align:right; }
                                           </div>
                                         ) : validMotoqueiros.map((m) => {
                                           const ativo = typeof m.pedidos_ativos === "number" ? m.pedidos_ativos : 0;
-                                          const statusColor = ativo === 0
-                                            ? "bg-emerald-100 text-emerald-700 border-emerald-200"
-                                            : ativo <= 2
-                                              ? "bg-amber-100 text-amber-700 border-amber-200"
-                                              : "bg-red-100 text-red-700 border-red-200";
                                           const statusText = ativo === 0
                                             ? "Livre"
-                                            : `${ativo} entrega${ativo > 1 ? "s" : ""} em andamento`;
+                                            : `${ativo} em andamento`;
                                           const label = m.full_name || m.email || "Motoqueiro";
                                           return (
                                             <SelectItem key={m.id} value={m.id} textValue={label}>
-                                              <div className="flex items-center justify-between gap-3 w-full pointer-events-none">
-                                                <span className="font-medium truncate">{label}</span>
-                                                <span className={`text-[10px] px-2 py-0.5 rounded-full border whitespace-nowrap ${statusColor}`}>
-                                                  {statusText}
-                                                </span>
-                                              </div>
+                                              {label} — {statusText}
                                             </SelectItem>
                                           );
                                         })}
@@ -7353,6 +7342,7 @@ table.main thead th.right { text-align:right; }
                                     </Select>
                                   );
                                 })()}
+
 
                                 {order.status === 'delivering' && (
                                   <Button 
