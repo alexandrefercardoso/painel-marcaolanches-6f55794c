@@ -7220,13 +7220,13 @@ table.main thead th.right { text-align:right; }
                   <div className="flex items-center gap-2">
                     <Bike className="h-5 w-5" /> 3. Entrega / Finalizados
                   </div>
-                  <Badge className="bg-green-600">{deliveryOrders.filter(o => o.status === 'ready' || o.status === 'delivering' || (o.order_type === 'delivery' && !!o.driver_id && o.status !== 'delivered' && o.status !== 'cancelled' && o.status !== 'awaiting_reconciliation')).length}</Badge>
+                  <Badge className="bg-green-600">{deliveryOrders.filter(o => o.status === 'ready' || (o.order_type === 'delivery' && !!o.driver_id && o.status !== 'delivered' && o.status !== 'cancelled' && o.status !== 'awaiting_reconciliation')).length}</Badge>
                 </div>
 
 
 
                 <div className="space-y-4 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
-                  {deliveryOrders.filter(o => o.status === 'ready' || o.status === 'delivering' || (o.order_type === 'delivery' && !!o.driver_id && o.status !== 'delivered' && o.status !== 'cancelled' && o.status !== 'awaiting_reconciliation')).map(order => {
+                  {deliveryOrders.filter(o => o.status === 'ready' || (o.order_type === 'delivery' && !!o.driver_id && o.status !== 'delivered' && o.status !== 'cancelled' && o.status !== 'awaiting_reconciliation')).map(order => {
                     const area = deliveryAreas.find(a => 
                       (order.neighborhood && a.name && order.neighborhood.toLowerCase().includes(a.name.toLowerCase())) ||
                       (order.customer_address && a.name && order.customer_address.toLowerCase().includes(a.name.toLowerCase()))
@@ -7286,7 +7286,7 @@ table.main thead th.right { text-align:right; }
                           </div>
                           
 
-                          {order.order_type === 'delivery' && (
+                          {order.order_type === 'delivery' && !order.driver_id && (
                             <div className="space-y-2 pt-2 border-t">
                               <Label className="text-xs font-bold uppercase text-muted-foreground">
                                 Motoqueiro (envia para o App MeuPedix Entregador)
@@ -7356,7 +7356,7 @@ table.main thead th.right { text-align:right; }
                             </div>
                           )}
                           
-                          {order.status === 'delivering' && order.driver_id && (
+                          {order.order_type === 'delivery' && order.driver_id && (
                             <div className="space-y-3">
                               <div className="bg-blue-50 p-3 rounded-xl flex items-center justify-between text-blue-700 border border-blue-100 shadow-sm">
                                 <div className="flex items-center gap-3">
@@ -7474,7 +7474,7 @@ table.main thead th.right { text-align:right; }
                     </Card>
                     );
                   })}
-                  {deliveryOrders.filter(o => o.status === 'ready' || o.status === 'delivering').length === 0 && (
+                  {deliveryOrders.filter(o => o.status === 'ready' || (o.order_type === 'delivery' && !!o.driver_id && o.status !== 'delivered' && o.status !== 'cancelled' && o.status !== 'awaiting_reconciliation')).length === 0 && (
                     <div className="py-10 text-center bg-muted/20 rounded-xl border-2 border-dashed">
                       <Truck className="h-10 w-10 text-muted-foreground mx-auto mb-2 opacity-20" />
                       <p className="text-muted-foreground text-sm">Sem pedidos aguardando.</p>
