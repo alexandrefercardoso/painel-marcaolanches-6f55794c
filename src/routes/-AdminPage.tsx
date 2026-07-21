@@ -7298,48 +7298,39 @@ table.main thead th.right { text-align:right; }
                                       (m) => m.id === order.driver_id || m.profile_id === order.driver_id
                                     )?.id || "";
                                   return (
-                                    <Select
-                                      value={currentValue || undefined}
-                                      onValueChange={async (v) => {
+                                    <select
+                                      className="h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                      value={order.status === "delivering" ? currentValue : ""}
+                                      disabled={validMotoqueiros.length === 0}
+                                      onChange={async (event) => {
+                                        const v = event.target.value;
                                         if (!v) return;
                                         try {
                                           await assignMotoqueiroToOrder(order.id, v);
-                                          toast.success("Motoqueiro atribuído e enviado ao app!");
                                         } catch (e: any) {
                                           console.error("[motoqueiros] falha ao atribuir:", e);
                                           toast.error(e?.message || "Erro ao atribuir motoqueiro");
                                         }
                                       }}
                                     >
-                                      <SelectTrigger
-                                        className="h-9"
-                                        onPointerDown={() => {
-                                          loadAppMotoqueiros().catch((e) =>
-                                            console.warn("[motoqueiros] load falhou:", e)
-                                          );
-                                        }}
-                                      >
-                                        <SelectValue placeholder="Escolher motoqueiro..." />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {validMotoqueiros.length === 0 ? (
-                                          <div className="px-3 py-2 text-xs text-muted-foreground">
-                                            Nenhum motoqueiro ativo encontrado. Cadastre ou ative um motoqueiro na aba Motoqueiros.
-                                          </div>
-                                        ) : validMotoqueiros.map((m) => {
-                                          const ativo = typeof m.pedidos_ativos === "number" ? m.pedidos_ativos : 0;
-                                          const statusText = ativo === 0
-                                            ? "Livre"
-                                            : `${ativo} em andamento`;
-                                          const label = m.full_name || m.email || "Motoqueiro";
-                                          return (
-                                            <SelectItem key={m.id} value={m.id} textValue={label}>
-                                              {label} — {statusText}
-                                            </SelectItem>
-                                          );
-                                        })}
-                                      </SelectContent>
-                                    </Select>
+                                      <option value="">
+                                        {validMotoqueiros.length === 0
+                                          ? "Nenhum motoqueiro ativo encontrado"
+                                          : "Escolher motoqueiro..."}
+                                      </option>
+                                      {validMotoqueiros.map((m) => {
+                                        const ativo = typeof m.pedidos_ativos === "number" ? m.pedidos_ativos : 0;
+                                        const statusText = ativo === 0
+                                          ? "Livre"
+                                          : `${ativo} em andamento`;
+                                        const label = m.full_name || m.email || "Motoqueiro";
+                                        return (
+                                          <option key={m.id} value={m.id}>
+                                            {label} — {statusText}
+                                          </option>
+                                        );
+                                      })}
+                                    </select>
                                   );
                                 })()}
 
