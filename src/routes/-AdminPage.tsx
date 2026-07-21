@@ -2110,6 +2110,7 @@ table.main thead th.right { text-align:right; }
       if (syncedProfileId) rpcDriverId = syncedProfileId;
     }
 
+    let rpcOk = false;
     try {
       const { error } = await (supabase as any).rpc("atribuir_entregador", {
         p_pedido_id: orderId,
@@ -2117,22 +2118,44 @@ table.main thead th.right { text-align:right; }
         p_admin_profile_id: user?.id,
       });
       if (error) throw error;
+      rpcOk = true;
     } catch (rpcError) {
       console.warn("RPC atribuir_entregador indisponível, aplicando vínculo direto:", rpcError);
-      const { error } = await supabase
-        .from("delivery_orders")
-        .update({ status: "delivering", driver_id: driverId } as any)
-        .eq("id", orderId);
-      if (error) throw error;
     }
 
-    await supabase
-      .from("delivery_orders")
-      .update({ status: "delivering", driver_id: driverId } as any)
-      .eq("id", orderId);
+    // Garante que o pedido entre em rota e apareça em "Entregas em Andamento"
+    // + fique visível pro app do entregador (driver_status = 'a_caminho').
+    const nowIso = new Date().toISOString();
+    const patch: any = {
+      driver_id: driverId,
+      driver_status: "a_caminho",
+      status: "delivering",
+    };
+    if (!rpcOk) patch.delivery_started_at = nowIso;
 
+    const { error: updErr } = await supabase
+      .from("delivery_orders")
+      .update(patch)
+      .eq("id", orderId);
+    if (updErr) {
+      console.error("Falha ao marcar pedido como em rota:", updErr);
+      toast.error("Não foi possível marcar o pedido como em rota.");
+      return;
+    }
+
+    // Se a RPC não rodou, precisamos garantir o horário de início também
+    if (!rpcOk) {
+      await supabase
+        .from("delivery_orders")
+        .update({ delivery_started_at: nowIso } as any)
+        .eq("id", orderId)
+        .is("delivery_started_at", null);
+    }
+
+    toast.success("Pedido enviado ao app do entregador.");
     await refreshDeliveryOrders();
   };
+
 
   const handleSaveDriver = async () => {
     if (!newDriver.name.trim() || !newDriver.phone.trim()) {
