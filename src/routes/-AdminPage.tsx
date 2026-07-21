@@ -7458,7 +7458,7 @@ table.main thead th.right { text-align:right; }
                       </CardContent>
                       <CardFooter className="flex gap-2">
                         <div className="flex flex-col w-full gap-2">
-                          {(order.status === 'delivering' || order.order_type !== 'delivery' || (order.order_type === 'delivery' && !!order.driver_id)) && (
+                          {(order.order_type !== 'delivery' || !!order.driver_id || order.status === 'delivering') && (
                             <Button 
                               className="w-full bg-green-600 hover:bg-green-700 gap-2 font-bold shadow-md h-11"
                                 onClick={() => {
@@ -7469,6 +7469,11 @@ table.main thead th.right { text-align:right; }
                             >
                               <CheckCircle2 className="h-4 w-4" /> Finalizar Pedido
                             </Button>
+                          )}
+                          {order.order_type === 'delivery' && !order.driver_id && order.status !== 'delivering' && (
+                            <p className="text-[11px] text-center text-muted-foreground italic">
+                              Selecione um motoqueiro para liberar a finalização.
+                            </p>
                           )}
                         </div>
                       </CardFooter>
