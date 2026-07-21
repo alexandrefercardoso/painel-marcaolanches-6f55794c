@@ -2097,6 +2097,7 @@ table.main thead th.right { text-align:right; }
   const assignMotoqueiroToOrder = async (orderId: string, driverId: string) => {
     const selectedDriver = appMotoqueiros.find((m) => m.id === driverId);
     const localDriver = drivers.find((d) => d.id === driverId);
+    const panelDriverId = selectedDriver?.id || localDriver?.id || driverId;
     let rpcDriverId = selectedDriver?.profile_id || localDriver?.auth_user_id || driverId;
 
     if (!selectedDriver?.profile_id && !localDriver?.auth_user_id && localDriver?.login) {
@@ -2123,14 +2124,13 @@ table.main thead th.right { text-align:right; }
       console.warn("RPC atribuir_entregador indisponível, aplicando vínculo direto:", rpcError);
     }
 
-    // Garante que o pedido entre em rota e apareça em "Entregas em Andamento"
-    // + fique visível pro app do entregador (driver_status = 'a_caminho').
+    // Garante que o pedido entre em rota e apareça em "Entregas em Andamento".
     const nowIso = new Date().toISOString();
-    // IMPORTANTE: o app do entregador filtra por driver_id = auth.uid(),
-    // então precisamos gravar o profile_id/auth_user_id do motoqueiro,
-    // NÃO o id da tabela local `drivers`.
+    // IMPORTANTE: delivery_orders.driver_id tem relacionamento com a tabela local `drivers`.
+    // Para o seletor do painel funcionar e liberar o botão "Finalizar Pedido",
+    // aqui deve ficar o ID local do motoqueiro selecionado.
     const patch: any = {
-      driver_id: rpcDriverId,
+      driver_id: panelDriverId,
       driver_status: "a_caminho",
       status: "delivering",
     };
