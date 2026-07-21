@@ -2021,50 +2021,78 @@ table.main thead th.right { text-align:right; }
   };
 
   const loadAppMotoqueiros = async () => {
-    const { data: localDrivers, error: driversError } = await (supabase.from as any)("drivers")
-      .select("id, name, login, active, is_active, auth_user_id")
-      .order("name");
-
-    if (!driversError) {
-      const validDrivers = ((localDrivers as any[]) || []).filter((d) => d.active !== false && d.is_active !== false);
-
-      if (validDrivers.length > 0) {
-        const { data: activeOrders } = await supabase
-          .from("delivery_orders")
-          .select("driver_id, status")
-          .in("status", ["delivering", "ready"])
-          .not("driver_id", "is", null);
-
-        const activeCount = ((activeOrders as any[]) || []).reduce<Record<string, number>>((acc, o) => {
-          if (o.driver_id) acc[o.driver_id] = (acc[o.driver_id] || 0) + 1;
-          return acc;
-        }, {});
-
-        const options = validDrivers.map((d) => ({
-          id: d.id,
-          full_name: d.name || "Motoqueiro",
-          email: d.login || null,
-          pedidos_ativos: activeCount[d.id] || 0,
-          profile_id: d.auth_user_id || null,
-        }));
-
-        setAppMotoqueiros(options);
-        return options;
+    // 1) tenta buscar direto da tabela drivers
+    let validDrivers: any[] = [];
+    try {
+      const { data: localDrivers, error: driversError } = await (supabase.from as any)("drivers")
+        .select("id, name, login, active, is_active, auth_user_id")
+        .order("name");
+      if (driversError) {
+        console.warn("[motoqueiros] erro ao ler drivers:", driversError);
       }
+      validDrivers = ((localDrivers as any[]) || []).filter(
+        (d) => d.active !== false && d.is_active !== false
+      );
+    } catch (e) {
+      console.warn("[motoqueiros] exceção ao ler drivers:", e);
     }
 
-    const { data, error } = await (supabase as any).rpc("listar_motoqueiros_loja");
-    if (error) throw error;
-    const options = ((data as any[]) || []).map((m) => ({
-      id: m.id,
-      full_name: m.full_name || m.name || "Motoqueiro",
-      email: m.email || m.login || null,
-      pedidos_ativos: typeof m.pedidos_ativos === "number" ? m.pedidos_ativos : 0,
-      profile_id: m.profile_id || m.auth_user_id || null,
-    }));
-    setAppMotoqueiros(options);
-    return options;
+    // 2) fallback: usa o state `drivers` já carregado pelo fetchData
+    if (validDrivers.length === 0 && Array.isArray(drivers) && drivers.length > 0) {
+      validDrivers = drivers
+        .filter((d: any) => d.active !== false && d.is_active !== false)
+        .map((d: any) => ({
+          id: d.id,
+          name: d.name,
+          login: d.login,
+          auth_user_id: d.auth_user_id,
+        }));
+    }
+
+    if (validDrivers.length > 0) {
+      const { data: activeOrders } = await supabase
+        .from("delivery_orders")
+        .select("driver_id, status")
+        .in("status", ["delivering", "ready"])
+        .not("driver_id", "is", null);
+
+      const activeCount = ((activeOrders as any[]) || []).reduce<Record<string, number>>((acc, o) => {
+        if (o.driver_id) acc[o.driver_id] = (acc[o.driver_id] || 0) + 1;
+        return acc;
+      }, {});
+
+      const options = validDrivers.map((d) => ({
+        id: d.id,
+        full_name: d.name || "Motoqueiro",
+        email: d.login || null,
+        pedidos_ativos: activeCount[d.id] || 0,
+        profile_id: d.auth_user_id || null,
+      }));
+
+      setAppMotoqueiros(options);
+      return options;
+    }
+
+    // 3) último fallback: RPC do app MeuPedix
+    try {
+      const { data, error } = await (supabase as any).rpc("listar_motoqueiros_loja");
+      if (error) throw error;
+      const options = ((data as any[]) || []).map((m) => ({
+        id: m.id,
+        full_name: m.full_name || m.name || "Motoqueiro",
+        email: m.email || m.login || null,
+        pedidos_ativos: typeof m.pedidos_ativos === "number" ? m.pedidos_ativos : 0,
+        profile_id: m.profile_id || m.auth_user_id || null,
+      }));
+      setAppMotoqueiros(options);
+      return options;
+    } catch (e) {
+      console.warn("[motoqueiros] RPC listar_motoqueiros_loja falhou:", e);
+      setAppMotoqueiros([]);
+      return [];
+    }
   };
+
 
   const assignMotoqueiroToOrder = async (orderId: string, driverId: string) => {
     const selectedDriver = appMotoqueiros.find((m) => m.id === driverId);
