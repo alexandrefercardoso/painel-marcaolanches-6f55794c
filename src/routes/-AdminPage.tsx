@@ -7310,65 +7310,44 @@ table.main thead th.right { text-align:right; }
                                     validMotoqueiros.find(
                                       (m) => m.id === order.driver_id || m.profile_id === order.driver_id
                                     )?.id || "";
-                                  const isDelivering = order.status === "delivering";
-                                  const pending = pendingDriverByOrder[order.id] || "";
-                                  const currentValue = isDelivering ? assignedValue : pending;
-                                  return (
-                                    <>
-                                      <select
-                                        className="h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={currentValue}
-                                        disabled={validMotoqueiros.length === 0 || isDelivering}
-                                        onChange={(event) => {
-                                          const v = event.target.value;
-                                          setPendingDriverByOrder((prev) => ({
-                                            ...prev,
-                                            [order.id]: v,
-                                          }));
-                                        }}
-                                      >
-                                        <option value="">
-                                          {validMotoqueiros.length === 0
-                                            ? "Nenhum motoqueiro ativo encontrado"
-                                            : "Escolher motoqueiro..."}
-                                        </option>
-                                        {validMotoqueiros.map((m) => {
-                                          const ativo = typeof m.pedidos_ativos === "number" ? m.pedidos_ativos : 0;
-                                          const statusText = ativo === 0
-                                            ? "Livre"
-                                            : `${ativo} em andamento`;
-                                          const label = m.full_name || m.email || "Motoqueiro";
-                                          return (
-                                            <option key={m.id} value={m.id}>
-                                              {label} — {statusText}
-                                            </option>
-                                          );
-                                        })}
-                                      </select>
+                                   const isDelivering = order.status === "delivering";
+                                   return (
+                                     <>
+                                       <select
+                                         className="h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                         value={assignedValue}
+                                         disabled={validMotoqueiros.length === 0 || isDelivering}
+                                         onChange={async (event) => {
+                                           const v = event.target.value;
+                                           if (!v) return;
+                                           try {
+                                             await assignMotoqueiroToOrder(order.id, v);
+                                           } catch (e: any) {
+                                             console.error("[motoqueiros] falha ao atribuir:", e);
+                                             toast.error(e?.message || "Erro ao atribuir motoqueiro");
+                                           }
+                                         }}
+                                       >
+                                         <option value="">
+                                           {validMotoqueiros.length === 0
+                                             ? "Nenhum motoqueiro ativo encontrado"
+                                             : "Escolher motoqueiro..."}
+                                         </option>
+                                         {validMotoqueiros.map((m) => {
+                                           const ativo = typeof m.pedidos_ativos === "number" ? m.pedidos_ativos : 0;
+                                           const statusText = ativo === 0
+                                             ? "Livre"
+                                             : `${ativo} em andamento`;
+                                           const label = m.full_name || m.email || "Motoqueiro";
+                                           return (
+                                             <option key={m.id} value={m.id}>
+                                               {label} — {statusText}
+                                             </option>
+                                           );
+                                         })}
+                                       </select>
 
-                                      {!isDelivering && (
-                                        <Button
-                                          size="sm"
-                                          className="w-full bg-blue-600 hover:bg-blue-700 text-white gap-2"
-                                          disabled={!pending}
-                                          onClick={async () => {
-                                            try {
-                                              await assignMotoqueiroToOrder(order.id, pending);
-                                              setPendingDriverByOrder((prev) => {
-                                                const copy = { ...prev };
-                                                delete copy[order.id];
-                                                return copy;
-                                              });
-                                            } catch (e: any) {
-                                              console.error("[motoqueiros] falha ao atribuir:", e);
-                                              toast.error(e?.message || "Erro ao atribuir motoqueiro");
-                                            }
-                                          }}
-                                        >
-                                          <Bike className="h-4 w-4" />
-                                          Enviar ao entregador
-                                        </Button>
-                                      )}
+
 
                                       {isDelivering && (
                                         <Button
