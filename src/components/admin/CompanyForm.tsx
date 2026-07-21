@@ -131,12 +131,13 @@ export const CompanyForm = React.memo(function CompanyForm({
 
     try {
       setSavingCompany(true);
-      const updateData = {
+      const updateData: any = {
         name: formData.name || null,
         whatsapp_number: formData.whatsapp_number || null,
         email: formData.email || null,
         cnpj: formData.cnpj || null,
         cpf: formData.cpf || null,
+        store_address: formData.store_address || null,
         city: formData.city || null,
         neighborhood: formData.neighborhood || null,
         address: formData.address || null,
