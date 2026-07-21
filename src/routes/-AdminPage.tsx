@@ -7290,12 +7290,21 @@ table.main thead th.right { text-align:right; }
                                       <div className="px-3 py-2 text-xs text-muted-foreground">
                                         Nenhum motoqueiro ativo encontrado. Cadastre ou ative um motoqueiro na aba Motoqueiros.
                                       </div>
-                                    ) : appMotoqueiros.map(m => (
-                                      <SelectItem key={m.id} value={m.id}>
-                                        {m.full_name || m.email || "Motoqueiro"}
-                                        {typeof m.pedidos_ativos === "number" ? ` · ${m.pedidos_ativos} ativo(s)` : ""}
-                                      </SelectItem>
-                                    ))}
+                                    ) : appMotoqueiros.map(m => {
+                                      const ativo = typeof m.pedidos_ativos === "number" ? m.pedidos_ativos : 0;
+                                      const statusColor = ativo === 0 ? "bg-emerald-100 text-emerald-700 border-emerald-200" : ativo <= 2 ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-red-100 text-red-700 border-red-200";
+                                      const statusText = ativo === 0 ? "Livre" : `${ativo} entrega${ativo > 1 ? "s" : ""} em andamento`;
+                                      return (
+                                        <SelectItem key={m.id} value={m.id}>
+                                          <div className="flex items-center justify-between gap-3 w-full">
+                                            <span className="font-medium truncate">{m.full_name || m.email || "Motoqueiro"}</span>
+                                            <span className={`text-[10px] px-2 py-0.5 rounded-full border whitespace-nowrap ${statusColor}`}>
+                                              {statusText}
+                                            </span>
+                                          </div>
+                                        </SelectItem>
+                                      );
+                                    })}
                                   </SelectContent>
                                 </Select>
 
