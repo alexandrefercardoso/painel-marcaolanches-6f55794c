@@ -384,9 +384,19 @@ export const CompanyForm = React.memo(function CompanyForm({
                       className="h-12"
                     />
                   </div>
-                  <div className="md:col-span-2">
-                    <p className="text-[11px] text-muted-foreground font-medium italic">
-                      Coordenadas da loja usadas para cálculo de rota e distância dos entregadores. Você pode obter no Google Maps clicando com o botão direito no endereço da loja.
+                  <div className="md:col-span-2 flex flex-col sm:flex-row sm:items-center gap-3">
+                    <Button
+                      type="button"
+                      onClick={buscarCoordenadas}
+                      disabled={geocoding}
+                      className="h-11 gap-2 font-bold"
+                      variant="secondary"
+                    >
+                      {geocoding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                      Buscar coordenadas pelo endereço
+                    </Button>
+                    <p className="text-[11px] text-muted-foreground font-medium italic flex-1">
+                      Usa o endereço preenchido acima + sua Chave da API do Google Maps para localizar a loja automaticamente. Você também pode digitar manualmente ou copiar do Google Maps (clique com o botão direito no endereço).
                     </p>
                   </div>
                 </div>
