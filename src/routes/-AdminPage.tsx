@@ -7289,50 +7289,70 @@ table.main thead th.right { text-align:right; }
                                 Motoqueiro (envia para o App MeuPedix Entregador)
                               </Label>
                               <div className="flex gap-2">
-                                <Select 
-                                  value={order.driver_id || ""} 
-                                  onOpenChange={async (isOpen) => {
-                                    if (!isOpen) return;
-                                    try {
-                                      await loadAppMotoqueiros();
-                                    } catch (e: any) {
-                                      toast.error(e?.message || "Erro ao listar motoqueiros");
-                                    }
-                                  }}
-                                  onValueChange={async (v) => {
-                                    try {
-                                      await assignMotoqueiroToOrder(order.id, v);
-                                      toast.success("Motoqueiro atribuído e enviado ao app!");
-                                    } catch (e: any) {
-                                      toast.error(e?.message || "Erro ao atribuir motoqueiro");
-                                    }
-                                  }}
-                                >
-                                  <SelectTrigger className="h-9">
-                                    <SelectValue placeholder="Escolher motoqueiro..." />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {appMotoqueiros.length === 0 ? (
-                                      <div className="px-3 py-2 text-xs text-muted-foreground">
-                                        Nenhum motoqueiro ativo encontrado. Cadastre ou ative um motoqueiro na aba Motoqueiros.
-                                      </div>
-                                    ) : appMotoqueiros.map(m => {
-                                      const ativo = typeof m.pedidos_ativos === "number" ? m.pedidos_ativos : 0;
-                                      const statusColor = ativo === 0 ? "bg-emerald-100 text-emerald-700 border-emerald-200" : ativo <= 2 ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-red-100 text-red-700 border-red-200";
-                                      const statusText = ativo === 0 ? "Livre" : `${ativo} entrega${ativo > 1 ? "s" : ""} em andamento`;
-                                      return (
-                                        <SelectItem key={m.id} value={m.id}>
-                                          <div className="flex items-center justify-between gap-3 w-full">
-                                            <span className="font-medium truncate">{m.full_name || m.email || "Motoqueiro"}</span>
-                                            <span className={`text-[10px] px-2 py-0.5 rounded-full border whitespace-nowrap ${statusColor}`}>
-                                              {statusText}
-                                            </span>
+                                {(() => {
+                                  const validMotoqueiros = appMotoqueiros.filter(
+                                    (m) => typeof m.id === "string" && m.id.length > 0
+                                  );
+                                  const currentValue =
+                                    validMotoqueiros.find(
+                                      (m) => m.id === order.driver_id || m.profile_id === order.driver_id
+                                    )?.id || "";
+                                  return (
+                                    <Select
+                                      value={currentValue}
+                                      onOpenChange={async (isOpen) => {
+                                        if (!isOpen) return;
+                                        try {
+                                          await loadAppMotoqueiros();
+                                        } catch (e: any) {
+                                          toast.error(e?.message || "Erro ao listar motoqueiros");
+                                        }
+                                      }}
+                                      onValueChange={async (v) => {
+                                        if (!v) return;
+                                        try {
+                                          await assignMotoqueiroToOrder(order.id, v);
+                                          toast.success("Motoqueiro atribuído e enviado ao app!");
+                                        } catch (e: any) {
+                                          console.error("[motoqueiros] falha ao atribuir:", e);
+                                          toast.error(e?.message || "Erro ao atribuir motoqueiro");
+                                        }
+                                      }}
+                                    >
+                                      <SelectTrigger className="h-9">
+                                        <SelectValue placeholder="Escolher motoqueiro..." />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {validMotoqueiros.length === 0 ? (
+                                          <div className="px-3 py-2 text-xs text-muted-foreground">
+                                            Nenhum motoqueiro ativo encontrado. Cadastre ou ative um motoqueiro na aba Motoqueiros.
                                           </div>
-                                        </SelectItem>
-                                      );
-                                    })}
-                                  </SelectContent>
-                                </Select>
+                                        ) : validMotoqueiros.map((m) => {
+                                          const ativo = typeof m.pedidos_ativos === "number" ? m.pedidos_ativos : 0;
+                                          const statusColor = ativo === 0
+                                            ? "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                            : ativo <= 2
+                                              ? "bg-amber-100 text-amber-700 border-amber-200"
+                                              : "bg-red-100 text-red-700 border-red-200";
+                                          const statusText = ativo === 0
+                                            ? "Livre"
+                                            : `${ativo} entrega${ativo > 1 ? "s" : ""} em andamento`;
+                                          const label = m.full_name || m.email || "Motoqueiro";
+                                          return (
+                                            <SelectItem key={m.id} value={m.id} textValue={label}>
+                                              <div className="flex items-center justify-between gap-3 w-full pointer-events-none">
+                                                <span className="font-medium truncate">{label}</span>
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full border whitespace-nowrap ${statusColor}`}>
+                                                  {statusText}
+                                                </span>
+                                              </div>
+                                            </SelectItem>
+                                          );
+                                        })}
+                                      </SelectContent>
+                                    </Select>
+                                  );
+                                })()}
 
                                 {order.status === 'delivering' && (
                                   <Button 
