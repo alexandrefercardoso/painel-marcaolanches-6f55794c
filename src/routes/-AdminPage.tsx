@@ -7465,7 +7465,7 @@ table.main thead th.right { text-align:right; }
                               <CheckCircle2 className="h-4 w-4" /> Finalizar Pedido
                             </Button>
                           )}
-                          {order.order_type === 'delivery' && !order.driver_id && order.status !== 'delivering' && (
+                          {order.order_type === 'delivery' && !order.driver_id && !assignedValue && order.status !== 'delivering' && (
                             <p className="text-[11px] text-center text-muted-foreground italic">
                               Selecione um motoqueiro para liberar a finalização.
                             </p>
