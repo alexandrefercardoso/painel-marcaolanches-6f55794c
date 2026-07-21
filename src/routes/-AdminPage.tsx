@@ -879,8 +879,8 @@ export default function AdminPage({ user }: { user: any }) {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productDialogTab, setProductDialogTab] = useState<string>("geral");
-  const [drivers, setDrivers] = useState<{id: string; name: string; phone: string; daily_rate: number; is_active: boolean; active?: boolean; login?: string; password?: string; has_fixed_fee?: boolean; fixed_fee?: number}[]>([]);
-  const [appMotoqueiros, setAppMotoqueiros] = useState<{id: string; full_name: string | null; email: string | null; pedidos_ativos: number | null}[]>([]);
+  const [drivers, setDrivers] = useState<{id: string; name: string; phone: string; daily_rate: number; is_active: boolean; active?: boolean; login?: string; password?: string; auth_user_id?: string | null; has_fixed_fee?: boolean; fixed_fee?: number}[]>([]);
+  const [appMotoqueiros, setAppMotoqueiros] = useState<{id: string; full_name: string | null; email: string | null; pedidos_ativos: number | null; profile_id?: string | null}[]>([]);
   const [newDriver, setNewDriver] = useState({ name: "", phone: "", daily_rate: "", login: "", password: "", has_fixed_fee: false, fixed_fee: "", active: true });
   const [editingDriver, setEditingDriver] = useState<any | null>(null);
   const [isDriverDialogOpen, setIsDriverDialogOpen] = useState(false);
@@ -1968,6 +1968,144 @@ table.main thead th.right { text-align:right; }
     }
   };
 
+  const syncDriverProfile = async (
+    driverId: string,
+    loginToSave: string,
+    driverName: string,
+    driverPassword = "",
+    driverActive = true
+  ) => {
+    if (!loginToSave) return;
+
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("id, allowed_modules")
+      .eq("email", loginToSave)
+      .maybeSingle();
+
+    const currentModules = Array.isArray((existingProfile as any)?.allowed_modules)
+      ? ((existingProfile as any).allowed_modules as string[])
+      : [];
+    const allowedModules = Array.from(new Set([...currentModules, "entregador"]));
+
+    const profilePayload = {
+      email: loginToSave,
+      password: driverPassword.trim(),
+      full_name: driverName.trim(),
+      role: "funcionario",
+      active: driverActive,
+      allowed_modules: allowedModules,
+      visible_fields: []
+    } as any;
+
+    let profileId = (existingProfile as any)?.id as string | undefined;
+
+    if (profileId) {
+      const { error } = await supabase.from("profiles").update(profilePayload).eq("id", profileId);
+      if (error) throw error;
+    } else {
+      const { data: insertedProfile, error } = await supabase
+        .from("profiles")
+        .insert(profilePayload)
+        .select("id")
+        .single();
+      if (error) throw error;
+      profileId = (insertedProfile as any)?.id;
+    }
+
+    if (profileId) {
+      await (supabase.from as any)("drivers").update({ auth_user_id: profileId }).eq("id", driverId);
+    }
+
+    return profileId;
+  };
+
+  const loadAppMotoqueiros = async () => {
+    const { data: localDrivers, error: driversError } = await (supabase.from as any)("drivers")
+      .select("id, name, login, active, is_active, auth_user_id")
+      .order("name");
+
+    if (!driversError) {
+      const validDrivers = ((localDrivers as any[]) || []).filter((d) => d.active !== false && d.is_active !== false);
+
+      if (validDrivers.length > 0) {
+        const { data: activeOrders } = await supabase
+          .from("delivery_orders")
+          .select("driver_id, status")
+          .in("status", ["delivering", "ready"])
+          .not("driver_id", "is", null);
+
+        const activeCount = ((activeOrders as any[]) || []).reduce<Record<string, number>>((acc, o) => {
+          if (o.driver_id) acc[o.driver_id] = (acc[o.driver_id] || 0) + 1;
+          return acc;
+        }, {});
+
+        const options = validDrivers.map((d) => ({
+          id: d.id,
+          full_name: d.name || "Motoqueiro",
+          email: d.login || null,
+          pedidos_ativos: activeCount[d.id] || 0,
+          profile_id: d.auth_user_id || null,
+        }));
+
+        setAppMotoqueiros(options);
+        return options;
+      }
+    }
+
+    const { data, error } = await (supabase as any).rpc("listar_motoqueiros_loja");
+    if (error) throw error;
+    const options = ((data as any[]) || []).map((m) => ({
+      id: m.id,
+      full_name: m.full_name || m.name || "Motoqueiro",
+      email: m.email || m.login || null,
+      pedidos_ativos: typeof m.pedidos_ativos === "number" ? m.pedidos_ativos : 0,
+      profile_id: m.profile_id || m.auth_user_id || null,
+    }));
+    setAppMotoqueiros(options);
+    return options;
+  };
+
+  const assignMotoqueiroToOrder = async (orderId: string, driverId: string) => {
+    const selectedDriver = appMotoqueiros.find((m) => m.id === driverId);
+    const localDriver = drivers.find((d) => d.id === driverId);
+    let rpcDriverId = selectedDriver?.profile_id || localDriver?.auth_user_id || driverId;
+
+    if (!selectedDriver?.profile_id && !localDriver?.auth_user_id && localDriver?.login) {
+      const syncedProfileId = await syncDriverProfile(
+        driverId,
+        localDriver.login,
+        localDriver.name,
+        localDriver.password || "",
+        localDriver.active !== false
+      );
+      if (syncedProfileId) rpcDriverId = syncedProfileId;
+    }
+
+    try {
+      const { error } = await (supabase as any).rpc("atribuir_entregador", {
+        p_pedido_id: orderId,
+        p_entregador_id: rpcDriverId,
+        p_admin_profile_id: user?.id,
+      });
+      if (error) throw error;
+    } catch (rpcError) {
+      console.warn("RPC atribuir_entregador indisponível, aplicando vínculo direto:", rpcError);
+      const { error } = await supabase
+        .from("delivery_orders")
+        .update({ status: "delivering", driver_id: driverId } as any)
+        .eq("id", orderId);
+      if (error) throw error;
+    }
+
+    await supabase
+      .from("delivery_orders")
+      .update({ status: "delivering", driver_id: driverId } as any)
+      .eq("id", orderId);
+
+    await refreshDeliveryOrders();
+  };
+
   const handleSaveDriver = async () => {
     if (!newDriver.name.trim() || !newDriver.phone.trim()) {
       toast.error("Preencha nome e celular.");
@@ -1987,15 +2125,22 @@ table.main thead th.right { text-align:right; }
         password: newDriver.password.trim(),
         active: newDriver.active
       };
+      let savedDriverId = editingDriver?.id as string | undefined;
       if (editingDriver) {
         const { error } = await supabase.from("drivers").update(payload).eq("id", editingDriver.id);
         if (error) throw error;
         toast.success("Motoqueiro atualizado!");
       } else {
-        const { error } = await supabase.from("drivers").insert([payload]);
+        const { data, error } = await supabase.from("drivers").insert([payload]).select("id").single();
         if (error) throw error;
+        savedDriverId = (data as any)?.id;
         toast.success("Motoqueiro cadastrado!");
       }
+
+      if (savedDriverId && loginToSave) {
+        await syncDriverProfile(savedDriverId, loginToSave, newDriver.name, newDriver.password, newDriver.active);
+      }
+
       setNewDriver({ name: "", phone: "", daily_rate: "", login: "", password: "", has_fixed_fee: false, fixed_fee: "", active: true });
       setEditingDriver(null);
       setIsDriverDialogOpen(false);
@@ -7095,22 +7240,14 @@ table.main thead th.right { text-align:right; }
                                   onOpenChange={async (isOpen) => {
                                     if (!isOpen) return;
                                     try {
-                                      const { data, error } = await (supabase as any).rpc("listar_motoqueiros_loja");
-                                      if (error) throw error;
-                                      setAppMotoqueiros((data as any) || []);
+                                      await loadAppMotoqueiros();
                                     } catch (e: any) {
                                       toast.error(e?.message || "Erro ao listar motoqueiros");
                                     }
                                   }}
                                   onValueChange={async (v) => {
                                     try {
-                                      const { error } = await (supabase as any).rpc("atribuir_entregador", {
-                                        p_pedido_id: order.id,
-                                        p_entregador_id: v,
-                                        p_admin_profile_id: user?.id,
-                                      });
-                                      if (error) throw error;
-                                      await updateOrderStatus(order.id, 'delivering', v);
+                                      await assignMotoqueiroToOrder(order.id, v);
                                       toast.success("Motoqueiro atribuído e enviado ao app!");
                                     } catch (e: any) {
                                       toast.error(e?.message || "Erro ao atribuir motoqueiro");
@@ -7123,7 +7260,7 @@ table.main thead th.right { text-align:right; }
                                   <SelectContent>
                                     {appMotoqueiros.length === 0 ? (
                                       <div className="px-3 py-2 text-xs text-muted-foreground">
-                                        Nenhum motoqueiro habilitado no app. Cadastre um usuário com módulo "Entregador" ativo.
+                                        Nenhum motoqueiro ativo encontrado. Cadastre ou ative um motoqueiro na aba Motoqueiros.
                                       </div>
                                     ) : appMotoqueiros.map(m => (
                                       <SelectItem key={m.id} value={m.id}>
