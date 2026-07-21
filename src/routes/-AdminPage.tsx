@@ -7294,13 +7294,6 @@ table.main thead th.right { text-align:right; }
                               </Label>
                               <div className="flex flex-col gap-2">
                                 {(() => {
-                                  const validMotoqueiros = appMotoqueiros.filter(
-                                    (m) => typeof m.id === "string" && m.id.length > 0
-                                  );
-                                  const assignedValue =
-                                    validMotoqueiros.find(
-                                      (m) => m.id === order.driver_id || m.profile_id === order.driver_id
-                                    )?.id || "";
                                    const isDelivering = order.status === "delivering";
                                    return (
                                      <>
