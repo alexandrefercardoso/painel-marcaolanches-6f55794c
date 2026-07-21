@@ -92,7 +92,7 @@ export const CompanyForm = React.memo(function CompanyForm({
 
   const [geocoding, setGeocoding] = useState(false);
   const buscarCoordenadas = async () => {
-    const apiKey = formData?.google_maps_api_key?.trim();
+    const apiKey = (formData?.google_maps_api_key?.trim() || import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() || "");
     if (!apiKey) {
       toast.error("Configure a Chave da API do Google Maps antes de buscar coordenadas.");
       return;
@@ -383,6 +383,19 @@ export const CompanyForm = React.memo(function CompanyForm({
                       onChange={e => updateField('longitude', e.target.value === "" ? null : e.target.value)}
                       className="h-12"
                     />
+                  </div>
+                  <div className="md:col-span-2 space-y-2">
+                    <Label className="font-bold text-primary flex items-center gap-2">Chave da API do Google Maps</Label>
+                    <Input
+                      type="password"
+                      placeholder="Cole aqui a chave de API do Google Maps (ou configure VITE_GOOGLE_MAPS_API_KEY no .env)"
+                      value={formData?.google_maps_api_key || ""}
+                      onChange={e => updateField('google_maps_api_key', e.target.value)}
+                      className="h-12"
+                    />
+                    <p className="text-[10px] text-muted-foreground font-medium italic">
+                      A chave é salva junto às configurações da loja. Se não preencher, o sistema tentará usar a variável VITE_GOOGLE_MAPS_API_KEY do ambiente.
+                    </p>
                   </div>
                   <div className="md:col-span-2 flex flex-col sm:flex-row sm:items-center gap-3">
                     <Button
