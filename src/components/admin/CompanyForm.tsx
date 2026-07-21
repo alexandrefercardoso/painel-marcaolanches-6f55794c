@@ -55,7 +55,9 @@ export const CompanyForm = React.memo(function CompanyForm({
         auto_manage_menu: false,
         google_maps_api_key: "",
         fixed_delivery_fee: null,
-        kds_enabled: true
+        kds_enabled: true,
+        latitude: null,
+        longitude: null
       };
       
       console.log("Inicializando CompanyForm com:", initialData.logo_url);
