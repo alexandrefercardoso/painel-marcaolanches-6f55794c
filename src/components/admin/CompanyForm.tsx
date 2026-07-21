@@ -99,14 +99,27 @@ export const CompanyForm = React.memo(function CompanyForm({
     }
     try {
       setGeocoding(true);
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1&countrycodes=br`;
+      // IMPORTANTE: navegadores bloqueiam o header "User-Agent" em fetch (é um
+      // header proibido) — se enviado, o request nunca sai no desktop.
+      // Nominatim aceita requisições sem custom UA; o browser envia o UA padrão.
+      const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=1&countrycodes=br&q=${encodeURIComponent(q)}`;
+      console.log("[Nominatim] buscando:", url);
+
       const resp = await fetch(url, {
-        headers: { "User-Agent": "MeuPedix App" },
+        method: "GET",
+        headers: { Accept: "application/json" },
+        mode: "cors",
+        cache: "no-store",
+        referrerPolicy: "no-referrer",
       });
-      if (!resp.ok) throw new Error("Erro ao consultar OpenStreetMap");
+
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const json = await resp.json();
+      console.log("[Nominatim] resposta:", json);
+
       if (!Array.isArray(json) || json.length === 0) {
-        throw new Error("Endereço não encontrado");
+        toast.error("Endereço não encontrado. Tente ser mais específico (rua, número, cidade, estado).");
+        return;
       }
       const lat = parseFloat(json[0].lat);
       const lng = parseFloat(json[0].lon);
@@ -116,7 +129,10 @@ export const CompanyForm = React.memo(function CompanyForm({
       console.log("[Nominatim] endereço resolvido:", displayName);
     } catch (err: any) {
       console.error("Erro ao geocodificar:", err);
-      toast.error("Erro ao buscar coordenadas: " + (err.message || "desconhecido"));
+      const msg = err?.message || "desconhecido";
+      toast.error(
+        `Erro ao buscar coordenadas: ${msg}. Se estiver no desktop, verifique bloqueadores de anúncio/extensões ou tente outra rede.`
+      );
     } finally {
       setGeocoding(false);
     }
