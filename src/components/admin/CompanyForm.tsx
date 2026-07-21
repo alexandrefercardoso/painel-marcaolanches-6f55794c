@@ -92,7 +92,7 @@ export const CompanyForm = React.memo(function CompanyForm({
 
   const [geocoding, setGeocoding] = useState(false);
   const buscarCoordenadas = async () => {
-    const apiKey = formData?.google_maps_api_key?.trim();
+    const apiKey = (formData?.google_maps_api_key?.trim() || import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() || "");
     if (!apiKey) {
       toast.error("Configure a Chave da API do Google Maps antes de buscar coordenadas.");
       return;
