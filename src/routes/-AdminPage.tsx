@@ -2156,7 +2156,7 @@ table.main thead th.right { text-align:right; }
     }
 
 
-    toast.success("Pedido enviado ao app do entregador.");
+    toast.success("Motoqueiro vinculado. Aguardando início da entrega.");
     await refreshDeliveryOrders();
   };
 
