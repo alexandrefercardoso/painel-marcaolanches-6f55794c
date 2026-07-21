@@ -8,7 +8,8 @@ export type ModuleId =
   | "financeiro"
   | "fiscal"
   | "marketing"
-  | "configuracoes";
+  | "configuracoes"
+  | "entregador";
 
 export const ALL_MODULES: { id: ModuleId; label: string }[] = [
   { id: "dashboard", label: "Dashboard" },
@@ -19,6 +20,7 @@ export const ALL_MODULES: { id: ModuleId; label: string }[] = [
   { id: "fiscal", label: "Fiscal" },
   { id: "marketing", label: "Marketing" },
   { id: "configuracoes", label: "Configurações" },
+  { id: "entregador", label: "Entregador (App MeuPedix)" },
 ];
 
 export const DEFAULT_FUNCIONARIO_MODULES: ModuleId[] = [
