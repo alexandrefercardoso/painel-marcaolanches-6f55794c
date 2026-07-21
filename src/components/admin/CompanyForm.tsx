@@ -55,7 +55,9 @@ export const CompanyForm = React.memo(function CompanyForm({
         auto_manage_menu: false,
         google_maps_api_key: "",
         fixed_delivery_fee: null,
-        kds_enabled: true
+        kds_enabled: true,
+        latitude: null,
+        longitude: null
       };
       
       console.log("Inicializando CompanyForm com:", initialData.logo_url);
@@ -117,6 +119,8 @@ export const CompanyForm = React.memo(function CompanyForm({
         google_maps_api_key: formData.google_maps_api_key || null,
         fixed_delivery_fee: formData.fixed_delivery_fee ? Number(formData.fixed_delivery_fee) : null,
         kds_enabled: formData.kds_enabled !== false,
+        latitude: formData.latitude === "" || formData.latitude === null || formData.latitude === undefined ? null : Number(formData.latitude),
+        longitude: formData.longitude === "" || formData.longitude === null || formData.longitude === undefined ? null : Number(formData.longitude),
         is_menu_active: !!isMenuOpen
       };
 
@@ -316,6 +320,36 @@ export const CompanyForm = React.memo(function CompanyForm({
                   <div className="space-y-2">
                     <Label className="font-bold text-primary">Estado</Label>
                     <Input value={formData?.state || ""} onChange={e => updateField('state', e.target.value)} className="h-12" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-primary/5">
+                  <div className="space-y-2">
+                    <Label className="font-bold text-primary flex items-center gap-2"><MapPin className="h-4 w-4" /> Latitude</Label>
+                    <Input
+                      type="number"
+                      step="any"
+                      placeholder="-23.5505"
+                      value={formData?.latitude === null || formData?.latitude === undefined ? "" : formData.latitude}
+                      onChange={e => updateField('latitude', e.target.value === "" ? null : e.target.value)}
+                      className="h-12"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="font-bold text-primary flex items-center gap-2"><MapPin className="h-4 w-4" /> Longitude</Label>
+                    <Input
+                      type="number"
+                      step="any"
+                      placeholder="-46.6333"
+                      value={formData?.longitude === null || formData?.longitude === undefined ? "" : formData.longitude}
+                      onChange={e => updateField('longitude', e.target.value === "" ? null : e.target.value)}
+                      className="h-12"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <p className="text-[11px] text-muted-foreground font-medium italic">
+                      Coordenadas da loja usadas para cálculo de rota e distância dos entregadores. Você pode obter no Google Maps clicando com o botão direito no endereço da loja.
+                    </p>
                   </div>
                 </div>
               </div>
