@@ -92,11 +92,6 @@ export const CompanyForm = React.memo(function CompanyForm({
 
   const [geocoding, setGeocoding] = useState(false);
   const buscarCoordenadas = async () => {
-    const apiKey = (formData?.google_maps_api_key?.trim() || import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() || "");
-    if (!apiKey) {
-      toast.error("Configure a Chave da API do Google Maps antes de buscar coordenadas.");
-      return;
-    }
     const parts = [
       formData?.address,
       formData?.address_number,
@@ -111,15 +106,21 @@ export const CompanyForm = React.memo(function CompanyForm({
     }
     try {
       setGeocoding(true);
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(parts)}&key=${encodeURIComponent(apiKey)}`;
-      const resp = await fetch(url);
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(parts)}&limit=1&countrycodes=br`;
+      const resp = await fetch(url, {
+        headers: { "User-Agent": "MeuPedix App" },
+      });
+      if (!resp.ok) throw new Error("Erro ao consultar OpenStreetMap");
       const json = await resp.json();
-      if (json.status !== "OK" || !json.results?.[0]) {
-        throw new Error(json.error_message || json.status || "Endereço não encontrado");
+      if (!Array.isArray(json) || json.length === 0) {
+        throw new Error("Endereço não encontrado");
       }
-      const loc = json.results[0].geometry.location;
-      setFormData((prev: any) => ({ ...prev, latitude: loc.lat, longitude: loc.lng }));
-      toast.success(`Coordenadas encontradas: ${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}`);
+      const lat = parseFloat(json[0].lat);
+      const lng = parseFloat(json[0].lon);
+      const displayName = json[0].display_name || parts;
+      setFormData((prev: any) => ({ ...prev, latitude: lat, longitude: lng }));
+      toast.success(`Coordenadas encontradas: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+      console.log("[Nominatim] endereço resolvido:", displayName);
     } catch (err: any) {
       console.error("Erro ao geocodificar:", err);
       toast.error("Erro ao buscar coordenadas: " + (err.message || "desconhecido"));
