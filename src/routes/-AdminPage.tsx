@@ -7083,30 +7083,27 @@ table.main thead th.right { text-align:right; }
                           </div>
                           
 
-                          {order.order_type === 'delivery' && order.status === 'ready' && (
-                            <div className="pt-2 border-t flex items-center justify-between gap-2 flex-wrap">
-                              <Label className="text-xs font-bold uppercase text-muted-foreground">
-                                Entregador (App MeuPedix)
-                              </Label>
-                              <AssignDriverButton
-                                orderId={order.id}
-                                driverId={order.driver_id}
-                                driverNameFallback={order.driver_id ? drivers.find(d => d.id === order.driver_id)?.name : null}
-                                adminUser={user}
-                                onAssigned={loadLargeData}
-                              />
-                            </div>
-                          )}
-
                           {order.order_type === 'delivery' && (
                             <div className="space-y-2 pt-2 border-t">
-                              <Label className="text-xs font-bold uppercase text-muted-foreground">Motoqueiro</Label>
+                              <Label className="text-xs font-bold uppercase text-muted-foreground">
+                                Motoqueiro (envia para o App MeuPedix Entregador)
+                              </Label>
                               <div className="flex gap-2">
                                 <Select 
                                   value={order.driver_id || ""} 
-                                  onValueChange={(v) => {
-                                    // Ao selecionar o motoqueiro, marca como em rota
-                                    updateOrderStatus(order.id, 'delivering', v);
+                                  onValueChange={async (v) => {
+                                    try {
+                                      const { error } = await (supabase as any).rpc("atribuir_entregador", {
+                                        p_pedido_id: order.id,
+                                        p_entregador_id: v,
+                                        p_admin_profile_id: user?.id,
+                                      });
+                                      if (error) throw error;
+                                      await updateOrderStatus(order.id, 'delivering', v);
+                                      toast.success("Motoqueiro atribuído e enviado ao app!");
+                                    } catch (e: any) {
+                                      toast.error(e?.message || "Erro ao atribuir motoqueiro");
+                                    }
                                   }}
                                 >
                                   <SelectTrigger className="h-9">
@@ -7118,6 +7115,7 @@ table.main thead th.right { text-align:right; }
                                     ))}
                                   </SelectContent>
                                 </Select>
+
                                 {order.status === 'delivering' && (
                                   <Button 
                                     variant="outline" 
