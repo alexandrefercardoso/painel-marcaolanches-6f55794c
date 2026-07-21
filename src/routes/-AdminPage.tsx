@@ -2137,36 +2137,25 @@ table.main thead th.right { text-align:right; }
       console.warn("RPC atribuir_entregador indisponível, aplicando vínculo direto:", rpcError);
     }
 
-    // Garante que o pedido entre em rota e apareça em "Entregas em Andamento".
-    const nowIso = new Date().toISOString();
     // IMPORTANTE: delivery_orders.driver_id tem relacionamento com a tabela local `drivers`.
     // Para o seletor do painel funcionar e liberar o botão "Finalizar Pedido",
     // aqui deve ficar o ID local do motoqueiro selecionado.
     const patch: any = {
       driver_id: panelDriverId,
-      driver_status: "a_caminho",
+      driver_status: "aguardando",
       status: "delivering",
     };
-    if (!rpcOk) patch.delivery_started_at = nowIso;
 
     const { error: updErr } = await supabase
       .from("delivery_orders")
       .update(patch)
       .eq("id", orderId);
     if (updErr) {
-      console.error("Falha ao marcar pedido como em rota:", updErr);
-      toast.error("Não foi possível marcar o pedido como em rota.");
+      console.error("Falha ao vincular motoqueiro ao pedido:", updErr);
+      toast.error("Não foi possível vincular o motoqueiro ao pedido.");
       return;
     }
 
-    // Se a RPC não rodou, precisamos garantir o horário de início também
-    if (!rpcOk) {
-      await supabase
-        .from("delivery_orders")
-        .update({ delivery_started_at: nowIso } as any)
-        .eq("id", orderId)
-        .is("delivery_started_at", null);
-    }
 
     toast.success("Pedido enviado ao app do entregador.");
     await refreshDeliveryOrders();
