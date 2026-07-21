@@ -53,7 +53,6 @@ export const CompanyForm = React.memo(function CompanyForm({
         sidebar_logo_url: "",
         opening_hours: {},
         auto_manage_menu: false,
-        google_maps_api_key: "",
         fixed_delivery_fee: null,
         kds_enabled: true,
         latitude: null,
