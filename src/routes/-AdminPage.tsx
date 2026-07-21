@@ -7301,69 +7301,95 @@ table.main thead th.right { text-align:right; }
                               <Label className="text-xs font-bold uppercase text-muted-foreground">
                                 Motoqueiro (envia para o App MeuPedix Entregador)
                               </Label>
-                              <div className="flex gap-2">
+                              <div className="flex flex-col gap-2">
                                 {(() => {
                                   const validMotoqueiros = appMotoqueiros.filter(
                                     (m) => typeof m.id === "string" && m.id.length > 0
                                   );
-                                  const currentValue =
+                                  const assignedValue =
                                     validMotoqueiros.find(
                                       (m) => m.id === order.driver_id || m.profile_id === order.driver_id
                                     )?.id || "";
+                                  const isDelivering = order.status === "delivering";
+                                  const pending = pendingDriverByOrder[order.id] || "";
+                                  const currentValue = isDelivering ? assignedValue : pending;
                                   return (
-                                    <select
-                                      className="h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                      value={order.status === "delivering" ? currentValue : ""}
-                                      disabled={validMotoqueiros.length === 0}
-                                      onChange={async (event) => {
-                                        const v = event.target.value;
-                                        if (!v) return;
-                                        try {
-                                          await assignMotoqueiroToOrder(order.id, v);
-                                        } catch (e: any) {
-                                          console.error("[motoqueiros] falha ao atribuir:", e);
-                                          toast.error(e?.message || "Erro ao atribuir motoqueiro");
-                                        }
-                                      }}
-                                    >
-                                      <option value="">
-                                        {validMotoqueiros.length === 0
-                                          ? "Nenhum motoqueiro ativo encontrado"
-                                          : "Escolher motoqueiro..."}
-                                      </option>
-                                      {validMotoqueiros.map((m) => {
-                                        const ativo = typeof m.pedidos_ativos === "number" ? m.pedidos_ativos : 0;
-                                        const statusText = ativo === 0
-                                          ? "Livre"
-                                          : `${ativo} em andamento`;
-                                        const label = m.full_name || m.email || "Motoqueiro";
-                                        return (
-                                          <option key={m.id} value={m.id}>
-                                            {label} — {statusText}
-                                          </option>
-                                        );
-                                      })}
-                                    </select>
+                                    <>
+                                      <select
+                                        className="h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                        value={currentValue}
+                                        disabled={validMotoqueiros.length === 0 || isDelivering}
+                                        onChange={(event) => {
+                                          const v = event.target.value;
+                                          setPendingDriverByOrder((prev) => ({
+                                            ...prev,
+                                            [order.id]: v,
+                                          }));
+                                        }}
+                                      >
+                                        <option value="">
+                                          {validMotoqueiros.length === 0
+                                            ? "Nenhum motoqueiro ativo encontrado"
+                                            : "Escolher motoqueiro..."}
+                                        </option>
+                                        {validMotoqueiros.map((m) => {
+                                          const ativo = typeof m.pedidos_ativos === "number" ? m.pedidos_ativos : 0;
+                                          const statusText = ativo === 0
+                                            ? "Livre"
+                                            : `${ativo} em andamento`;
+                                          const label = m.full_name || m.email || "Motoqueiro";
+                                          return (
+                                            <option key={m.id} value={m.id}>
+                                              {label} — {statusText}
+                                            </option>
+                                          );
+                                        })}
+                                      </select>
+
+                                      {!isDelivering && (
+                                        <Button
+                                          size="sm"
+                                          className="w-full bg-blue-600 hover:bg-blue-700 text-white gap-2"
+                                          disabled={!pending}
+                                          onClick={async () => {
+                                            try {
+                                              await assignMotoqueiroToOrder(order.id, pending);
+                                              setPendingDriverByOrder((prev) => {
+                                                const copy = { ...prev };
+                                                delete copy[order.id];
+                                                return copy;
+                                              });
+                                            } catch (e: any) {
+                                              console.error("[motoqueiros] falha ao atribuir:", e);
+                                              toast.error(e?.message || "Erro ao atribuir motoqueiro");
+                                            }
+                                          }}
+                                        >
+                                          <Bike className="h-4 w-4" />
+                                          Enviar ao entregador
+                                        </Button>
+                                      )}
+
+                                      {isDelivering && (
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          className="w-full gap-2 text-green-700 border-green-200 hover:bg-green-50"
+                                          title="Enviar WhatsApp de Saída"
+                                          onClick={() => {
+                                            const msg = `🚀 *${order.customer_name}, seu pedido saiu para entrega!* O entregador já está a caminho.\n\n📍 Acompanhe pelo link do nosso site!`;
+                                            const cleanPhone = order.customer_phone.replace(/\D/g, '');
+                                            const finalPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+                                            window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+                                          }}
+                                        >
+                                          <Phone className="h-4 w-4" />
+                                          WhatsApp de Saída
+                                        </Button>
+                                      )}
+                                    </>
                                   );
                                 })()}
-
-
-                                {order.status === 'delivering' && (
-                                  <Button 
-                                    variant="outline" 
-                                    size="icon" 
-                                    className="h-9 w-9 shrink-0 text-green-600 border-green-200 hover:bg-green-50"
-                                    title="Enviar WhatsApp de Saída"
-                                    onClick={() => {
-                                      const msg = `🚀 *${order.customer_name}, seu pedido saiu para entrega!* O entregador já está a caminho.\n\n📍 Acompanhe pelo link do nosso site!`;
-                                      const cleanPhone = order.customer_phone.replace(/\D/g, '');
-                                      const finalPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
-                                      window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(msg)}`, "_blank");
-                                    }}
-                                  >
-                                    <Phone className="h-4 w-4" />
-                                  </Button>
-                                )}
                               </div>
                             </div>
                           )}
