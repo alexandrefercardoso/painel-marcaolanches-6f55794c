@@ -119,6 +119,8 @@ export const CompanyForm = React.memo(function CompanyForm({
         google_maps_api_key: formData.google_maps_api_key || null,
         fixed_delivery_fee: formData.fixed_delivery_fee ? Number(formData.fixed_delivery_fee) : null,
         kds_enabled: formData.kds_enabled !== false,
+        latitude: formData.latitude === "" || formData.latitude === null || formData.latitude === undefined ? null : Number(formData.latitude),
+        longitude: formData.longitude === "" || formData.longitude === null || formData.longitude === undefined ? null : Number(formData.longitude),
         is_menu_active: !!isMenuOpen
       };
 
