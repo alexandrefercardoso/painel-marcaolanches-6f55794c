@@ -90,6 +90,44 @@ export const CompanyForm = React.memo(function CompanyForm({
     setFormData((prev: any) => ({ ...prev, [field]: value }));
   };
 
+  const [geocoding, setGeocoding] = useState(false);
+  const buscarCoordenadas = async () => {
+    const apiKey = formData?.google_maps_api_key?.trim();
+    if (!apiKey) {
+      toast.error("Configure a Chave da API do Google Maps antes de buscar coordenadas.");
+      return;
+    }
+    const parts = [
+      formData?.address,
+      formData?.address_number,
+      formData?.neighborhood,
+      formData?.city,
+      formData?.state,
+      formData?.zip_code,
+    ].filter(Boolean).join(", ");
+    if (!parts) {
+      toast.error("Preencha o endereço da loja antes de buscar as coordenadas.");
+      return;
+    }
+    try {
+      setGeocoding(true);
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(parts)}&key=${encodeURIComponent(apiKey)}`;
+      const resp = await fetch(url);
+      const json = await resp.json();
+      if (json.status !== "OK" || !json.results?.[0]) {
+        throw new Error(json.error_message || json.status || "Endereço não encontrado");
+      }
+      const loc = json.results[0].geometry.location;
+      setFormData((prev: any) => ({ ...prev, latitude: loc.lat, longitude: loc.lng }));
+      toast.success(`Coordenadas encontradas: ${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}`);
+    } catch (err: any) {
+      console.error("Erro ao geocodificar:", err);
+      toast.error("Erro ao buscar coordenadas: " + (err.message || "desconhecido"));
+    } finally {
+      setGeocoding(false);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData?.id) {
