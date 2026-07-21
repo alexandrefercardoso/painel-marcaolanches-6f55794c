@@ -419,12 +419,12 @@ export const CompanyForm = React.memo(function CompanyForm({
                     </p>
                     {formData?.latitude != null && formData?.longitude != null && (
                       <a
-                        href={`https://www.openstreetmap.org/?mlat=${formData.latitude}&mlon=${formData.longitude}#map=18/${formData.latitude}/${formData.longitude}`}
+                        href={`https://www.google.com/maps?q=${formData.latitude},${formData.longitude}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 text-xs font-bold text-primary hover:underline whitespace-nowrap"
                       >
-                        <MapPin className="h-4 w-4" /> Ver no mapa
+                        <MapPin className="h-4 w-4" /> Ver no Google Maps
                       </a>
                     )}
                   </div>
