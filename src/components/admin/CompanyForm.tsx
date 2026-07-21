@@ -53,7 +53,6 @@ export const CompanyForm = React.memo(function CompanyForm({
         sidebar_logo_url: "",
         opening_hours: {},
         auto_manage_menu: false,
-        google_maps_api_key: "",
         fixed_delivery_fee: null,
         kds_enabled: true,
         latitude: null,
@@ -92,11 +91,6 @@ export const CompanyForm = React.memo(function CompanyForm({
 
   const [geocoding, setGeocoding] = useState(false);
   const buscarCoordenadas = async () => {
-    const apiKey = (formData?.google_maps_api_key?.trim() || import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() || "");
-    if (!apiKey) {
-      toast.error("Configure a Chave da API do Google Maps antes de buscar coordenadas.");
-      return;
-    }
     const parts = [
       formData?.address,
       formData?.address_number,
@@ -111,15 +105,21 @@ export const CompanyForm = React.memo(function CompanyForm({
     }
     try {
       setGeocoding(true);
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(parts)}&key=${encodeURIComponent(apiKey)}`;
-      const resp = await fetch(url);
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(parts)}&limit=1&countrycodes=br`;
+      const resp = await fetch(url, {
+        headers: { "User-Agent": "MeuPedix App" },
+      });
+      if (!resp.ok) throw new Error("Erro ao consultar OpenStreetMap");
       const json = await resp.json();
-      if (json.status !== "OK" || !json.results?.[0]) {
-        throw new Error(json.error_message || json.status || "Endereço não encontrado");
+      if (!Array.isArray(json) || json.length === 0) {
+        throw new Error("Endereço não encontrado");
       }
-      const loc = json.results[0].geometry.location;
-      setFormData((prev: any) => ({ ...prev, latitude: loc.lat, longitude: loc.lng }));
-      toast.success(`Coordenadas encontradas: ${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}`);
+      const lat = parseFloat(json[0].lat);
+      const lng = parseFloat(json[0].lon);
+      const displayName = json[0].display_name || parts;
+      setFormData((prev: any) => ({ ...prev, latitude: lat, longitude: lng }));
+      toast.success(`Coordenadas encontradas: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+      console.log("[Nominatim] endereço resolvido:", displayName);
     } catch (err: any) {
       console.error("Erro ao geocodificar:", err);
       toast.error("Erro ao buscar coordenadas: " + (err.message || "desconhecido"));
@@ -154,7 +154,6 @@ export const CompanyForm = React.memo(function CompanyForm({
         sidebar_logo_url: formData.sidebar_logo_url || null,
         opening_hours: formData.opening_hours || {},
         auto_manage_menu: !!formData.auto_manage_menu,
-        google_maps_api_key: formData.google_maps_api_key || null,
         fixed_delivery_fee: formData.fixed_delivery_fee ? Number(formData.fixed_delivery_fee) : null,
         kds_enabled: formData.kds_enabled !== false,
         latitude: formData.latitude === "" || formData.latitude === null || formData.latitude === undefined ? null : Number(formData.latitude),
@@ -384,19 +383,6 @@ export const CompanyForm = React.memo(function CompanyForm({
                       className="h-12"
                     />
                   </div>
-                  <div className="md:col-span-2 space-y-2">
-                    <Label className="font-bold text-primary flex items-center gap-2">Chave da API do Google Maps</Label>
-                    <Input
-                      type="password"
-                      placeholder="Cole aqui a chave de API do Google Maps (ou configure VITE_GOOGLE_MAPS_API_KEY no .env)"
-                      value={formData?.google_maps_api_key || ""}
-                      onChange={e => updateField('google_maps_api_key', e.target.value)}
-                      className="h-12"
-                    />
-                    <p className="text-[10px] text-muted-foreground font-medium italic">
-                      A chave é salva junto às configurações da loja. Se não preencher, o sistema tentará usar a variável VITE_GOOGLE_MAPS_API_KEY do ambiente.
-                    </p>
-                  </div>
                   <div className="md:col-span-2 flex flex-col sm:flex-row sm:items-center gap-3">
                     <Button
                       type="button"
@@ -409,7 +395,7 @@ export const CompanyForm = React.memo(function CompanyForm({
                       Buscar coordenadas pelo endereço
                     </Button>
                     <p className="text-[11px] text-muted-foreground font-medium italic flex-1">
-                      Usa o endereço preenchido acima + sua Chave da API do Google Maps para localizar a loja automaticamente. Você também pode digitar manualmente ou copiar do Google Maps (clique com o botão direito no endereço).
+                      Usa o endereço preenchido acima e consulta a base gratuita OpenStreetMap (Nominatim) para localizar a loja automaticamente. Você também pode digitar manualmente ou copiar do Google Maps (clique com o botão direito no endereço).
                     </p>
                   </div>
                 </div>
