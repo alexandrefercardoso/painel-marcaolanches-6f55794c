@@ -2093,6 +2093,16 @@ table.main thead th.right { text-align:right; }
     }
   };
 
+  // Carrega os motoqueiros disponíveis para o seletor de entrega
+  useEffect(() => {
+    loadAppMotoqueiros().catch((e) =>
+      console.warn("[motoqueiros] loadAppMotoqueiros falhou:", e)
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drivers]);
+
+
+
 
   const assignMotoqueiroToOrder = async (orderId: string, driverId: string) => {
     const selectedDriver = appMotoqueiros.find((m) => m.id === driverId);
