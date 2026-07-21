@@ -82,7 +82,8 @@ export function LiveDeliveriesPanel({ alertThresholdMin = 20 }: Props) {
 
     const list = ((data as any[]) || []).map((r) => ({
       ...r,
-      delivery_address: r.delivery_address ?? r.customer_address ?? null,
+      order_number: null,
+      delivery_address: r.customer_address ?? null,
     })) as DeliveryRow[];
     const driverIds = Array.from(
       new Set(list.map((r) => r.driver_id).filter(Boolean))
