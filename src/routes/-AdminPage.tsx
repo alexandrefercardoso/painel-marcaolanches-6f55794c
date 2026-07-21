@@ -7221,13 +7221,13 @@ table.main thead th.right { text-align:right; }
                   <div className="flex items-center gap-2">
                     <Bike className="h-5 w-5" /> 3. Entrega / Finalizados
                   </div>
-                  <Badge className="bg-green-600">{deliveryOrders.filter(o => o.status === 'ready' || o.status === 'delivering').length}</Badge>
+                  <Badge className="bg-green-600">{deliveryOrders.filter(o => o.status === 'ready' || o.status === 'delivering' || (o.order_type === 'delivery' && !!o.driver_id && o.status !== 'completed' && o.status !== 'cancelled' && o.status !== 'awaiting_reconciliation')).length}</Badge>
                 </div>
 
 
 
                 <div className="space-y-4 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
-                  {deliveryOrders.filter(o => o.status === 'ready' || o.status === 'delivering').map(order => {
+                  {deliveryOrders.filter(o => o.status === 'ready' || o.status === 'delivering' || (o.order_type === 'delivery' && !!o.driver_id && o.status !== 'completed' && o.status !== 'cancelled' && o.status !== 'awaiting_reconciliation')).map(order => {
                     const area = deliveryAreas.find(a => 
                       (order.neighborhood && a.name && order.neighborhood.toLowerCase().includes(a.name.toLowerCase())) ||
                       (order.customer_address && a.name && order.customer_address.toLowerCase().includes(a.name.toLowerCase()))
