@@ -2137,13 +2137,12 @@ table.main thead th.right { text-align:right; }
       console.warn("RPC atribuir_entregador indisponível, aplicando vínculo direto:", rpcError);
     }
 
-    // IMPORTANTE: delivery_orders.driver_id tem relacionamento com a tabela local `drivers`.
-    // Para o seletor do painel funcionar e liberar o botão "Finalizar Pedido",
-    // aqui deve ficar o ID local do motoqueiro selecionado.
+    // IMPORTANTE: só vinculamos o motoqueiro e marcamos como "aguardando".
+    // O campo `status` NÃO é alterado aqui — só muda para "delivering" quando o
+    // motoqueiro tocar em "Iniciar Entrega" no app, ou ao finalizar pelo painel.
     const patch: any = {
       driver_id: panelDriverId,
       driver_status: "aguardando",
-      status: "delivering",
     };
 
     const { error: updErr } = await supabase
