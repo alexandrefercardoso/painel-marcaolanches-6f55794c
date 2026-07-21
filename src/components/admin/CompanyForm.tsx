@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2, Save, Building2, Phone, MapPin, Clock, CalendarDays, Trash2, Upload, Plus, Eye, Utensils } from "lucide-react";
+import { Loader2, Save, Building2, Phone, MapPin, Clock, CalendarDays, Trash2, Upload, Plus, Eye, Utensils, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { CompanyFormSkeleton } from "./CompanyFormSkeleton";
