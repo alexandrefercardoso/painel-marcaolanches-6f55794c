@@ -92,21 +92,14 @@ export const CompanyForm = React.memo(function CompanyForm({
 
   const [geocoding, setGeocoding] = useState(false);
   const buscarCoordenadas = async () => {
-    const parts = [
-      formData?.address,
-      formData?.address_number,
-      formData?.neighborhood,
-      formData?.city,
-      formData?.state,
-      formData?.zip_code,
-    ].filter(Boolean).join(", ");
-    if (!parts) {
-      toast.error("Preencha o endereço da loja antes de buscar as coordenadas.");
+    const q = (formData?.store_address || "").trim();
+    if (!q) {
+      toast.error("Preencha o campo 'Endereço da Loja' antes de buscar as coordenadas.");
       return;
     }
     try {
       setGeocoding(true);
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(parts)}&limit=1&countrycodes=br`;
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1&countrycodes=br`;
       const resp = await fetch(url, {
         headers: { "User-Agent": "MeuPedix App" },
       });
@@ -117,7 +110,7 @@ export const CompanyForm = React.memo(function CompanyForm({
       }
       const lat = parseFloat(json[0].lat);
       const lng = parseFloat(json[0].lon);
-      const displayName = json[0].display_name || parts;
+      const displayName = json[0].display_name || q;
       setFormData((prev: any) => ({ ...prev, latitude: lat, longitude: lng }));
       toast.success(`Coordenadas encontradas: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
       console.log("[Nominatim] endereço resolvido:", displayName);
