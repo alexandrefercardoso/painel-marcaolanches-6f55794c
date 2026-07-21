@@ -3323,7 +3323,6 @@ table.main thead th.right { text-align:right; }
           ])}
 
           ${sec('Integrações', [
-            ['Google Maps API Key', s.google_maps_api_key ? '••••' + String(s.google_maps_api_key).slice(-4) : '-'],
             ['URL Cardápio Digital', v(s.digital_menu_url)],
           ])}
 

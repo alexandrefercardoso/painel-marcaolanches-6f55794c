@@ -42,6 +42,7 @@ export const CompanyForm = React.memo(function CompanyForm({
         email: "",
         cnpj: "",
         cpf: "",
+        store_address: "",
         address: "",
         address_number: "",
         state: "",
@@ -91,21 +92,14 @@ export const CompanyForm = React.memo(function CompanyForm({
 
   const [geocoding, setGeocoding] = useState(false);
   const buscarCoordenadas = async () => {
-    const parts = [
-      formData?.address,
-      formData?.address_number,
-      formData?.neighborhood,
-      formData?.city,
-      formData?.state,
-      formData?.zip_code,
-    ].filter(Boolean).join(", ");
-    if (!parts) {
-      toast.error("Preencha o endereço da loja antes de buscar as coordenadas.");
+    const q = (formData?.store_address || "").trim();
+    if (!q) {
+      toast.error("Preencha o campo 'Endereço da Loja' antes de buscar as coordenadas.");
       return;
     }
     try {
       setGeocoding(true);
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(parts)}&limit=1&countrycodes=br`;
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1&countrycodes=br`;
       const resp = await fetch(url, {
         headers: { "User-Agent": "MeuPedix App" },
       });
@@ -116,7 +110,7 @@ export const CompanyForm = React.memo(function CompanyForm({
       }
       const lat = parseFloat(json[0].lat);
       const lng = parseFloat(json[0].lon);
-      const displayName = json[0].display_name || parts;
+      const displayName = json[0].display_name || q;
       setFormData((prev: any) => ({ ...prev, latitude: lat, longitude: lng }));
       toast.success(`Coordenadas encontradas: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
       console.log("[Nominatim] endereço resolvido:", displayName);
@@ -137,12 +131,13 @@ export const CompanyForm = React.memo(function CompanyForm({
 
     try {
       setSavingCompany(true);
-      const updateData = {
+      const updateData: any = {
         name: formData.name || null,
         whatsapp_number: formData.whatsapp_number || null,
         email: formData.email || null,
         cnpj: formData.cnpj || null,
         cpf: formData.cpf || null,
+        store_address: formData.store_address || null,
         city: formData.city || null,
         neighborhood: formData.neighborhood || null,
         address: formData.address || null,
@@ -327,6 +322,25 @@ export const CompanyForm = React.memo(function CompanyForm({
                   <MapPin className="h-4 w-4" /> Endereço
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <div className="md:col-span-3 space-y-2">
+                    <Label className="font-bold text-primary flex items-center gap-2"><MapPin className="h-4 w-4" /> Endereço da Loja</Label>
+                    <Input value={formData?.store_address || ""} onChange={e => updateField('store_address', e.target.value)} placeholder="Ex: Rua das Flores, 123, Centro, Sorocaba - SP" className="h-12" />
+                  </div>
+                  <div className="space-y-2 flex flex-col justify-end">
+                    <Button
+                      type="button"
+                      onClick={buscarCoordenadas}
+                      disabled={geocoding}
+                      className="h-12 gap-2 font-bold w-full"
+                      variant="secondary"
+                    >
+                      {geocoding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                      Buscar coordenadas
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div className="md:col-span-2 space-y-2">
                     <Label className="font-bold text-primary">Rua/Logradouro</Label>
                     <Input value={formData?.address || ""} onChange={e => updateField('address', e.target.value)} className="h-12" />
@@ -367,9 +381,9 @@ export const CompanyForm = React.memo(function CompanyForm({
                       type="number"
                       step="any"
                       placeholder="-23.5505"
+                      disabled
                       value={formData?.latitude === null || formData?.latitude === undefined ? "" : formData.latitude}
-                      onChange={e => updateField('latitude', e.target.value === "" ? null : e.target.value)}
-                      className="h-12"
+                      className="h-12 bg-muted/50"
                     />
                   </div>
                   <div className="space-y-2">
@@ -378,25 +392,25 @@ export const CompanyForm = React.memo(function CompanyForm({
                       type="number"
                       step="any"
                       placeholder="-46.6333"
+                      disabled
                       value={formData?.longitude === null || formData?.longitude === undefined ? "" : formData.longitude}
-                      onChange={e => updateField('longitude', e.target.value === "" ? null : e.target.value)}
-                      className="h-12"
+                      className="h-12 bg-muted/50"
                     />
                   </div>
                   <div className="md:col-span-2 flex flex-col sm:flex-row sm:items-center gap-3">
-                    <Button
-                      type="button"
-                      onClick={buscarCoordenadas}
-                      disabled={geocoding}
-                      className="h-11 gap-2 font-bold"
-                      variant="secondary"
-                    >
-                      {geocoding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                      Buscar coordenadas pelo endereço
-                    </Button>
                     <p className="text-[11px] text-muted-foreground font-medium italic flex-1">
-                      Usa o endereço preenchido acima e consulta a base gratuita OpenStreetMap (Nominatim) para localizar a loja automaticamente. Você também pode digitar manualmente ou copiar do Google Maps (clique com o botão direito no endereço).
+                      As coordenadas são preenchidas automaticamente ao clicar em "Buscar coordenadas". A consulta utiliza a base gratuita OpenStreetMap (Nominatim) e não requer chave de API.
                     </p>
+                    {formData?.latitude != null && formData?.longitude != null && (
+                      <a
+                        href={`https://www.openstreetmap.org/?mlat=${formData.latitude}&mlon=${formData.longitude}#map=18/${formData.latitude}/${formData.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-xs font-bold text-primary hover:underline whitespace-nowrap"
+                      >
+                        <MapPin className="h-4 w-4" /> Ver no mapa
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
