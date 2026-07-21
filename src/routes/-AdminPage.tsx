@@ -879,7 +879,7 @@ export default function AdminPage({ user }: { user: any }) {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productDialogTab, setProductDialogTab] = useState<string>("geral");
-  const [drivers, setDrivers] = useState<{id: string; name: string; phone: string; daily_rate: number; is_active: boolean; active?: boolean; login?: string; password?: string; has_fixed_fee?: boolean; fixed_fee?: number}[]>([]);
+  const [drivers, setDrivers] = useState<{id: string; name: string; phone: string; daily_rate: number; is_active: boolean; active?: boolean; login?: string; password?: string; auth_user_id?: string | null; has_fixed_fee?: boolean; fixed_fee?: number}[]>([]);
   const [appMotoqueiros, setAppMotoqueiros] = useState<{id: string; full_name: string | null; email: string | null; pedidos_ativos: number | null; profile_id?: string | null}[]>([]);
   const [newDriver, setNewDriver] = useState({ name: "", phone: "", daily_rate: "", login: "", password: "", has_fixed_fee: false, fixed_fee: "", active: true });
   const [editingDriver, setEditingDriver] = useState<any | null>(null);
