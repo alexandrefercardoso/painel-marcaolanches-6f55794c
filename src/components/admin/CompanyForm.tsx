@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2, Save, Building2, Phone, MapPin, Clock, CalendarDays, Trash2, Upload, Plus, Eye, Utensils } from "lucide-react";
+import { Loader2, Save, Building2, Phone, MapPin, Clock, CalendarDays, Trash2, Upload, Plus, Eye, Utensils, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { CompanyFormSkeleton } from "./CompanyFormSkeleton";
@@ -88,6 +88,44 @@ export const CompanyForm = React.memo(function CompanyForm({
 
   const updateField = (field: string, value: any) => {
     setFormData((prev: any) => ({ ...prev, [field]: value }));
+  };
+
+  const [geocoding, setGeocoding] = useState(false);
+  const buscarCoordenadas = async () => {
+    const apiKey = formData?.google_maps_api_key?.trim();
+    if (!apiKey) {
+      toast.error("Configure a Chave da API do Google Maps antes de buscar coordenadas.");
+      return;
+    }
+    const parts = [
+      formData?.address,
+      formData?.address_number,
+      formData?.neighborhood,
+      formData?.city,
+      formData?.state,
+      formData?.zip_code,
+    ].filter(Boolean).join(", ");
+    if (!parts) {
+      toast.error("Preencha o endereço da loja antes de buscar as coordenadas.");
+      return;
+    }
+    try {
+      setGeocoding(true);
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(parts)}&key=${encodeURIComponent(apiKey)}`;
+      const resp = await fetch(url);
+      const json = await resp.json();
+      if (json.status !== "OK" || !json.results?.[0]) {
+        throw new Error(json.error_message || json.status || "Endereço não encontrado");
+      }
+      const loc = json.results[0].geometry.location;
+      setFormData((prev: any) => ({ ...prev, latitude: loc.lat, longitude: loc.lng }));
+      toast.success(`Coordenadas encontradas: ${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}`);
+    } catch (err: any) {
+      console.error("Erro ao geocodificar:", err);
+      toast.error("Erro ao buscar coordenadas: " + (err.message || "desconhecido"));
+    } finally {
+      setGeocoding(false);
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -346,9 +384,19 @@ export const CompanyForm = React.memo(function CompanyForm({
                       className="h-12"
                     />
                   </div>
-                  <div className="md:col-span-2">
-                    <p className="text-[11px] text-muted-foreground font-medium italic">
-                      Coordenadas da loja usadas para cálculo de rota e distância dos entregadores. Você pode obter no Google Maps clicando com o botão direito no endereço da loja.
+                  <div className="md:col-span-2 flex flex-col sm:flex-row sm:items-center gap-3">
+                    <Button
+                      type="button"
+                      onClick={buscarCoordenadas}
+                      disabled={geocoding}
+                      className="h-11 gap-2 font-bold"
+                      variant="secondary"
+                    >
+                      {geocoding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                      Buscar coordenadas pelo endereço
+                    </Button>
+                    <p className="text-[11px] text-muted-foreground font-medium italic flex-1">
+                      Usa o endereço preenchido acima + sua Chave da API do Google Maps para localizar a loja automaticamente. Você também pode digitar manualmente ou copiar do Google Maps (clique com o botão direito no endereço).
                     </p>
                   </div>
                 </div>
