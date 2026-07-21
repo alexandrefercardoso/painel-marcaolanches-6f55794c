@@ -2126,8 +2126,11 @@ table.main thead th.right { text-align:right; }
     // Garante que o pedido entre em rota e apareça em "Entregas em Andamento"
     // + fique visível pro app do entregador (driver_status = 'a_caminho').
     const nowIso = new Date().toISOString();
+    // IMPORTANTE: o app do entregador filtra por driver_id = auth.uid(),
+    // então precisamos gravar o profile_id/auth_user_id do motoqueiro,
+    // NÃO o id da tabela local `drivers`.
     const patch: any = {
-      driver_id: driverId,
+      driver_id: rpcDriverId,
       driver_status: "a_caminho",
       status: "delivering",
     };
