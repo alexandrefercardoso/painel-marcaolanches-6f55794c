@@ -6868,7 +6868,7 @@ table.main thead th.right { text-align:right; }
 
                 
                 <div className="space-y-4 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
-                  {deliveryOrders.filter(o => o.status === 'pending').map(order => (
+                  {deliveryOrders.filter(o => o.status === 'pending' && !o.driver_id).map(order => (
                     <Card key={order.id} className="border-l-4 border-l-orange-500 shadow-md hover:shadow-lg transition-shadow">
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
@@ -7029,7 +7029,7 @@ table.main thead th.right { text-align:right; }
                       </CardFooter>
                     </Card>
                   ))}
-                  {deliveryOrders.filter(o => o.status === 'pending').length === 0 && (
+                  {deliveryOrders.filter(o => o.status === 'pending' && !o.driver_id).length === 0 && (
                     <div className="py-10 text-center bg-muted/20 rounded-xl border-2 border-dashed">
                       <Package className="h-10 w-10 text-muted-foreground mx-auto mb-2 opacity-20" />
                       <p className="text-muted-foreground text-sm">Nenhum pedido novo.</p>
