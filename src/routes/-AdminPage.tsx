@@ -7232,6 +7232,8 @@ table.main thead th.right { text-align:right; }
                       (order.neighborhood && a.name && order.neighborhood.toLowerCase().includes(a.name.toLowerCase())) ||
                       (order.customer_address && a.name && order.customer_address.toLowerCase().includes(a.name.toLowerCase()))
                     );
+                    const validMotoqueiros = appMotoqueiros.filter((m) => typeof m.id === "string" && m.id.length > 0);
+                    const assignedValue = validMotoqueiros.find((m) => m.id === order.driver_id || (m.profile_id && m.profile_id === order.driver_id))?.id || order.driver_id || "";
                     return (
                     <Card key={order.id} className={`border-l-4 ${order.status === 'delivering' ? 'border-l-blue-500' : 'border-l-green-500'} shadow-md`}>
                       <CardHeader className="pb-2">
@@ -7292,13 +7294,6 @@ table.main thead th.right { text-align:right; }
                               </Label>
                               <div className="flex flex-col gap-2">
                                 {(() => {
-                                  const validMotoqueiros = appMotoqueiros.filter(
-                                    (m) => typeof m.id === "string" && m.id.length > 0
-                                  );
-                                  const assignedValue =
-                                    validMotoqueiros.find(
-                                      (m) => m.id === order.driver_id || m.profile_id === order.driver_id
-                                    )?.id || "";
                                    const isDelivering = order.status === "delivering";
                                    return (
                                      <>
@@ -7458,7 +7453,7 @@ table.main thead th.right { text-align:right; }
                       </CardContent>
                       <CardFooter className="flex gap-2">
                         <div className="flex flex-col w-full gap-2">
-                          {(order.order_type !== 'delivery' || !!order.driver_id || order.status === 'delivering') && (
+                          {(order.order_type !== 'delivery' || !!order.driver_id || !!assignedValue || order.status === 'delivering') && (
                             <Button 
                               className="w-full bg-green-600 hover:bg-green-700 gap-2 font-bold shadow-md h-11"
                                 onClick={() => {
@@ -7470,7 +7465,7 @@ table.main thead th.right { text-align:right; }
                               <CheckCircle2 className="h-4 w-4" /> Finalizar Pedido
                             </Button>
                           )}
-                          {order.order_type === 'delivery' && !order.driver_id && order.status !== 'delivering' && (
+                          {order.order_type === 'delivery' && !order.driver_id && !assignedValue && order.status !== 'delivering' && (
                             <p className="text-[11px] text-center text-muted-foreground italic">
                               Selecione um motoqueiro para liberar a finalização.
                             </p>
