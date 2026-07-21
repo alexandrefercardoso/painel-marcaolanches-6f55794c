@@ -1968,7 +1968,13 @@ table.main thead th.right { text-align:right; }
     }
   };
 
-  const syncDriverProfile = async (driverId: string, loginToSave: string) => {
+  const syncDriverProfile = async (
+    driverId: string,
+    loginToSave: string,
+    driverName: string,
+    driverPassword = "",
+    driverActive = true
+  ) => {
     if (!loginToSave) return;
 
     const { data: existingProfile } = await supabase
@@ -1984,10 +1990,10 @@ table.main thead th.right { text-align:right; }
 
     const profilePayload = {
       email: loginToSave,
-      password: newDriver.password.trim(),
-      full_name: newDriver.name.trim(),
+      password: driverPassword.trim(),
+      full_name: driverName.trim(),
       role: "funcionario",
-      active: newDriver.active,
+      active: driverActive,
       allowed_modules: allowedModules,
       visible_fields: []
     } as any;
@@ -2010,6 +2016,8 @@ table.main thead th.right { text-align:right; }
     if (profileId) {
       await (supabase.from as any)("drivers").update({ auth_user_id: profileId }).eq("id", driverId);
     }
+
+    return profileId;
   };
 
   const loadAppMotoqueiros = async () => {
@@ -2060,7 +2068,19 @@ table.main thead th.right { text-align:right; }
 
   const assignMotoqueiroToOrder = async (orderId: string, driverId: string) => {
     const selectedDriver = appMotoqueiros.find((m) => m.id === driverId);
-    const rpcDriverId = selectedDriver?.profile_id || driverId;
+    const localDriver = drivers.find((d) => d.id === driverId);
+    let rpcDriverId = selectedDriver?.profile_id || localDriver?.auth_user_id || driverId;
+
+    if (!selectedDriver?.profile_id && !localDriver?.auth_user_id && localDriver?.login) {
+      const syncedProfileId = await syncDriverProfile(
+        driverId,
+        localDriver.login,
+        localDriver.name,
+        localDriver.password || "",
+        localDriver.active !== false
+      );
+      if (syncedProfileId) rpcDriverId = syncedProfileId;
+    }
 
     try {
       const { error } = await (supabase as any).rpc("atribuir_entregador", {
@@ -2118,7 +2138,7 @@ table.main thead th.right { text-align:right; }
       }
 
       if (savedDriverId && loginToSave) {
-        await syncDriverProfile(savedDriverId, loginToSave);
+        await syncDriverProfile(savedDriverId, loginToSave, newDriver.name, newDriver.password, newDriver.active);
       }
 
       setNewDriver({ name: "", phone: "", daily_rate: "", login: "", password: "", has_fixed_fee: false, fixed_fee: "", active: true });
