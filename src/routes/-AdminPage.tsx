@@ -7092,6 +7092,16 @@ table.main thead th.right { text-align:right; }
                               <div className="flex gap-2">
                                 <Select 
                                   value={order.driver_id || ""} 
+                                  onOpenChange={async (isOpen) => {
+                                    if (!isOpen) return;
+                                    try {
+                                      const { data, error } = await (supabase as any).rpc("listar_motoqueiros_loja");
+                                      if (error) throw error;
+                                      setAppMotoqueiros((data as any) || []);
+                                    } catch (e: any) {
+                                      toast.error(e?.message || "Erro ao listar motoqueiros");
+                                    }
+                                  }}
                                   onValueChange={async (v) => {
                                     try {
                                       const { error } = await (supabase as any).rpc("atribuir_entregador", {
@@ -7111,8 +7121,15 @@ table.main thead th.right { text-align:right; }
                                     <SelectValue placeholder="Escolher motoqueiro..." />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {drivers.filter(d => d.is_active).map(d => (
-                                      <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                                    {appMotoqueiros.length === 0 ? (
+                                      <div className="px-3 py-2 text-xs text-muted-foreground">
+                                        Nenhum motoqueiro habilitado no app. Cadastre um usuário com módulo "Entregador" ativo.
+                                      </div>
+                                    ) : appMotoqueiros.map(m => (
+                                      <SelectItem key={m.id} value={m.id}>
+                                        {m.full_name || m.email || "Motoqueiro"}
+                                        {typeof m.pedidos_ativos === "number" ? ` · ${m.pedidos_ativos} ativo(s)` : ""}
+                                      </SelectItem>
                                     ))}
                                   </SelectContent>
                                 </Select>
