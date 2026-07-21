@@ -7220,22 +7220,14 @@ table.main thead th.right { text-align:right; }
                                   onOpenChange={async (isOpen) => {
                                     if (!isOpen) return;
                                     try {
-                                      const { data, error } = await (supabase as any).rpc("listar_motoqueiros_loja");
-                                      if (error) throw error;
-                                      setAppMotoqueiros((data as any) || []);
+                                      await loadAppMotoqueiros();
                                     } catch (e: any) {
                                       toast.error(e?.message || "Erro ao listar motoqueiros");
                                     }
                                   }}
                                   onValueChange={async (v) => {
                                     try {
-                                      const { error } = await (supabase as any).rpc("atribuir_entregador", {
-                                        p_pedido_id: order.id,
-                                        p_entregador_id: v,
-                                        p_admin_profile_id: user?.id,
-                                      });
-                                      if (error) throw error;
-                                      await updateOrderStatus(order.id, 'delivering', v);
+                                      await assignMotoqueiroToOrder(order.id, v);
                                       toast.success("Motoqueiro atribuído e enviado ao app!");
                                     } catch (e: any) {
                                       toast.error(e?.message || "Erro ao atribuir motoqueiro");
@@ -7248,7 +7240,7 @@ table.main thead th.right { text-align:right; }
                                   <SelectContent>
                                     {appMotoqueiros.length === 0 ? (
                                       <div className="px-3 py-2 text-xs text-muted-foreground">
-                                        Nenhum motoqueiro habilitado no app. Cadastre um usuário com módulo "Entregador" ativo.
+                                        Nenhum motoqueiro ativo encontrado. Cadastre ou ative um motoqueiro na aba Motoqueiros.
                                       </div>
                                     ) : appMotoqueiros.map(m => (
                                       <SelectItem key={m.id} value={m.id}>
