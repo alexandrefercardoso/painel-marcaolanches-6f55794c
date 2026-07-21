@@ -322,6 +322,25 @@ export const CompanyForm = React.memo(function CompanyForm({
                   <MapPin className="h-4 w-4" /> Endereço
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <div className="md:col-span-3 space-y-2">
+                    <Label className="font-bold text-primary flex items-center gap-2"><MapPin className="h-4 w-4" /> Endereço da Loja</Label>
+                    <Input value={formData?.store_address || ""} onChange={e => updateField('store_address', e.target.value)} placeholder="Ex: Rua das Flores, 123, Centro, Sorocaba - SP" className="h-12" />
+                  </div>
+                  <div className="space-y-2 flex flex-col justify-end">
+                    <Button
+                      type="button"
+                      onClick={buscarCoordenadas}
+                      disabled={geocoding}
+                      className="h-12 gap-2 font-bold w-full"
+                      variant="secondary"
+                    >
+                      {geocoding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                      Buscar coordenadas
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div className="md:col-span-2 space-y-2">
                     <Label className="font-bold text-primary">Rua/Logradouro</Label>
                     <Input value={formData?.address || ""} onChange={e => updateField('address', e.target.value)} className="h-12" />
