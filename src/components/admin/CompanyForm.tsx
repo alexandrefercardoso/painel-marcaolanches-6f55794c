@@ -42,6 +42,7 @@ export const CompanyForm = React.memo(function CompanyForm({
         email: "",
         cnpj: "",
         cpf: "",
+        store_address: "",
         address: "",
         address_number: "",
         state: "",
