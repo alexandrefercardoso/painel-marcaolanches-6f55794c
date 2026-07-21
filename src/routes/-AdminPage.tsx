@@ -7453,7 +7453,7 @@ table.main thead th.right { text-align:right; }
                       </CardContent>
                       <CardFooter className="flex gap-2">
                         <div className="flex flex-col w-full gap-2">
-                          {(order.order_type !== 'delivery' || !!order.driver_id || order.status === 'delivering') && (
+                          {(order.order_type !== 'delivery' || !!order.driver_id || !!assignedValue || order.status === 'delivering') && (
                             <Button 
                               className="w-full bg-green-600 hover:bg-green-700 gap-2 font-bold shadow-md h-11"
                                 onClick={() => {
