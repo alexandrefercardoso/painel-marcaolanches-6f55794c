@@ -7431,12 +7431,13 @@ table.main thead th.right { text-align:right; }
                               })()}</span>
                             </div>
 
-                            {order.order_type === 'delivery' && order.driver_id && (
+                            {order.order_type === 'delivery' && (
                               <div className="flex justify-between items-center text-xs text-muted-foreground px-1 italic">
-                                <span>Taxa do Motoqueiro</span>
+                                <span>Taxa de Entrega</span>
                                 <span>R$ {(Number((order as any).delivery_fee || 0) || (order.total_amount - (order.delivery_order_items?.reduce((acc: number, item: any) => acc + item.total_price, 0) || 0))).toFixed(2)}</span>
                               </div>
                             )}
+
 
                             <div className="flex justify-between items-center text-sm font-bold text-orange-600 bg-orange-50 p-1.5 rounded-md border border-orange-100 mt-1">
                               <span className="flex items-center gap-1">
