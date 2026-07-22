@@ -7491,9 +7491,11 @@ table.main thead th.right { text-align:right; }
                                         delete next[order.id];
                                         return next;
                                       });
-                                      toast.success("Motoqueiro atribuído! Pedido aparecerá no app do entregador.");
-                                    } else if (order.driver_id) {
-                                      toast.info("Pedido já atribuído ao entregador. Aguarde finalização no app.");
+                                    }
+                                    if (order.driver_id || pendingDriver) {
+                                      await updateOrderStatus(order.id, 'awaiting_reconciliation');
+                                    } else {
+                                      toast.info("Selecione um motoqueiro para finalizar.");
                                     }
                                     return;
                                   }
