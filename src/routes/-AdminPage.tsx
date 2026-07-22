@@ -7262,7 +7262,7 @@ table.main thead th.right { text-align:right; }
                     const selectValue = pendingDriver || assignedValue;
                     return (
                     <Card key={order.id} className={`border-l-4 ${order.status === 'delivering' ? 'border-l-blue-500' : 'border-l-green-500'} shadow-md`}>
-                      <CardHeader className="pb-2">
+                      <CardHeader className="px-3 pt-3 pb-1">
                         <div className="flex justify-between items-start">
                           {activeSession && (
                             <Button 
@@ -7276,67 +7276,57 @@ table.main thead th.right { text-align:right; }
                             </Button>
                           )}
                           <div className="flex-1 px-2">
-                            <CardTitle className="text-lg">{order.customer_name}</CardTitle>
-                            <CardDescription className="font-medium text-primary">{order.order_type === 'delivery' ? 'Entrega em Domicílio' : order.order_type === 'pickup' ? 'Retirada' : order.order_type === 'dine_in' ? 'Consumo Local (Mesa)' : 'Pedido Balcão'}</CardDescription>
+                            <CardTitle className="text-base leading-tight">{order.customer_name}</CardTitle>
+                            <CardDescription className="text-xs text-primary">{order.order_type === 'delivery' ? 'Entrega em Domicílio' : order.order_type === 'pickup' ? 'Retirada' : order.order_type === 'dine_in' ? 'Consumo Local (Mesa)' : 'Pedido Balcão'}</CardDescription>
                           </div>
                           <Badge className={order.status === 'delivering' ? 'bg-blue-500' : 'bg-green-500'}>
                             {order.status === 'delivering' ? 'Em Rota' : 'Aguardando'}
                           </Badge>
                         </div>
                       </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4 text-sm">
-                          <div className="flex items-start gap-2">
-                            <MapPin className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                      <CardContent className="px-3 py-2">
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-start gap-1.5 text-xs">
+                            <MapPin className="h-3.5 w-3.5 mt-0.5 text-primary shrink-0" />
                             <span className="font-medium">{order.customer_address}</span>
                           </div>
                           
                           {order.observation && (
-                            <div className="bg-blue-50 p-2 rounded-lg border border-blue-100 flex items-start gap-2">
-                              <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+                            <div className="bg-blue-50 p-1.5 rounded-md border border-blue-100 flex items-start gap-1.5">
+                              <Info className="h-3.5 w-3.5 text-blue-600 mt-0.5 shrink-0" />
                               <div className="text-xs">
-                                <p className="font-bold text-blue-800 uppercase text-[9px]">Observação do Pedido:</p>
-                                <p className="text-blue-900 font-medium">{order.observation}</p>
+                                <p className="font-bold text-blue-800 uppercase text-[9px]">Observação:</p>
+                                <p className="text-blue-900 font-medium leading-tight">{order.observation}</p>
                               </div>
                             </div>
                           )}
 
-                          <div className="grid grid-cols-2 gap-4 pt-2 border-t">
-                            <div>
-                              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Tipo de Venda</Label>
-                              <p className="text-sm font-medium">{(order as any).tipo_venda || "Não informado"}</p>
-                            </div>
-                            <div>
-                              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Frete</Label>
-                              <p className="text-sm font-medium">{(order as any).frete === 1 ? "Destinatário" : "Emitente"}</p>
-                            </div>
-                          </div>
                           
 
                           {order.order_type === 'delivery' && !order.driver_id && (
-                            <div className="space-y-2 pt-2 border-t">
-                              <Label className="text-xs font-bold uppercase text-muted-foreground">
-                                Motoqueiro (envia para o App MeuPedix Entregador)
+                            <div className="space-y-1.5 pt-1.5 border-t">
+                              <Label className="text-[10px] font-bold uppercase text-muted-foreground leading-tight">
+                                Motoqueiro (App MeuPedix Entregador)
                               </Label>
-                              <div className="flex flex-col gap-2">
+                              <div className="flex flex-col gap-1.5">
                                 {(() => {
                                    const isDelivering = order.status === "delivering";
                                    return (
                                      <>
-                                       <select
-                                         className="h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                         value={selectValue}
-                                         disabled={validMotoqueiros.length === 0 || !!order.driver_id}
-                                         onChange={(event) => {
-                                           const v = event.target.value;
-                                           setPendingDriverByOrder((prev) => {
-                                             const next = { ...prev };
-                                             if (v) next[order.id] = v;
-                                             else delete next[order.id];
-                                             return next;
-                                           });
-                                         }}
-                                       >
+                                        <select
+                                          className="h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                          value={selectValue}
+                                          disabled={validMotoqueiros.length === 0 || !!order.driver_id}
+                                          onChange={(event) => {
+                                            const v = event.target.value;
+                                            setPendingDriverByOrder((prev) => {
+                                              const next = { ...prev };
+                                              if (v) next[order.id] = v;
+                                              else delete next[order.id];
+                                              return next;
+                                            });
+                                          }}
+                                        >
                                          <option value="">
                                            {validMotoqueiros.length === 0
                                              ? "Nenhum motoqueiro ativo encontrado"
@@ -7358,23 +7348,23 @@ table.main thead th.right { text-align:right; }
 
 
 
-                                      {isDelivering && (
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          className="w-full gap-2 text-green-700 border-green-200 hover:bg-green-50"
-                                          title="Enviar WhatsApp de Saída"
-                                          onClick={() => {
-                                            const msg = `🚀 *${order.customer_name}, seu pedido saiu para entrega!* O entregador já está a caminho.\n\n📍 Acompanhe pelo link do nosso site!`;
-                                            const cleanPhone = order.customer_phone.replace(/\D/g, '');
-                                            const finalPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
-                                            window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(msg)}`, "_blank");
-                                          }}
-                                        >
-                                          <Phone className="h-4 w-4" />
-                                          WhatsApp de Saída
-                                        </Button>
-                                      )}
+                                       {isDelivering && (
+                                         <Button
+                                           variant="outline"
+                                           size="sm"
+                                           className="w-full h-8 gap-1 text-xs text-green-700 border-green-200 hover:bg-green-50"
+                                           title="Enviar WhatsApp de Saída"
+                                           onClick={() => {
+                                             const msg = `🚀 *${order.customer_name}, seu pedido saiu para entrega!* O entregador já está a caminho.\n\n📍 Acompanhe pelo link do nosso site!`;
+                                             const cleanPhone = order.customer_phone.replace(/\D/g, '');
+                                             const finalPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+                                             window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+                                           }}
+                                         >
+                                           <Phone className="h-3.5 w-3.5" />
+                                           WhatsApp de Saída
+                                         </Button>
+                                       )}
                                     </>
                                   );
                                 })()}
@@ -7383,20 +7373,20 @@ table.main thead th.right { text-align:right; }
                           )}
                           
                           {order.order_type === 'delivery' && order.driver_id && (
-                            <div className="space-y-3">
-                              <div className="bg-blue-50 p-3 rounded-xl flex items-center justify-between text-blue-700 border border-blue-100 shadow-sm">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center">
-                                    <Bike className="h-5 w-5" />
+                            <div className="space-y-2">
+                              <div className="bg-blue-50 p-2 rounded-lg flex items-center justify-between text-blue-700 border border-blue-100 shadow-sm">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-7 h-7 bg-blue-600 text-white rounded-lg flex items-center justify-center">
+                                    <Bike className="h-4 w-4" />
                                   </div>
                                   <div>
-                                    <p className="text-[10px] font-black uppercase opacity-60">Entregador</p>
-                                    <span className="font-bold">{drivers.find(d => d.id === order.driver_id)?.name}</span>
+                                    <p className="text-[9px] font-black uppercase opacity-60">Entregador</p>
+                                    <span className="text-sm font-bold">{drivers.find(d => d.id === order.driver_id)?.name}</span>
                                   </div>
                                 </div>
                                 <div className="flex flex-col items-end">
-                                  <span className="text-[10px] uppercase font-bold opacity-60">Taxa</span>
-                                  <span className="font-black text-blue-800">
+                                  <span className="text-[9px] uppercase font-bold opacity-60">Taxa</span>
+                                  <span className="font-black text-sm text-blue-800">
                                     R$ {(Number((order as any).delivery_fee || 0) || (order.total_amount - (order.delivery_order_items?.reduce((acc: number, item: any) => acc + item.total_price, 0) || 0))).toFixed(2)}
                                   </span>
                                 </div>
@@ -7407,43 +7397,43 @@ table.main thead th.right { text-align:right; }
                             </div>
                           )}
                           
-                          <div className="pt-2 border-t space-y-2">
-                            <Label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1">
-                              <Package className="h-3 w-3" /> Itens do Pedido
+                          <div className="pt-1.5 border-t space-y-1">
+                            <Label className="text-[9px] font-bold uppercase text-muted-foreground flex items-center gap-1">
+                              <Package className="h-3 w-3" /> Itens
                             </Label>
                             <ul className="space-y-1">
                                {(!order.delivery_order_items || order.delivery_order_items.length === 0) ? (
-                                 <li className="text-xs italic text-muted-foreground py-2 text-center flex flex-col items-center justify-center gap-2">
-                                   {order.delivery_order_items ? "Nenhum item encontrado" : (
-                                     <>
-                                       <Loader2 className="h-3 w-3 animate-spin" />
-                                       Carregando itens...
-                                     </>
-                                   )}
-                                 </li>
-                               ) : (
-                                 order.delivery_order_items.map((item: any) => (
-                                   <li key={item.id} className="text-xs flex flex-col bg-muted/30 p-1.5 rounded-sm">
-                                     <div className="flex justify-between items-center w-full">
-                                       <span className="font-medium">{item.quantity}x {item.product_name}</span>
-                                       <span className="font-bold text-primary">R$ {Number(item.total_price || 0).toFixed(2)}</span>
-                                     </div>
-                                     {item.selected_complements && item.selected_complements.length > 0 && (
-                                       <div className="flex flex-col ml-4 text-[9px] text-muted-foreground italic border-l border-primary/20 pl-2 mt-1 bg-card/30 rounded p-1">
-                                         {item.selected_complements.map((c: any, i: number) => (
-                                           <span key={i}>+ {c.name}</span>
-                                         ))}
-                                       </div>
-                                     )}
-                                   </li>
-                                 ))
-                               )}
+                                  <li className="text-xs italic text-muted-foreground py-1 text-center flex flex-col items-center justify-center gap-1">
+                                    {order.delivery_order_items ? "Nenhum item encontrado" : (
+                                      <>
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                        Carregando itens...
+                                      </>
+                                    )}
+                                  </li>
+                                ) : (
+                                  order.delivery_order_items.map((item: any) => (
+                                    <li key={item.id} className="text-xs flex flex-col bg-muted/30 p-1 rounded-sm">
+                                      <div className="flex justify-between items-center w-full">
+                                        <span className="font-medium">{item.quantity}x {item.product_name}</span>
+                                        <span className="font-bold text-primary">R$ {Number(item.total_price || 0).toFixed(2)}</span>
+                                      </div>
+                                      {item.selected_complements && item.selected_complements.length > 0 && (
+                                        <div className="flex flex-col ml-3 text-[9px] text-muted-foreground italic border-l border-primary/20 pl-2 mt-0.5 bg-card/30 rounded p-1">
+                                          {item.selected_complements.map((c: any, i: number) => (
+                                            <span key={i}>+ {c.name}</span>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </li>
+                                  ))
+                                )}
                             </ul>
                           </div>
 
 
-                          <div className="pt-2 border-t space-y-1">
-                            <div className="flex justify-between items-center text-xs text-muted-foreground px-2">
+                          <div className="pt-1.5 border-t space-y-1">
+                            <div className="flex justify-between items-center text-xs text-muted-foreground px-1">
                               <span>Subtotal</span>
                               <span>R$ {(() => {
                                 const subtotal = order.delivery_order_items?.reduce((acc: number, item: any) => acc + item.total_price, 0) || 0;
@@ -7451,23 +7441,22 @@ table.main thead th.right { text-align:right; }
                               })()}</span>
                             </div>
 
-                            
                             {order.order_type === 'delivery' && order.driver_id && (
-                              <div className="flex justify-between items-center text-xs text-muted-foreground px-2 italic">
+                              <div className="flex justify-between items-center text-xs text-muted-foreground px-1 italic">
                                 <span>Taxa do Motoqueiro</span>
                                 <span>R$ {(Number((order as any).delivery_fee || 0) || (order.total_amount - (order.delivery_order_items?.reduce((acc: number, item: any) => acc + item.total_price, 0) || 0))).toFixed(2)}</span>
                               </div>
                             )}
 
-                            <div className="flex justify-between items-center text-base font-bold text-orange-600 bg-orange-50 p-2 rounded-md border border-orange-100 mt-1">
-                              <span className="flex items-center gap-2">
-                                <DollarSign className="h-4 w-4" /> Total do Pedido
+                            <div className="flex justify-between items-center text-sm font-bold text-orange-600 bg-orange-50 p-1.5 rounded-md border border-orange-100 mt-1">
+                              <span className="flex items-center gap-1">
+                                <DollarSign className="h-3.5 w-3.5" /> Total
                               </span>
                               <span>
                                 R$ {(() => {
                                   const subtotalValue = order.delivery_order_items?.reduce((acc: number, item: any) => acc + item.total_price, 0) || 0;
                                   if (order.order_type !== 'delivery') return subtotalValue.toFixed(2);
-                                  
+
                                   const feeValue = (order as any).delivery_fee || (order.total_amount - subtotalValue);
                                   return (subtotalValue + feeValue).toFixed(2);
                                 })()}
@@ -7476,11 +7465,11 @@ table.main thead th.right { text-align:right; }
                           </div>
                         </div>
                       </CardContent>
-                      <CardFooter className="flex gap-2">
-                        <div className="flex flex-col w-full gap-2">
+                      <CardFooter className="flex gap-2 px-3 py-2">
+                        <div className="flex flex-col w-full gap-1.5">
                           {(order.order_type !== 'delivery' || !!order.driver_id || !!pendingDriver || order.status === 'delivering') && (
                             <Button
-                              className="w-full bg-green-600 hover:bg-green-700 gap-2 font-bold shadow-md h-11"
+                              className="w-full bg-green-600 hover:bg-green-700 gap-1.5 font-bold shadow-md h-9 text-sm"
                               onClick={async () => {
                                 try {
                                   if (order.order_type === 'delivery') {
@@ -7512,7 +7501,7 @@ table.main thead th.right { text-align:right; }
                             </Button>
                           )}
                           {order.order_type === 'delivery' && !order.driver_id && !pendingDriver && order.status !== 'delivering' && (
-                            <p className="text-[11px] text-center text-muted-foreground italic">
+                            <p className="text-[10px] text-center text-muted-foreground italic">
                               Selecione um motoqueiro para liberar a finalização.
                             </p>
                           )}
