@@ -7377,13 +7377,13 @@ table.main thead th.right { text-align:right; }
                             </div>
                           )}
                           
-                          <div className="pt-1.5 border-t space-y-1">
-                            <Label className="text-[9px] font-bold uppercase text-muted-foreground flex items-center gap-1">
+                          <div className="pt-1 border-t space-y-0.5">
+                            <Label className="text-[8px] font-bold uppercase text-muted-foreground flex items-center gap-1">
                               <Package className="h-3 w-3" /> Itens
                             </Label>
-                            <ul className="space-y-1">
+                            <ul className="space-y-0.5">
                                {(!order.delivery_order_items || order.delivery_order_items.length === 0) ? (
-                                  <li className="text-xs italic text-muted-foreground py-1 text-center flex flex-col items-center justify-center gap-1">
+                                  <li className="text-[10px] italic text-muted-foreground py-1 text-center flex flex-col items-center justify-center gap-1">
                                     {order.delivery_order_items ? "Nenhum item encontrado" : (
                                       <>
                                         <Loader2 className="h-3 w-3 animate-spin" />
@@ -7393,13 +7393,13 @@ table.main thead th.right { text-align:right; }
                                   </li>
                                 ) : (
                                   order.delivery_order_items.map((item: any) => (
-                                    <li key={item.id} className="text-xs flex flex-col bg-muted/30 p-1 rounded-sm">
+                                    <li key={item.id} className="text-[10px] flex flex-col bg-muted/30 p-0.5 rounded-sm">
                                       <div className="flex justify-between items-center w-full">
                                         <span className="font-medium">{item.quantity}x {item.product_name}</span>
                                         <span className="font-bold text-primary">R$ {Number(item.total_price || 0).toFixed(2)}</span>
                                       </div>
                                       {item.selected_complements && item.selected_complements.length > 0 && (
-                                        <div className="flex flex-col ml-3 text-[9px] text-muted-foreground italic border-l border-primary/20 pl-2 mt-0.5 bg-card/30 rounded p-1">
+                                        <div className="flex flex-col ml-2 text-[8px] text-muted-foreground italic border-l border-primary/20 pl-1.5 mt-0.5 bg-card/30 rounded p-0.5">
                                           {item.selected_complements.map((c: any, i: number) => (
                                             <span key={i}>+ {c.name}</span>
                                           ))}
