@@ -3496,6 +3496,8 @@ table.main thead th.right { text-align:right; }
       
       const payload: any = {
         status: 'delivered', // Finaliza definitivamente
+        driver_status: 'entregue', // Sincroniza com o app do entregador
+        delivered_at: toSupabaseDateTime(),
         payment_method: paymentMethod,
         payment_split_details: splitDetails,
         reconciled_at: toSupabaseDateTime(),
