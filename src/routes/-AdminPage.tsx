@@ -7501,7 +7501,7 @@ table.main thead th.right { text-align:right; }
                             </Button>
                           )}
                           {order.order_type === 'delivery' && !order.driver_id && !pendingDriver && order.status !== 'delivering' && (
-                            <p className="text-[11px] text-center text-muted-foreground italic">
+                            <p className="text-[10px] text-center text-muted-foreground italic">
                               Selecione um motoqueiro para liberar a finalização.
                             </p>
                           )}
