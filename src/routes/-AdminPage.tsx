@@ -7479,27 +7479,32 @@ table.main thead th.right { text-align:right; }
                       <CardFooter className="flex gap-2">
                         <div className="flex flex-col w-full gap-2">
                           {(order.order_type !== 'delivery' || !!order.driver_id || !!pendingDriver || order.status === 'delivering') && (
-                            <Button 
+                            <Button
                               className="w-full bg-green-600 hover:bg-green-700 gap-2 font-bold shadow-md h-11"
-                                onClick={async () => {
-                                  try {
-                                    if (order.order_type === 'delivery' && !order.driver_id && pendingDriver) {
+                              onClick={async () => {
+                                try {
+                                  if (order.order_type === 'delivery') {
+                                    if (!order.driver_id && pendingDriver) {
                                       await assignMotoqueiroToOrder(order.id, pendingDriver);
                                       setPendingDriverByOrder((prev) => {
                                         const next = { ...prev };
                                         delete next[order.id];
                                         return next;
                                       });
+                                      toast.success("Motoqueiro atribuído! Pedido aparecerá no app do entregador.");
+                                    } else if (order.driver_id) {
+                                      toast.info("Pedido já atribuído ao entregador. Aguarde finalização no app.");
                                     }
-                                  } catch (e: any) {
-                                    console.error("[motoqueiros] falha ao atribuir:", e);
-                                    toast.error(e?.message || "Erro ao atribuir motoqueiro");
                                     return;
                                   }
-                                  // Encaminha para conciliação no caixa em vez de finalizar direto
-                                  // Isso garante que o pedido apareça na aba de Caixa para acerto financeiro
+                                  // Retirada/balcão: segue para conciliação no caixa
                                   updateOrderStatus(order.id, 'awaiting_reconciliation');
-                                }}
+                                } catch (e: any) {
+                                  console.error("[motoqueiros] falha ao atribuir:", e);
+                                  toast.error(e?.message || "Erro ao atribuir motoqueiro");
+                                  return;
+                                }
+                              }}
                             >
                               <CheckCircle2 className="h-4 w-4" /> Finalizar Pedido
                             </Button>
