@@ -7304,11 +7304,11 @@ table.main thead th.right { text-align:right; }
                           
 
                           {order.order_type === 'delivery' && !order.driver_id && (
-                            <div className="space-y-2 pt-2 border-t">
-                              <Label className="text-xs font-bold uppercase text-muted-foreground">
-                                Motoqueiro (envia para o App MeuPedix Entregador)
+                            <div className="space-y-1.5 pt-1.5 border-t">
+                              <Label className="text-[10px] font-bold uppercase text-muted-foreground leading-tight">
+                                Motoqueiro (App MeuPedix Entregador)
                               </Label>
-                              <div className="flex flex-col gap-2">
+                              <div className="flex flex-col gap-1.5">
                                 {(() => {
                                    const isDelivering = order.status === "delivering";
                                    return (
