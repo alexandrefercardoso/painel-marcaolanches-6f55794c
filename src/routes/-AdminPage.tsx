@@ -7285,9 +7285,9 @@ table.main thead th.right { text-align:right; }
                         </div>
                       </CardHeader>
                       <CardContent className="px-3 py-2">
-                        <div className="space-y-4 text-sm">
-                          <div className="flex items-start gap-2">
-                            <MapPin className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-start gap-1.5 text-xs">
+                            <MapPin className="h-3.5 w-3.5 mt-0.5 text-primary shrink-0" />
                             <span className="font-medium">{order.customer_address}</span>
                           </div>
                           
