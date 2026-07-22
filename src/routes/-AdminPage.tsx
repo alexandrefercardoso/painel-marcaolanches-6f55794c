@@ -4302,13 +4302,16 @@ table.main thead th.right { text-align:right; }
       toast.error("O valor deve ser maior que zero.");
       return;
     }
+    // Data do caixa: se houver sessão aberta, usa a data de abertura; senão usa hoje
+    const cashierDate = activeSession?.opened_at
+      ? activeSession.opened_at.substring(0, 10)
+      : todayDate;
     if (!newTransaction.date) {
-      toast.error("A data de lançamento é obrigatória.");
-      return;
+      newTransaction.date = cashierDate;
     }
     if (!newTransaction.due_date) {
-      toast.error("A data de vencimento é obrigatória.");
-      return;
+      // Auto-preenche com a data do caixa (ou data de lançamento)
+      newTransaction.due_date = newTransaction.date || cashierDate;
     }
     if (newTransaction.type === 'income' && !newTransaction.customer_id) {
       toast.error("O cliente é obrigatório para receitas.");
@@ -9631,7 +9634,7 @@ table.main thead th.right { text-align:right; }
                   <Button size="sm" className="gap-2" onClick={() => {
                     setIsEditTransactionMode(false);
                     setIsViewTransactionMode(false);
-                    setNewTransaction({ id: "", description: "", amount: "", type: "income", category_id: "", date: todayDate, due_date: "", payment_date: "", status: "pending", customer_id: "", supplier_id: "" });
+                    setNewTransaction({ id: "", description: "", amount: "", type: "income", category_id: "", date: todayDate, due_date: todayDate, payment_date: "", status: "pending", customer_id: "", supplier_id: "" });
                     setIsTransactionDialogOpen(true);
                   }}>
                     <Plus className="h-4 w-4" /> Novo Lançamento
@@ -12826,7 +12829,7 @@ table.main thead th.right { text-align:right; }
             if (!open) {
               setIsEditTransactionMode(false);
               setIsViewTransactionMode(false);
-              setNewTransaction({ id: "", description: "", amount: "", type: "income", category_id: "", date: todayDate, due_date: "", payment_date: "", status: "pending", customer_id: "", supplier_id: "" });
+              setNewTransaction({ id: "", description: "", amount: "", type: "income", category_id: "", date: todayDate, due_date: todayDate, payment_date: "", status: "pending", customer_id: "", supplier_id: "" });
             }
           }}>
             <DialogContent className="max-w-2xl">
@@ -12864,6 +12867,7 @@ table.main thead th.right { text-align:right; }
                   <div className="space-y-2">
                     <Label>Data Vencimento</Label>
                     <Input type="date" value={newTransaction.due_date || ""} onChange={e => setNewTransaction({...newTransaction, due_date: e.target.value})} disabled={isViewTransactionMode} />
+                    <p className="text-[10px] text-muted-foreground">Se vazio, usa a data do caixa.</p>
                   </div>
                   <div className="space-y-2">
                     <Label>Data Pagamento</Label>
