@@ -7232,6 +7232,8 @@ table.main thead th.right { text-align:right; }
                     );
                     const validMotoqueiros = appMotoqueiros.filter((m) => typeof m.id === "string" && m.id.length > 0);
                     const assignedValue = validMotoqueiros.find((m) => m.id === order.driver_id || (m.profile_id && m.profile_id === order.driver_id))?.id || order.driver_id || "";
+                    const pendingDriver = pendingDriverByOrder[order.id] || "";
+                    const selectValue = pendingDriver || assignedValue;
                     return (
                     <Card key={order.id} className={`border-l-4 ${order.status === 'delivering' ? 'border-l-blue-500' : 'border-l-green-500'} shadow-md`}>
                       <CardHeader className="pb-2">
