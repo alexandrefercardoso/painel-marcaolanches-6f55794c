@@ -12897,14 +12897,15 @@ table.main thead th.right { text-align:right; }
                        if (newTransaction.type === 'income') setNewTransaction({...newTransaction, customer_id: v});
                        else setNewTransaction({...newTransaction, supplier_id: v});
                     }} disabled={isViewTransactionMode}>
-                      <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                      <SelectContent>
-                        {newTransaction.type === 'income' ? 
-                          customers.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>) :
-                          suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)
-                        }
-                      </SelectContent>
-                    </Select>
+                       <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="">Nenhum / Não informado</SelectItem>
+                         {newTransaction.type === 'income' ? 
+                           customers.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>) :
+                           suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)
+                         }
+                       </SelectContent>
+                     </Select>
                   </div>
                   <div className="space-y-2">
                     <Label>Status</Label>
