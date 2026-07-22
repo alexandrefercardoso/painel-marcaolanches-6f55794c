@@ -4302,13 +4302,16 @@ table.main thead th.right { text-align:right; }
       toast.error("O valor deve ser maior que zero.");
       return;
     }
+    // Data do caixa: se houver sessão aberta, usa a data de abertura; senão usa hoje
+    const cashierDate = activeSession?.opened_at
+      ? activeSession.opened_at.substring(0, 10)
+      : todayDate;
     if (!newTransaction.date) {
-      toast.error("A data de lançamento é obrigatória.");
-      return;
+      newTransaction.date = cashierDate;
     }
     if (!newTransaction.due_date) {
-      toast.error("A data de vencimento é obrigatória.");
-      return;
+      // Auto-preenche com a data do caixa (ou data de lançamento)
+      newTransaction.due_date = newTransaction.date || cashierDate;
     }
     if (newTransaction.type === 'income' && !newTransaction.customer_id) {
       toast.error("O cliente é obrigatório para receitas.");
