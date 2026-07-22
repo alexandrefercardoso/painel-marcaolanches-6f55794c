@@ -4317,10 +4317,6 @@ table.main thead th.right { text-align:right; }
       toast.error("O cliente é obrigatório para receitas.");
       return;
     }
-    if (newTransaction.type === 'expense' && !newTransaction.supplier_id) {
-      toast.error("O fornecedor é obrigatório para despesas.");
-      return;
-    }
     if (!newTransaction.category_id) {
       toast.error("A categoria é obrigatória.");
       return;
