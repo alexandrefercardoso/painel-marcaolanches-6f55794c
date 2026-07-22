@@ -7348,23 +7348,23 @@ table.main thead th.right { text-align:right; }
 
 
 
-                                      {isDelivering && (
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          className="w-full gap-2 text-green-700 border-green-200 hover:bg-green-50"
-                                          title="Enviar WhatsApp de Saída"
-                                          onClick={() => {
-                                            const msg = `🚀 *${order.customer_name}, seu pedido saiu para entrega!* O entregador já está a caminho.\n\n📍 Acompanhe pelo link do nosso site!`;
-                                            const cleanPhone = order.customer_phone.replace(/\D/g, '');
-                                            const finalPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
-                                            window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(msg)}`, "_blank");
-                                          }}
-                                        >
-                                          <Phone className="h-4 w-4" />
-                                          WhatsApp de Saída
-                                        </Button>
-                                      )}
+                                       {isDelivering && (
+                                         <Button
+                                           variant="outline"
+                                           size="sm"
+                                           className="w-full h-8 gap-1 text-xs text-green-700 border-green-200 hover:bg-green-50"
+                                           title="Enviar WhatsApp de Saída"
+                                           onClick={() => {
+                                             const msg = `🚀 *${order.customer_name}, seu pedido saiu para entrega!* O entregador já está a caminho.\n\n📍 Acompanhe pelo link do nosso site!`;
+                                             const cleanPhone = order.customer_phone.replace(/\D/g, '');
+                                             const finalPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+                                             window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+                                           }}
+                                         >
+                                           <Phone className="h-3.5 w-3.5" />
+                                           WhatsApp de Saída
+                                         </Button>
+                                       )}
                                     </>
                                   );
                                 })()}
