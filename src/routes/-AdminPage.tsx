@@ -7232,6 +7232,8 @@ table.main thead th.right { text-align:right; }
                     );
                     const validMotoqueiros = appMotoqueiros.filter((m) => typeof m.id === "string" && m.id.length > 0);
                     const assignedValue = validMotoqueiros.find((m) => m.id === order.driver_id || (m.profile_id && m.profile_id === order.driver_id))?.id || order.driver_id || "";
+                    const pendingDriver = pendingDriverByOrder[order.id] || "";
+                    const selectValue = pendingDriver || assignedValue;
                     return (
                     <Card key={order.id} className={`border-l-4 ${order.status === 'delivering' ? 'border-l-blue-500' : 'border-l-green-500'} shadow-md`}>
                       <CardHeader className="pb-2">
@@ -7297,17 +7299,16 @@ table.main thead th.right { text-align:right; }
                                      <>
                                        <select
                                          className="h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                         value={assignedValue}
-                                         disabled={validMotoqueiros.length === 0}
-                                         onChange={async (event) => {
+                                         value={selectValue}
+                                         disabled={validMotoqueiros.length === 0 || !!order.driver_id}
+                                         onChange={(event) => {
                                            const v = event.target.value;
-                                           if (!v) return;
-                                           try {
-                                             await assignMotoqueiroToOrder(order.id, v);
-                                           } catch (e: any) {
-                                             console.error("[motoqueiros] falha ao atribuir:", e);
-                                             toast.error(e?.message || "Erro ao atribuir motoqueiro");
-                                           }
+                                           setPendingDriverByOrder((prev) => {
+                                             const next = { ...prev };
+                                             if (v) next[order.id] = v;
+                                             else delete next[order.id];
+                                             return next;
+                                           });
                                          }}
                                        >
                                          <option value="">
@@ -7451,10 +7452,24 @@ table.main thead th.right { text-align:right; }
                       </CardContent>
                       <CardFooter className="flex gap-2">
                         <div className="flex flex-col w-full gap-2">
-                          {(order.order_type !== 'delivery' || !!order.driver_id || !!assignedValue || order.status === 'delivering') && (
+                          {(order.order_type !== 'delivery' || !!order.driver_id || !!pendingDriver || order.status === 'delivering') && (
                             <Button 
                               className="w-full bg-green-600 hover:bg-green-700 gap-2 font-bold shadow-md h-11"
-                                onClick={() => {
+                                onClick={async () => {
+                                  try {
+                                    if (order.order_type === 'delivery' && !order.driver_id && pendingDriver) {
+                                      await assignMotoqueiroToOrder(order.id, pendingDriver);
+                                      setPendingDriverByOrder((prev) => {
+                                        const next = { ...prev };
+                                        delete next[order.id];
+                                        return next;
+                                      });
+                                    }
+                                  } catch (e: any) {
+                                    console.error("[motoqueiros] falha ao atribuir:", e);
+                                    toast.error(e?.message || "Erro ao atribuir motoqueiro");
+                                    return;
+                                  }
                                   // Encaminha para conciliação no caixa em vez de finalizar direto
                                   // Isso garante que o pedido apareça na aba de Caixa para acerto financeiro
                                   updateOrderStatus(order.id, 'awaiting_reconciliation');
@@ -7463,7 +7478,7 @@ table.main thead th.right { text-align:right; }
                               <CheckCircle2 className="h-4 w-4" /> Finalizar Pedido
                             </Button>
                           )}
-                          {order.order_type === 'delivery' && !order.driver_id && !assignedValue && order.status !== 'delivering' && (
+                          {order.order_type === 'delivery' && !order.driver_id && !pendingDriver && order.status !== 'delivering' && (
                             <p className="text-[11px] text-center text-muted-foreground italic">
                               Selecione um motoqueiro para liberar a finalização.
                             </p>
