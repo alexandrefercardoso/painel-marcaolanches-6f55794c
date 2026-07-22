@@ -7373,20 +7373,20 @@ table.main thead th.right { text-align:right; }
                           )}
                           
                           {order.order_type === 'delivery' && order.driver_id && (
-                            <div className="space-y-3">
-                              <div className="bg-blue-50 p-3 rounded-xl flex items-center justify-between text-blue-700 border border-blue-100 shadow-sm">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center">
-                                    <Bike className="h-5 w-5" />
+                            <div className="space-y-2">
+                              <div className="bg-blue-50 p-2 rounded-lg flex items-center justify-between text-blue-700 border border-blue-100 shadow-sm">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-7 h-7 bg-blue-600 text-white rounded-lg flex items-center justify-center">
+                                    <Bike className="h-4 w-4" />
                                   </div>
                                   <div>
-                                    <p className="text-[10px] font-black uppercase opacity-60">Entregador</p>
-                                    <span className="font-bold">{drivers.find(d => d.id === order.driver_id)?.name}</span>
+                                    <p className="text-[9px] font-black uppercase opacity-60">Entregador</p>
+                                    <span className="text-sm font-bold">{drivers.find(d => d.id === order.driver_id)?.name}</span>
                                   </div>
                                 </div>
                                 <div className="flex flex-col items-end">
-                                  <span className="text-[10px] uppercase font-bold opacity-60">Taxa</span>
-                                  <span className="font-black text-blue-800">
+                                  <span className="text-[9px] uppercase font-bold opacity-60">Taxa</span>
+                                  <span className="font-black text-sm text-blue-800">
                                     R$ {(Number((order as any).delivery_fee || 0) || (order.total_amount - (order.delivery_order_items?.reduce((acc: number, item: any) => acc + item.total_price, 0) || 0))).toFixed(2)}
                                   </span>
                                 </div>
