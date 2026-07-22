@@ -9634,7 +9634,7 @@ table.main thead th.right { text-align:right; }
                   <Button size="sm" className="gap-2" onClick={() => {
                     setIsEditTransactionMode(false);
                     setIsViewTransactionMode(false);
-                    setNewTransaction({ id: "", description: "", amount: "", type: "income", category_id: "", date: todayDate, due_date: "", payment_date: "", status: "pending", customer_id: "", supplier_id: "" });
+                    setNewTransaction({ id: "", description: "", amount: "", type: "income", category_id: "", date: todayDate, due_date: todayDate, payment_date: "", status: "pending", customer_id: "", supplier_id: "" });
                     setIsTransactionDialogOpen(true);
                   }}>
                     <Plus className="h-4 w-4" /> Novo Lançamento
