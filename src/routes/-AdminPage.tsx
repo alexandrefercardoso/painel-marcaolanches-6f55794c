@@ -7299,17 +7299,16 @@ table.main thead th.right { text-align:right; }
                                      <>
                                        <select
                                          className="h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                         value={assignedValue}
-                                         disabled={validMotoqueiros.length === 0}
-                                         onChange={async (event) => {
+                                         value={selectValue}
+                                         disabled={validMotoqueiros.length === 0 || !!order.driver_id}
+                                         onChange={(event) => {
                                            const v = event.target.value;
-                                           if (!v) return;
-                                           try {
-                                             await assignMotoqueiroToOrder(order.id, v);
-                                           } catch (e: any) {
-                                             console.error("[motoqueiros] falha ao atribuir:", e);
-                                             toast.error(e?.message || "Erro ao atribuir motoqueiro");
-                                           }
+                                           setPendingDriverByOrder((prev) => {
+                                             const next = { ...prev };
+                                             if (v) next[order.id] = v;
+                                             else delete next[order.id];
+                                             return next;
+                                           });
                                          }}
                                        >
                                          <option value="">
