@@ -7292,11 +7292,11 @@ table.main thead th.right { text-align:right; }
                           </div>
                           
                           {order.observation && (
-                            <div className="bg-blue-50 p-2 rounded-lg border border-blue-100 flex items-start gap-2">
-                              <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+                            <div className="bg-blue-50 p-1.5 rounded-md border border-blue-100 flex items-start gap-1.5">
+                              <Info className="h-3.5 w-3.5 text-blue-600 mt-0.5 shrink-0" />
                               <div className="text-xs">
-                                <p className="font-bold text-blue-800 uppercase text-[9px]">Observação do Pedido:</p>
-                                <p className="text-blue-900 font-medium">{order.observation}</p>
+                                <p className="font-bold text-blue-800 uppercase text-[9px]">Observação:</p>
+                                <p className="text-blue-900 font-medium leading-tight">{order.observation}</p>
                               </div>
                             </div>
                           )}
