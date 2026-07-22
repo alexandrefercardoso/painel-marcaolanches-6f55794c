@@ -4337,7 +4337,7 @@ table.main thead th.right { text-align:right; }
         payment_date: newTransaction.payment_date || null,
         status: newTransaction.status || 'pending',
         customer_id: newTransaction.type === 'income' && newTransaction.customer_id ? newTransaction.customer_id : null,
-        supplier_id: newTransaction.type === 'expense' && newTransaction.supplier_id ? newTransaction.supplier_id : null,
+        supplier_id: newTransaction.supplier_id ? newTransaction.supplier_id : null,
         cashier_session_id: activeSession?.id || null
       };
 
