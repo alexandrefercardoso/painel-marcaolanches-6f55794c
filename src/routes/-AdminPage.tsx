@@ -12829,7 +12829,7 @@ table.main thead th.right { text-align:right; }
             if (!open) {
               setIsEditTransactionMode(false);
               setIsViewTransactionMode(false);
-              setNewTransaction({ id: "", description: "", amount: "", type: "income", category_id: "", date: todayDate, due_date: "", payment_date: "", status: "pending", customer_id: "", supplier_id: "" });
+              setNewTransaction({ id: "", description: "", amount: "", type: "income", category_id: "", date: todayDate, due_date: todayDate, payment_date: "", status: "pending", customer_id: "", supplier_id: "" });
             }
           }}>
             <DialogContent className="max-w-2xl">
