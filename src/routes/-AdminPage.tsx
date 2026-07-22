@@ -7301,16 +7301,6 @@ table.main thead th.right { text-align:right; }
                             </div>
                           )}
 
-                          <div className="grid grid-cols-2 gap-4 pt-2 border-t">
-                            <div>
-                              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Tipo de Venda</Label>
-                              <p className="text-sm font-medium">{(order as any).tipo_venda || "Não informado"}</p>
-                            </div>
-                            <div>
-                              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Frete</Label>
-                              <p className="text-sm font-medium">{(order as any).frete === 1 ? "Destinatário" : "Emitente"}</p>
-                            </div>
-                          </div>
                           
 
                           {order.order_type === 'delivery' && !order.driver_id && (
