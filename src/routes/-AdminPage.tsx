@@ -7452,10 +7452,24 @@ table.main thead th.right { text-align:right; }
                       </CardContent>
                       <CardFooter className="flex gap-2">
                         <div className="flex flex-col w-full gap-2">
-                          {(order.order_type !== 'delivery' || !!order.driver_id || !!assignedValue || order.status === 'delivering') && (
+                          {(order.order_type !== 'delivery' || !!order.driver_id || !!pendingDriver || order.status === 'delivering') && (
                             <Button 
                               className="w-full bg-green-600 hover:bg-green-700 gap-2 font-bold shadow-md h-11"
-                                onClick={() => {
+                                onClick={async () => {
+                                  try {
+                                    if (order.order_type === 'delivery' && !order.driver_id && pendingDriver) {
+                                      await assignMotoqueiroToOrder(order.id, pendingDriver);
+                                      setPendingDriverByOrder((prev) => {
+                                        const next = { ...prev };
+                                        delete next[order.id];
+                                        return next;
+                                      });
+                                    }
+                                  } catch (e: any) {
+                                    console.error("[motoqueiros] falha ao atribuir:", e);
+                                    toast.error(e?.message || "Erro ao atribuir motoqueiro");
+                                    return;
+                                  }
                                   // Encaminha para conciliação no caixa em vez de finalizar direto
                                   // Isso garante que o pedido apareça na aba de Caixa para acerto financeiro
                                   updateOrderStatus(order.id, 'awaiting_reconciliation');
@@ -7464,7 +7478,7 @@ table.main thead th.right { text-align:right; }
                               <CheckCircle2 className="h-4 w-4" /> Finalizar Pedido
                             </Button>
                           )}
-                          {order.order_type === 'delivery' && !order.driver_id && !assignedValue && order.status !== 'delivering' && (
+                          {order.order_type === 'delivery' && !order.driver_id && !pendingDriver && order.status !== 'delivering' && (
                             <p className="text-[11px] text-center text-muted-foreground italic">
                               Selecione um motoqueiro para liberar a finalização.
                             </p>
