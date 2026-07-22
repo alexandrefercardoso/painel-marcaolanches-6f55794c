@@ -4317,10 +4317,6 @@ table.main thead th.right { text-align:right; }
       toast.error("O cliente é obrigatório para receitas.");
       return;
     }
-    if (newTransaction.type === 'expense' && !newTransaction.supplier_id) {
-      toast.error("O fornecedor é obrigatório para despesas.");
-      return;
-    }
     if (!newTransaction.category_id) {
       toast.error("A categoria é obrigatória.");
       return;
@@ -4341,7 +4337,7 @@ table.main thead th.right { text-align:right; }
         payment_date: newTransaction.payment_date || null,
         status: newTransaction.status || 'pending',
         customer_id: newTransaction.type === 'income' && newTransaction.customer_id ? newTransaction.customer_id : null,
-        supplier_id: newTransaction.type === 'expense' && newTransaction.supplier_id ? newTransaction.supplier_id : null,
+        supplier_id: newTransaction.supplier_id ? newTransaction.supplier_id : null,
         cashier_session_id: activeSession?.id || null
       };
 
@@ -12901,14 +12897,15 @@ table.main thead th.right { text-align:right; }
                        if (newTransaction.type === 'income') setNewTransaction({...newTransaction, customer_id: v});
                        else setNewTransaction({...newTransaction, supplier_id: v});
                     }} disabled={isViewTransactionMode}>
-                      <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                      <SelectContent>
-                        {newTransaction.type === 'income' ? 
-                          customers.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>) :
-                          suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)
-                        }
-                      </SelectContent>
-                    </Select>
+                       <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="">Nenhum / Não informado</SelectItem>
+                         {newTransaction.type === 'income' ? 
+                           customers.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>) :
+                           suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)
+                         }
+                       </SelectContent>
+                     </Select>
                   </div>
                   <div className="space-y-2">
                     <Label>Status</Label>
