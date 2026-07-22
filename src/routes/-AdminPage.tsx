@@ -1759,37 +1759,61 @@ table.main thead th.right { text-align:right; }
       }
       
       let error;
+      let savedProfileId: string | undefined = newUser.id;
+      const allowedModules = newUser.role === 'funcionario' ? (newUser.allowedModules || []) : [];
+      const profilePayload = {
+        email: emailToCreate,
+        password: newUser.password,
+        full_name: newUser.fullName,
+        role: newUser.role || 'funcionario',
+        can_delete: newUser.canDelete,
+        can_cancel: newUser.canCancel,
+        is_kds_only: newUser.isKdsOnly,
+        allowed_modules: allowedModules,
+        visible_fields: newUser.role === 'funcionario' ? (newUser.visibleFields || []) : [],
+        active: newUser.active
+      } as any;
+
       if (newUser.id) {
-        const { error: updateError } = await supabase.from("profiles").update({
-          email: emailToCreate,
-          password: newUser.password,
-          full_name: newUser.fullName,
-          role: newUser.role || 'funcionario',
-          can_delete: newUser.canDelete,
-          can_cancel: newUser.canCancel,
-          is_kds_only: newUser.isKdsOnly,
-          allowed_modules: newUser.role === 'funcionario' ? (newUser.allowedModules || []) : [],
-          visible_fields: newUser.role === 'funcionario' ? (newUser.visibleFields || []) : [],
-          active: newUser.active
-        } as any).eq("id", newUser.id);
+        const { error: updateError } = await supabase.from("profiles").update(profilePayload).eq("id", newUser.id);
         error = updateError;
       } else {
-        const { error: insertError } = await supabase.from("profiles").insert({
-          email: emailToCreate,
-          password: newUser.password,
-          full_name: newUser.fullName,
-          role: newUser.role || 'funcionario',
-          can_delete: newUser.canDelete,
-          can_cancel: newUser.canCancel,
-          is_kds_only: newUser.isKdsOnly,
-          allowed_modules: newUser.role === 'funcionario' ? (newUser.allowedModules || []) : [],
-          visible_fields: newUser.role === 'funcionario' ? (newUser.visibleFields || []) : [],
-          active: newUser.active
-        } as any);
+        const { data: inserted, error: insertError } = await supabase
+          .from("profiles")
+          .insert(profilePayload)
+          .select("id")
+          .single();
         error = insertError;
+        savedProfileId = (inserted as any)?.id;
       }
 
       if (error) throw error;
+
+      // Sincroniza com a tabela drivers quando o módulo "entregador" está habilitado
+      if (savedProfileId && allowedModules.includes('entregador')) {
+        const driverPayload: any = {
+          id: savedProfileId,
+          name: newUser.fullName || emailToCreate,
+          login: emailToCreate,
+          password: newUser.password || '',
+          phone: newUser.phone || '',
+          active: newUser.active !== false,
+          is_active: newUser.active !== false,
+          daily_rate: 40,
+          has_fixed_fee: false,
+          fixed_fee: 0,
+          auth_user_id: savedProfileId,
+        };
+        const { error: driverError } = await (supabase.from as any)("drivers").upsert(driverPayload, { onConflict: 'id' });
+        if (driverError) {
+          console.warn('[drivers] erro ao sincronizar entregador:', driverError);
+          toast.warning('Usuário salvo, mas houve um erro ao sincronizar o entregador: ' + driverError.message);
+        }
+      } else if (savedProfileId && !allowedModules.includes('entregador') && newUser.role === 'funcionario') {
+        // Se o módulo foi removido, desativa o driver correspondente (não remove para preservar histórico)
+        await (supabase.from as any)("drivers").update({ active: false, is_active: false }).eq('id', savedProfileId);
+      }
+
       toast.success(newUser.id ? "Usuário atualizado com sucesso!" : "Usuário cadastrado com sucesso!");
       setNewUser({ email: "", password: "", fullName: "", role: "funcionario", canDelete: false, canCancel: false, isKdsOnly: false, active: true });
       setIsUserDialogOpen(false);
