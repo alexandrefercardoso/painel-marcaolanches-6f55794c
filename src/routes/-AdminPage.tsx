@@ -12867,6 +12867,7 @@ table.main thead th.right { text-align:right; }
                   <div className="space-y-2">
                     <Label>Data Vencimento</Label>
                     <Input type="date" value={newTransaction.due_date || ""} onChange={e => setNewTransaction({...newTransaction, due_date: e.target.value})} disabled={isViewTransactionMode} />
+                    <p className="text-[10px] text-muted-foreground">Se vazio, usa a data do caixa.</p>
                   </div>
                   <div className="space-y-2">
                     <Label>Data Pagamento</Label>
