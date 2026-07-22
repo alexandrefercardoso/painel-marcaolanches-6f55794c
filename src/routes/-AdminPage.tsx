@@ -7262,7 +7262,7 @@ table.main thead th.right { text-align:right; }
                     const selectValue = pendingDriver || assignedValue;
                     return (
                     <Card key={order.id} className={`border-l-4 ${order.status === 'delivering' ? 'border-l-blue-500' : 'border-l-green-500'} shadow-md`}>
-                      <CardHeader className="pb-2">
+                      <CardHeader className="px-3 pt-3 pb-1">
                         <div className="flex justify-between items-start">
                           {activeSession && (
                             <Button 
@@ -7276,15 +7276,15 @@ table.main thead th.right { text-align:right; }
                             </Button>
                           )}
                           <div className="flex-1 px-2">
-                            <CardTitle className="text-lg">{order.customer_name}</CardTitle>
-                            <CardDescription className="font-medium text-primary">{order.order_type === 'delivery' ? 'Entrega em Domicílio' : order.order_type === 'pickup' ? 'Retirada' : order.order_type === 'dine_in' ? 'Consumo Local (Mesa)' : 'Pedido Balcão'}</CardDescription>
+                            <CardTitle className="text-base leading-tight">{order.customer_name}</CardTitle>
+                            <CardDescription className="text-xs text-primary">{order.order_type === 'delivery' ? 'Entrega em Domicílio' : order.order_type === 'pickup' ? 'Retirada' : order.order_type === 'dine_in' ? 'Consumo Local (Mesa)' : 'Pedido Balcão'}</CardDescription>
                           </div>
                           <Badge className={order.status === 'delivering' ? 'bg-blue-500' : 'bg-green-500'}>
                             {order.status === 'delivering' ? 'Em Rota' : 'Aguardando'}
                           </Badge>
                         </div>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="px-3 py-2">
                         <div className="space-y-4 text-sm">
                           <div className="flex items-start gap-2">
                             <MapPin className="h-4 w-4 mt-0.5 text-primary shrink-0" />
