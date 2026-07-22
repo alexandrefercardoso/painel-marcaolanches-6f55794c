@@ -6944,6 +6944,22 @@ table.main thead th.right { text-align:right; }
                               </div>
                             </div>
                           )}
+                          <div className="flex justify-end -my-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 px-2 text-[10px] gap-1 border-orange-200 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-bold"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                processPrintingForDeliveryOrder(order.id).catch(err => {
+                                  console.error("Erro ao imprimir pedido:", err);
+                                  toast.error("Erro ao processar impressão");
+                                });
+                              }}
+                            >
+                              <Printer className="h-3 w-3" /> REIMPRIMIR
+                            </Button>
+                          </div>
                           <div className="border-t pt-2 mt-2">
                             <p className="font-semibold mb-1">Itens:</p>
                             <ul className="space-y-1">
@@ -7127,6 +7143,22 @@ table.main thead th.right { text-align:right; }
                               {order.notes}
                             </div>
                           )}
+                          <div className="flex justify-end -my-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 px-2 text-[10px] gap-1 border-yellow-200 text-yellow-600 hover:bg-yellow-50 hover:text-yellow-700 font-bold"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                processPrintingForDeliveryOrder(order.id).catch(err => {
+                                  console.error("Erro ao imprimir pedido:", err);
+                                  toast.error("Erro ao processar impressão");
+                                });
+                              }}
+                            >
+                              <Printer className="h-3 w-3" /> REIMPRIMIR
+                            </Button>
+                          </div>
                           <div className="border-t pt-2">
                             <ul className="space-y-1">
                                {(!order.delivery_order_items || order.delivery_order_items.length === 0) ? (
