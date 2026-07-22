@@ -7187,16 +7187,6 @@ table.main thead th.right { text-align:right; }
                             </ul>
                           </div>
                           <div className="pt-2 border-t space-y-1">
-                            {order.order_type === 'delivery' && (
-                              <div className="flex justify-between items-center text-xs text-muted-foreground italic px-1">
-                                <span>Taxa de Entrega</span>
-                                <span>R$ {(Number((order as any).delivery_fee || 0) || (order.total_amount - (order.delivery_order_items?.reduce((acc: number, item: any) => acc + item.total_price, 0) || 0))).toFixed(2)}</span>
-                              </div>
-                            )}
-                            <div className="flex justify-between items-center font-bold text-sm">
-                              <span>Total</span>
-                               <span className="text-orange-600">R$ {Number(order.total_amount).toFixed(2)}</span>
-                            </div>
                             <div className="flex justify-end pt-1">
                               <Button
                                 variant="outline"
