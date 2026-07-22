@@ -10726,53 +10726,35 @@ table.main thead th.right { text-align:right; }
                     <CardDescription>Movimentações e viagens registradas hoje.</CardDescription>
                   </div>
                   {activeSession && (
-                    <Dialog>
-                      <DialogTrigger asChild><Button size="sm" variant="outline" className="gap-2"><Plus className="h-4 w-4" /> Nova Despesa/Venda</Button></DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader><DialogTitle>Lançamento em Caixa</DialogTitle></DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="space-y-2">
-                            <Label>Descrição</Label>
-                            <Input value={newTransaction.description} onChange={e => setNewTransaction({...newTransaction, description: e.target.value})} />
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label>Valor (R$)</Label>
-                              <Input type="number" value={newTransaction.amount} onChange={e => setNewTransaction({...newTransaction, amount: e.target.value})} />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Tipo</Label>
-                              <Select 
-                                value={newTransaction.type} 
-                                onValueChange={v => setNewTransaction({...newTransaction, type: v, category_id: ""})}
-                              >
-                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="income">Receita</SelectItem>
-                                  <SelectItem value="expense">Despesa</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Categoria</Label>
-                            <Select value={newTransaction.category_id} onValueChange={v => setNewTransaction({...newTransaction, category_id: v})}>
-                              <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                              <SelectContent>
-                                {finCategories.length === 0 && (
-                                  <SelectItem value="none" disabled>Nenhuma categoria encontrada</SelectItem>
-                                )}
-                                {finCategories
-                                  .filter(c => c.type === newTransaction.type)
-                                  .map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)
-                                }
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <Button onClick={handleAddTransactionWithCashier}>Confirmar Lançamento</Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-2"
+                      onClick={() => {
+                        const cashierDate = activeSession?.opened_at
+                          ? activeSession.opened_at.substring(0, 10)
+                          : todayDate;
+                        setIsEditTransactionMode(false);
+                        setIsViewTransactionMode(false);
+                        setNewTransaction({
+                          id: "",
+                          description: "",
+                          amount: "",
+                          type: "expense",
+                          category_id: "",
+                          chart_account_id: "",
+                          date: cashierDate,
+                          due_date: cashierDate,
+                          payment_date: cashierDate,
+                          status: "paid",
+                          customer_id: "",
+                          supplier_id: "",
+                        });
+                        setIsTransactionDialogOpen(true);
+                      }}
+                    >
+                      <Plus className="h-4 w-4" /> Nova Despesa/Venda
+                    </Button>
                   )}
                 </CardHeader>
                 <CardContent>
