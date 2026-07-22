@@ -6960,11 +6960,11 @@ table.main thead th.right { text-align:right; }
                               <Printer className="h-3 w-3" /> REIMPRIMIR
                             </Button>
                           </div>
-                          <div className="border-t pt-2 mt-2">
-                            <p className="font-semibold mb-1">Itens:</p>
-                            <ul className="space-y-1">
+                          <div className="border-t pt-1.5 mt-1.5">
+                            <p className="text-xs font-semibold mb-0.5">Itens:</p>
+                            <ul className="space-y-0.5">
                                {(!order.delivery_order_items || order.delivery_order_items.length === 0) ? (
-                                 <li className="text-xs italic text-muted-foreground py-2 text-center flex flex-col items-center justify-center gap-2">
+                                 <li className="text-[11px] italic text-muted-foreground py-1.5 text-center flex flex-col items-center justify-center gap-1.5">
                                    {order.delivery_order_items ? "Nenhum item encontrado" : (
                                      <>
                                        <Loader2 className="h-3 w-3 animate-spin" />
@@ -6974,25 +6974,25 @@ table.main thead th.right { text-align:right; }
                                  </li>
                                ) : (
                                  order.delivery_order_items.map((item: any) => (
-                                   <li key={item.id} className="flex flex-col gap-0.5 border-b border-orange-50 pb-1 mb-1 last:border-0">
-                                     <div className="flex justify-between items-center">
+                                   <li key={item.id} className="flex flex-col gap-0.5 border-b border-orange-50 pb-1 mb-0.5 last:border-0 last:pb-0 last:mb-0">
+                                     <div className="flex justify-between items-center text-[11px]">
                                        <span className="font-medium flex items-center gap-1.5">
                                          {item.quantity}x {item.product_name}
                                          {item.selected_complements?.some((c: any) => c.name.toLowerCase().includes('borda')) && (
-                                           <Badge className="bg-emerald-600 text-white border-none text-[8px] h-3.5 px-1 font-black leading-none uppercase">BORDA</Badge>
+                                           <Badge className="bg-emerald-600 text-white border-none text-[7px] h-3 px-1 font-black leading-none uppercase">BORDA</Badge>
                                          )}
                                        </span>
                                        <span className="text-muted-foreground font-medium">R$ {Number(item.total_price || 0).toFixed(2)}</span>
                                      </div>
                                       {item.selected_complements && item.selected_complements.length > 0 && (
-                                        <div className="flex flex-col ml-4 text-[10px] text-muted-foreground italic bg-orange-50/50 p-1 rounded mt-0.5">
+                                        <div className="flex flex-col ml-3 text-[9px] text-muted-foreground italic bg-orange-50/50 p-1 rounded mt-0.5">
                                           {item.selected_complements.map((c: any, i: number) => (
                                             <span key={i}>+ {c.name}</span>
                                           ))}
                                         </div>
                                       )}
                                       {item.notes && (
-                                        <div className="ml-4 mt-0.5 text-[10px] text-yellow-800 bg-yellow-50 border border-yellow-200 rounded px-1.5 py-0.5">
+                                        <div className="ml-3 mt-0.5 text-[9px] text-yellow-800 bg-yellow-50 border border-yellow-200 rounded px-1.5 py-0.5">
                                           <span className="font-bold">Obs:</span> {item.notes}
                                         </div>
                                       )}
@@ -7143,10 +7143,10 @@ table.main thead th.right { text-align:right; }
                               <Printer className="h-3 w-3" /> REIMPRIMIR
                             </Button>
                           </div>
-                          <div className="border-t pt-2">
-                            <ul className="space-y-1">
+                          <div className="border-t pt-1.5">
+                            <ul className="space-y-0.5">
                                {(!order.delivery_order_items || order.delivery_order_items.length === 0) ? (
-                                 <li className="text-xs italic text-muted-foreground py-2 text-center flex flex-col items-center justify-center gap-2">
+                                 <li className="text-[11px] italic text-muted-foreground py-1.5 text-center flex flex-col items-center justify-center gap-1.5">
                                    {order.delivery_order_items ? "Nenhum item encontrado" : (
                                      <>
                                        <Loader2 className="h-3 w-3 animate-spin" />
@@ -7162,29 +7162,29 @@ table.main thead th.right { text-align:right; }
                                       const sendsToProduction = !product || (product as any).send_to_production !== false;
                                       const sendsToKds = !product || (product as any).send_to_kds !== false;
                                       const shouldShowInProduction = sendsToProduction || sendsToKds;
-                                      
+
                                       if (!shouldShowInProduction) return null;
 
                                       return (
-                                        <li key={item.id} className="flex flex-col gap-1 border-b border-yellow-50 pb-2 last:border-0">
-                                          <div className="flex gap-2 items-center">
-                                             <span className="font-bold text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded text-xs">{item.quantity}x</span>
+                                        <li key={item.id} className="flex flex-col gap-0.5 border-b border-yellow-50 pb-1 last:border-0 last:pb-0">
+                                          <div className="flex gap-2 items-center text-[11px]">
+                                             <span className="font-bold text-yellow-700 bg-yellow-100 px-1.5 py-0.5 rounded text-[10px]">{item.quantity}x</span>
                                              <span className="font-medium flex items-center gap-1.5">
                                                {item.product_name}
                                                {item.selected_complements?.some((c: any) => c.name.toLowerCase().includes('borda')) && (
-                                                 <Badge className="bg-emerald-600 text-white border-none text-[8px] h-3.5 px-1 font-black leading-none uppercase">BORDA</Badge>
+                                                 <Badge className="bg-emerald-600 text-white border-none text-[7px] h-3 px-1 font-black leading-none uppercase">BORDA</Badge>
                                                )}
                                              </span>
                                           </div>
                                            {item.selected_complements && item.selected_complements.length > 0 && (
-                                             <div className="flex flex-col ml-8 text-[10px] text-muted-foreground italic bg-yellow-50/50 p-1 rounded">
+                                             <div className="flex flex-col ml-6 text-[9px] text-muted-foreground italic bg-yellow-50/50 p-1 rounded">
                                                {item.selected_complements.map((c: any, i: number) => (
                                                  <span key={i}>+ {c.name}</span>
                                                ))}
                                              </div>
                                            )}
                                            {item.notes && (
-                                             <div className="ml-8 text-[10px] text-yellow-900 bg-yellow-100 border border-yellow-300 rounded px-2 py-0.5">
+                                             <div className="ml-6 text-[9px] text-yellow-900 bg-yellow-100 border border-yellow-300 rounded px-1.5 py-0.5">
                                                <span className="font-bold">Obs:</span> {item.notes}
                                              </div>
                                            )}
@@ -7196,7 +7196,7 @@ table.main thead th.right { text-align:right; }
                                        if (!product) return false;
                                        return (product as any).send_to_kds === false && (product as any).send_to_production === false;
                                      }) && (
-                                      <li className="text-xs italic text-muted-foreground">Nenhum item para produção.</li>
+                                      <li className="text-[11px] italic text-muted-foreground">Nenhum item para produção.</li>
                                     )}
                                  </>
                                )}
@@ -7377,13 +7377,13 @@ table.main thead th.right { text-align:right; }
                             </div>
                           )}
                           
-                          <div className="pt-1.5 border-t space-y-1">
-                            <Label className="text-[9px] font-bold uppercase text-muted-foreground flex items-center gap-1">
+                          <div className="pt-1 border-t space-y-0.5">
+                            <Label className="text-[8px] font-bold uppercase text-muted-foreground flex items-center gap-1">
                               <Package className="h-3 w-3" /> Itens
                             </Label>
-                            <ul className="space-y-1">
+                            <ul className="space-y-0.5">
                                {(!order.delivery_order_items || order.delivery_order_items.length === 0) ? (
-                                  <li className="text-xs italic text-muted-foreground py-1 text-center flex flex-col items-center justify-center gap-1">
+                                  <li className="text-[10px] italic text-muted-foreground py-1 text-center flex flex-col items-center justify-center gap-1">
                                     {order.delivery_order_items ? "Nenhum item encontrado" : (
                                       <>
                                         <Loader2 className="h-3 w-3 animate-spin" />
@@ -7393,13 +7393,13 @@ table.main thead th.right { text-align:right; }
                                   </li>
                                 ) : (
                                   order.delivery_order_items.map((item: any) => (
-                                    <li key={item.id} className="text-xs flex flex-col bg-muted/30 p-1 rounded-sm">
+                                    <li key={item.id} className="text-[10px] flex flex-col bg-muted/30 p-0.5 rounded-sm">
                                       <div className="flex justify-between items-center w-full">
                                         <span className="font-medium">{item.quantity}x {item.product_name}</span>
                                         <span className="font-bold text-primary">R$ {Number(item.total_price || 0).toFixed(2)}</span>
                                       </div>
                                       {item.selected_complements && item.selected_complements.length > 0 && (
-                                        <div className="flex flex-col ml-3 text-[9px] text-muted-foreground italic border-l border-primary/20 pl-2 mt-0.5 bg-card/30 rounded p-1">
+                                        <div className="flex flex-col ml-2 text-[8px] text-muted-foreground italic border-l border-primary/20 pl-1.5 mt-0.5 bg-card/30 rounded p-0.5">
                                           {item.selected_complements.map((c: any, i: number) => (
                                             <span key={i}>+ {c.name}</span>
                                           ))}
