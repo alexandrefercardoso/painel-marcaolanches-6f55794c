@@ -7465,11 +7465,11 @@ table.main thead th.right { text-align:right; }
                           </div>
                         </div>
                       </CardContent>
-                      <CardFooter className="flex gap-2">
-                        <div className="flex flex-col w-full gap-2">
+                      <CardFooter className="flex gap-2 px-3 py-2">
+                        <div className="flex flex-col w-full gap-1.5">
                           {(order.order_type !== 'delivery' || !!order.driver_id || !!pendingDriver || order.status === 'delivering') && (
                             <Button
-                              className="w-full bg-green-600 hover:bg-green-700 gap-2 font-bold shadow-md h-11"
+                              className="w-full bg-green-600 hover:bg-green-700 gap-1.5 font-bold shadow-md h-9 text-sm"
                               onClick={async () => {
                                 try {
                                   if (order.order_type === 'delivery') {
