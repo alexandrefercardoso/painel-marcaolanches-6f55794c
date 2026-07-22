@@ -6895,7 +6895,7 @@ table.main thead th.right { text-align:right; }
                 <div className="space-y-4 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
                   {deliveryOrders.filter(o => o.status === 'pending' && !o.driver_id).map(order => (
                     <Card key={order.id} className="border-l-4 border-l-orange-500 shadow-md hover:shadow-lg transition-shadow">
-                      <CardHeader className="pb-2">
+                      <CardHeader className="pb-1">
                         <div className="flex justify-between items-start">
                           {activeSession && (
                             <Button 
@@ -6933,11 +6933,8 @@ table.main thead th.right { text-align:right; }
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <div className="space-y-3 text-sm">
-                          <div className="flex items-start gap-2 text-muted-foreground">
-                            <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
-                            <span className="truncate">{order.customer_address}</span>
-                          </div>
+                        <div className="space-y-2 text-sm">
+
                           {order.observation && (
                             <div className="bg-blue-50 p-2 rounded-lg border border-blue-100 flex items-start gap-2">
                               <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
@@ -7077,7 +7074,7 @@ table.main thead th.right { text-align:right; }
                 <div className="space-y-4 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
                   {deliveryOrders.filter(o => o.status === 'production').map(order => (
                     <Card key={order.id} className="border-l-4 border-l-yellow-500 shadow-md">
-                      <CardHeader className="pb-2">
+                      <CardHeader className="pb-1">
                         <div className="flex justify-between items-start">
                           {activeSession && (
                             <Button 
@@ -7115,9 +7112,9 @@ table.main thead th.right { text-align:right; }
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <div className="space-y-3 text-sm">
+                        <div className="space-y-2 text-sm">
                           {order.observation && (
-                            <div className="bg-blue-50 p-2 rounded-lg border border-blue-100 flex items-start gap-2 mb-2">
+                            <div className="bg-blue-50 p-2 rounded-lg border border-blue-100 flex items-start gap-2 mb-1">
                               <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
                               <div className="text-xs">
                                 <p className="font-bold text-blue-800 uppercase text-[9px]">Observação do Pedido:</p>
@@ -7131,7 +7128,7 @@ table.main thead th.right { text-align:right; }
                             </div>
                           )}
                           <div className="border-t pt-2">
-                            <ul className="space-y-2">
+                            <ul className="space-y-1">
                                {(!order.delivery_order_items || order.delivery_order_items.length === 0) ? (
                                  <li className="text-xs italic text-muted-foreground py-2 text-center flex flex-col items-center justify-center gap-2">
                                    {order.delivery_order_items ? "Nenhum item encontrado" : (
@@ -7252,10 +7249,6 @@ table.main thead th.right { text-align:right; }
 
                 <div className="space-y-4 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
                   {deliveryOrders.filter(o => o.status === 'ready' || (o.order_type === 'delivery' && !!o.driver_id && o.status !== 'delivered' && o.status !== 'cancelled' && o.status !== 'awaiting_reconciliation' && o.status !== 'delivering')).map(order => {
-                    const area = deliveryAreas.find(a => 
-                      (order.neighborhood && a.name && order.neighborhood.toLowerCase().includes(a.name.toLowerCase())) ||
-                      (order.customer_address && a.name && order.customer_address.toLowerCase().includes(a.name.toLowerCase()))
-                    );
                     const validMotoqueiros = appMotoqueiros.filter((m) => typeof m.id === "string" && m.id.length > 0);
                     const assignedValue = validMotoqueiros.find((m) => m.id === order.driver_id || (m.profile_id && m.profile_id === order.driver_id))?.id || order.driver_id || "";
                     const pendingDriver = pendingDriverByOrder[order.id] || "";
@@ -7284,14 +7277,11 @@ table.main thead th.right { text-align:right; }
                           </Badge>
                         </div>
                       </CardHeader>
-                      <CardContent className="px-3 py-2">
-                        <div className="space-y-2 text-sm">
-                          <div className="flex items-start gap-1.5 text-xs">
-                            <MapPin className="h-3.5 w-3.5 mt-0.5 text-primary shrink-0" />
-                            <span className="font-medium">{order.customer_address}</span>
-                          </div>
+                      <CardContent className="px-3 py-1.5">
+                        <div className="space-y-1.5 text-sm">
                           
                           {order.observation && (
+
                             <div className="bg-blue-50 p-1.5 rounded-md border border-blue-100 flex items-start gap-1.5">
                               <Info className="h-3.5 w-3.5 text-blue-600 mt-0.5 shrink-0" />
                               <div className="text-xs">
