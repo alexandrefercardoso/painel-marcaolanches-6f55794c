@@ -7432,8 +7432,8 @@ table.main thead th.right { text-align:right; }
                           </div>
 
 
-                          <div className="pt-2 border-t space-y-1">
-                            <div className="flex justify-between items-center text-xs text-muted-foreground px-2">
+                          <div className="pt-1.5 border-t space-y-1">
+                            <div className="flex justify-between items-center text-xs text-muted-foreground px-1">
                               <span>Subtotal</span>
                               <span>R$ {(() => {
                                 const subtotal = order.delivery_order_items?.reduce((acc: number, item: any) => acc + item.total_price, 0) || 0;
@@ -7441,23 +7441,22 @@ table.main thead th.right { text-align:right; }
                               })()}</span>
                             </div>
 
-                            
                             {order.order_type === 'delivery' && order.driver_id && (
-                              <div className="flex justify-between items-center text-xs text-muted-foreground px-2 italic">
+                              <div className="flex justify-between items-center text-xs text-muted-foreground px-1 italic">
                                 <span>Taxa do Motoqueiro</span>
                                 <span>R$ {(Number((order as any).delivery_fee || 0) || (order.total_amount - (order.delivery_order_items?.reduce((acc: number, item: any) => acc + item.total_price, 0) || 0))).toFixed(2)}</span>
                               </div>
                             )}
 
-                            <div className="flex justify-between items-center text-base font-bold text-orange-600 bg-orange-50 p-2 rounded-md border border-orange-100 mt-1">
-                              <span className="flex items-center gap-2">
-                                <DollarSign className="h-4 w-4" /> Total do Pedido
+                            <div className="flex justify-between items-center text-sm font-bold text-orange-600 bg-orange-50 p-1.5 rounded-md border border-orange-100 mt-1">
+                              <span className="flex items-center gap-1">
+                                <DollarSign className="h-3.5 w-3.5" /> Total
                               </span>
                               <span>
                                 R$ {(() => {
                                   const subtotalValue = order.delivery_order_items?.reduce((acc: number, item: any) => acc + item.total_price, 0) || 0;
                                   if (order.order_type !== 'delivery') return subtotalValue.toFixed(2);
-                                  
+
                                   const feeValue = (order as any).delivery_fee || (order.total_amount - subtotalValue);
                                   return (subtotalValue + feeValue).toFixed(2);
                                 })()}
