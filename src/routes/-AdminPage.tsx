@@ -6928,7 +6928,7 @@ table.main thead th.right { text-align:right; }
                           )}
                           <div className="flex-1 px-2">
                             <CardTitle className="text-lg flex items-center gap-2 flex-wrap">
-                              <Badge className="bg-orange-600 text-white border-none font-mono text-[11px] px-1.5 py-0.5">#{((order as any).order_number || String(order.id).slice(-4)).toString().toUpperCase()}</Badge>
+                              <Badge className="bg-orange-600 text-white border-none font-mono text-[11px] px-1.5 py-0.5">#{((order as any).order_number || String(order.id).slice(0, 6)).toString().toUpperCase()}</Badge>
                               {order.customer_name}
                               {order.order_type === 'delivery' ? (
                                 <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200">
