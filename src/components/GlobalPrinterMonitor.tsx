@@ -152,6 +152,21 @@ export function GlobalPrinterMonitor() {
               toast.success(`Impresso em ${printer.name}`);
             } catch (err: any) {
               console.error('[GlobalPrinterMonitor] Erro QZ Tray:', err);
+
+              // Só marca como 'error' se o job ainda não tiver sido marcado como 'printed'.
+              // Isso evita que erros tardios/duplicados do QZ Tray (ex.: "Cannot find printer"
+              // vindo de uma segunda tentativa) sobrescrevam uma impressão já bem-sucedida.
+              const { data: current } = await supabase
+                .from('printing_jobs')
+                .select('status')
+                .eq('id', job.id)
+                .maybeSingle();
+
+              if (current?.status === 'printed') {
+                console.warn('[GlobalPrinterMonitor] Job já estava como "printed"; ignorando erro tardio do QZ.');
+                return;
+              }
+
               await supabase
                 .from('printing_jobs')
                 .update({ status: 'error', error_message: err.message })
