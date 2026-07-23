@@ -106,7 +106,11 @@ export function GlobalPrinterMonitor() {
           const autoPrint = printer?.auto_browser_print === true;
           const showPreview = printer?.show_preview !== false || !printer || printerName.toUpperCase().includes("PDF") || printerName.toUpperCase().includes("VIRTUAL");
 
-          console.log(`[GlobalPrinterMonitor] Processando job. Impressora: ${printerName}. AutoPrint: ${autoPrint}, Preview: ${showPreview}`);
+          // Fonte única da verdade: usar o número de cópias gravado no job no
+          // momento da criação. Fallback para 1 se ausente.
+          const jobCopies = Math.max(1, Number((job as any).copies) || 1);
+
+          console.log(`[GlobalPrinterMonitor] Processando job. Impressora: ${printerName}. AutoPrint: ${autoPrint}, Preview: ${showPreview}, Cópias(job): ${jobCopies}`);
 
           if (printer?.connection_type === 'qz_tray') {
             try {
@@ -129,7 +133,7 @@ export function GlobalPrinterMonitor() {
               await printViaQZ({
                 printerName: printer.name,
                 htmlContent,
-                copies: (printer as any).copies || 1,
+                copies: jobCopies,
               });
 
               await supabase.from('printing_jobs').update({ status: 'printed' }).eq('id', job.id);
@@ -146,7 +150,7 @@ export function GlobalPrinterMonitor() {
           }
 
           if (autoPrint) {
-            await handleAutoPrint(job.content, printerName, (printer as any)?.copies || 1);
+            await handleAutoPrint(job.content, printerName, jobCopies);
             await supabase.from("printing_jobs").update({ status: 'printed' }).eq("id", job.id);
             return;
           }
