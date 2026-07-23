@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  Home,
+  Headphones,
   Plus,
   Wallet,
   LayoutGrid,
@@ -27,6 +27,9 @@ type ActionItem = {
   tab?: string;
   variant?: "default" | "outline" | "secondary";
   onClick?: () => void;
+  iconColor: string;
+  activeIconColor: string;
+  activeBg: string;
 };
 
 export function QuickActionsBar({
@@ -47,11 +50,14 @@ export function QuickActionsBar({
 
   const actions: ActionItem[] = [
     {
-      id: "dashboard",
-      label: "Menu Principal",
-      icon: Home,
-      tab: "dashboard",
+      id: "delivery_module",
+      label: "Atendimento",
+      icon: Headphones,
+      tab: "delivery_module",
       variant: "outline",
+      iconColor: "text-emerald-500",
+      activeIconColor: "text-emerald-700",
+      activeBg: "bg-emerald-50 border-emerald-300 text-emerald-800 ring-emerald-200",
     },
     {
       id: "new-order",
@@ -59,6 +65,9 @@ export function QuickActionsBar({
       icon: Plus,
       onClick: onNewOrder,
       variant: "default",
+      iconColor: "text-white",
+      activeIconColor: "text-white",
+      activeBg: "",
     },
     {
       id: "cashier",
@@ -66,6 +75,9 @@ export function QuickActionsBar({
       icon: Wallet,
       tab: "cashier",
       variant: "outline",
+      iconColor: "text-green-500",
+      activeIconColor: "text-green-700",
+      activeBg: "bg-green-50 border-green-300 text-green-800 ring-green-200",
     },
     {
       id: "tables_quick_view",
@@ -73,6 +85,9 @@ export function QuickActionsBar({
       icon: LayoutGrid,
       tab: "tables_quick_view",
       variant: "outline",
+      iconColor: "text-blue-500",
+      activeIconColor: "text-blue-700",
+      activeBg: "bg-blue-50 border-blue-300 text-blue-800 ring-blue-200",
     },
     {
       id: "reconciliation",
@@ -80,6 +95,9 @@ export function QuickActionsBar({
       icon: RefreshCw,
       tab: "cashier",
       variant: "outline",
+      iconColor: "text-teal-500",
+      activeIconColor: "text-teal-700",
+      activeBg: "bg-teal-50 border-teal-300 text-teal-800 ring-teal-200",
     },
     {
       id: "digital-menu",
@@ -87,6 +105,9 @@ export function QuickActionsBar({
       icon: Smartphone,
       onClick: handleOpenDigitalMenu,
       variant: "outline",
+      iconColor: "text-indigo-500",
+      activeIconColor: "text-indigo-700",
+      activeBg: "bg-indigo-50 border-indigo-300 text-indigo-800 ring-indigo-200",
     },
     {
       id: "live_deliveries",
@@ -94,6 +115,9 @@ export function QuickActionsBar({
       icon: Bike,
       tab: "live_deliveries",
       variant: "outline",
+      iconColor: "text-amber-500",
+      activeIconColor: "text-amber-700",
+      activeBg: "bg-amber-50 border-amber-300 text-amber-800 ring-amber-200",
     },
     {
       id: "history_module",
@@ -101,6 +125,9 @@ export function QuickActionsBar({
       icon: ClipboardList,
       tab: "history_module",
       variant: "outline",
+      iconColor: "text-slate-500",
+      activeIconColor: "text-slate-700",
+      activeBg: "bg-slate-100 border-slate-300 text-slate-800 ring-slate-200",
     },
   ];
 
@@ -123,6 +150,7 @@ export function QuickActionsBar({
         {actions.map((action) => {
           const Icon = action.icon;
           const active = isActive(action);
+          const isActionButton = action.id === "new-order";
           return (
             <Button
               key={action.id}
@@ -131,21 +159,30 @@ export function QuickActionsBar({
               onClick={() => handleClick(action)}
               className={cn(
                 "flex-shrink-0 flex-col items-center justify-center gap-1 h-auto py-2.5 px-2 rounded-xl border-2 font-bold transition-all active:scale-95 min-w-[72px] md:min-w-0",
-                action.id === "new-order" &&
+                isActionButton &&
                   "bg-orange-600 hover:bg-orange-700 text-white border-orange-600 hover:border-orange-700 shadow-md",
-                action.id !== "new-order" &&
-                  "border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 bg-white",
-                active &&
-                  action.id !== "new-order" &&
-                  "bg-orange-100 border-orange-400 text-orange-800 ring-2 ring-orange-200",
-                active &&
-                  action.id === "new-order" &&
-                  "ring-2 ring-orange-300"
+                !isActionButton &&
+                  "border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300",
+                active && !isActionButton && action.activeBg,
+                active && isActionButton && "ring-2 ring-orange-300"
               )}
               title={action.label}
             >
-              <Icon className={cn("h-5 w-5", active && "scale-110")} />
-              <span className="text-[10px] leading-tight text-center hidden md:block">
+              <span
+                className={cn(
+                  "p-1.5 rounded-lg transition-colors",
+                  active ? action.activeIconColor : action.iconColor,
+                  active && !isActionButton && "bg-white/60"
+                )}
+              >
+                <Icon className={cn("h-5 w-5", active && "scale-110")} />
+              </span>
+              <span
+                className={cn(
+                  "text-[10px] leading-tight text-center hidden md:block",
+                  isActionButton ? "text-white" : active ? "text-current" : "text-slate-600"
+                )}
+              >
                 {action.label}
               </span>
             </Button>
