@@ -103,6 +103,17 @@ export function QuickActionsBar({
       activeBg: "bg-teal-50 border-teal-300 text-teal-800 ring-teal-200",
     },
     {
+      id: "motoboy-voltou",
+      label: "Motoboy Voltou",
+      icon: Bike,
+      tab: "cashier",
+      variant: "outline",
+      iconColor: "text-cyan-500",
+      activeIconColor: "text-cyan-700",
+      activeBg: "bg-cyan-50 border-cyan-300 text-cyan-800 ring-cyan-200",
+      badgeCount: pendingReconciliationCount,
+    },
+    {
       id: "digital-menu",
       label: "Cardápio Digital",
       icon: Smartphone,
