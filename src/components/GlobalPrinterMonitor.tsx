@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import { toast } from "sonner";
 
+// Dedupe cross-mount: evita que múltiplas instâncias/assinaturas do monitor
+// processem o mesmo job (o que causava sobrescrita de 'printed' -> 'error').
+const processedJobIds = new Set<string>();
+
 export function GlobalPrinterMonitor() {
   const [previewContent, setPreviewContent] = useState<any>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -77,16 +81,24 @@ export function GlobalPrinterMonitor() {
     console.log("[GlobalPrinterMonitor] Iniciando monitoramento global de impressão.");
     
     const channel = supabase
-      .channel(`global_printing_monitor_${Date.now()}`)
+      .channel('global_printing_monitor')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'printing_jobs'
       }, async (payload) => {
         const job = payload.new;
+
+        // Dedupe: se este job já foi processado nesta aba, ignora.
+        if (job?.id && processedJobIds.has(job.id)) {
+          console.log(`[GlobalPrinterMonitor] Job ${job.id} já processado nesta sessão. Ignorando.`);
+          return;
+        }
+        if (job?.id) processedJobIds.add(job.id);
+
         console.log("🖨️ [GlobalPrinterMonitor] Novo job detectado via Realtime:", job);
-        
-        toast.info("Impressão detectada! Abrindo preview...", { 
+
+        toast.info("Impressão detectada! Abrindo preview...", {
           icon: "🖨️",
           description: job.content?.order_number ? `Pedido: ${job.content.order_number}` : undefined
         });
@@ -140,6 +152,21 @@ export function GlobalPrinterMonitor() {
               toast.success(`Impresso em ${printer.name}`);
             } catch (err: any) {
               console.error('[GlobalPrinterMonitor] Erro QZ Tray:', err);
+
+              // Só marca como 'error' se o job ainda não tiver sido marcado como 'printed'.
+              // Isso evita que erros tardios/duplicados do QZ Tray (ex.: "Cannot find printer"
+              // vindo de uma segunda tentativa) sobrescrevam uma impressão já bem-sucedida.
+              const { data: current } = await supabase
+                .from('printing_jobs')
+                .select('status')
+                .eq('id', job.id)
+                .maybeSingle();
+
+              if (current?.status === 'printed') {
+                console.warn('[GlobalPrinterMonitor] Job já estava como "printed"; ignorando erro tardio do QZ.');
+                return;
+              }
+
               await supabase
                 .from('printing_jobs')
                 .update({ status: 'error', error_message: err.message })
