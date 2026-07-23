@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import { toast } from "sonner";
 
+// Dedupe cross-mount: evita que múltiplas instâncias/assinaturas do monitor
+// processem o mesmo job (o que causava sobrescrita de 'printed' -> 'error').
+const processedJobIds = new Set<string>();
+
 export function GlobalPrinterMonitor() {
   const [previewContent, setPreviewContent] = useState<any>(null);
   const [isOpen, setIsOpen] = useState(false);
