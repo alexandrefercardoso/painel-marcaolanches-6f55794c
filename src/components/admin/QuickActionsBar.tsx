@@ -18,6 +18,7 @@ interface QuickActionsBarProps {
   onChangeTab: (tab: string) => void;
   onNewOrder: () => void;
   storeSettings?: any;
+  pendingReconciliationCount?: number;
 }
 
 type ActionItem = {
@@ -30,6 +31,7 @@ type ActionItem = {
   iconColor: string;
   activeIconColor: string;
   activeBg: string;
+  badgeCount?: number;
 };
 
 export function QuickActionsBar({
