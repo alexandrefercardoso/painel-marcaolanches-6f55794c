@@ -102,8 +102,9 @@ export async function processPrintingForDeliveryOrder(orderId: string, isCancell
     const { error: adminError } = await supabase.from("printing_jobs").insert([{
       printer_id: adminPrinter.id,
       status: "pending",
+      copies: adminPrinter.copies,
       content: content as any,
-    }]);
+    } as any]);
 
     if (adminError) console.error("[DeliveryPrinting] Erro ao inserir job administrativo:", adminError);
     else console.log("[DeliveryPrinting] Job administrativo inserido com sucesso!");
