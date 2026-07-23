@@ -172,7 +172,7 @@ export function QuickActionsBar({
                 isActionButton &&
                   "bg-orange-600 hover:bg-orange-700 text-white border-orange-600 hover:border-orange-700 shadow-md",
                 !isActionButton &&
-                  "border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300",
+                  "border-border bg-card hover:bg-muted/60 hover:border-border",
                 active && !isActionButton && action.activeBg,
                 active && isActionButton && "ring-2 ring-orange-300"
               )}
@@ -182,14 +182,14 @@ export function QuickActionsBar({
                 className={cn(
                   "relative p-1.5 rounded-lg transition-colors",
                   active ? action.activeIconColor : action.iconColor,
-                  active && !isActionButton && "bg-white/60"
+                  active && !isActionButton && "bg-background/60"
                 )}
               >
                 <Icon className={cn("h-5 w-5", active && "scale-110")} />
                 {(action.badgeCount ?? 0) > 0 && (
                   <Badge
                     className={cn(
-                      "absolute -top-2 -right-2 h-4 min-w-[1rem] px-1 text-[9px] font-black text-white flex items-center justify-center rounded-full border-2 border-white",
+                      "absolute -top-2 -right-2 h-4 min-w-[1rem] px-1 text-[9px] font-black text-white flex items-center justify-center rounded-full border-2 border-background",
                       active ? "bg-red-600" : "bg-red-500"
                     )}
                   >
@@ -200,7 +200,7 @@ export function QuickActionsBar({
               <span
                 className={cn(
                   "text-[10px] leading-tight text-center hidden md:block",
-                  isActionButton ? "text-white" : active ? "text-current" : "text-slate-600"
+                  isActionButton ? "text-white" : active ? "text-current" : "text-muted-foreground"
                 )}
               >
                 {action.label}
