@@ -3966,11 +3966,12 @@ table.main thead th.right { text-align:right; }
       // Montar endereço completo para o snapshot do pedido
       const fullAddress = `${newDeliveryOrder.customer_address}${newDeliveryOrder.address_number ? ', ' + newDeliveryOrder.address_number : ''}${newDeliveryOrder.address_complement ? ' (' + newDeliveryOrder.address_complement + ')' : ''}${(newDeliveryOrder as any).neighborhood ? ' - ' + (newDeliveryOrder as any).neighborhood : ''}${newDeliveryOrder.city ? ' - ' + newDeliveryOrder.city : ''}`;
 
-      // Regra de fluxo: TODO pedido novo entra primeiro em "Atendimento" (status = 'pending').
-      // A partir do atendimento, o operador envia para Produção (somente os itens marcados como cozinha)
-      // e em seguida para Entrega. Não pulamos mais direto para 'ready'.
-      const initialStatus: 'pending' = 'pending';
-      console.log(`🚀 Criando pedido. Initial Status forçado: ${initialStatus} (fluxo Atendimento → Produção → Entrega)`);
+      // Regra de fluxo: pedidos delivery podem pular atendimento se a configuração estiver ativa.
+      // Se delivery_skip_attendance = true, o pedido entra direto em 'preparing' (produção).
+      // Caso contrário, segue o fluxo atual: 'pending' (atendimento).
+      const shouldSkipAttendance = newDeliveryOrder.order_type === 'delivery' && !!storeSettings?.delivery_skip_attendance;
+      const initialStatus: 'pending' | 'preparing' = shouldSkipAttendance ? 'preparing' : 'pending';
+      console.log(`🚀 Criando pedido. Initial Status: ${initialStatus} (skip attendance: ${shouldSkipAttendance})`);
 
 
 
