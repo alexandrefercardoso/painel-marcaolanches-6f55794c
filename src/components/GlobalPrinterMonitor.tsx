@@ -81,16 +81,24 @@ export function GlobalPrinterMonitor() {
     console.log("[GlobalPrinterMonitor] Iniciando monitoramento global de impressão.");
     
     const channel = supabase
-      .channel(`global_printing_monitor_${Date.now()}`)
+      .channel('global_printing_monitor')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'printing_jobs'
       }, async (payload) => {
         const job = payload.new;
+
+        // Dedupe: se este job já foi processado nesta aba, ignora.
+        if (job?.id && processedJobIds.has(job.id)) {
+          console.log(`[GlobalPrinterMonitor] Job ${job.id} já processado nesta sessão. Ignorando.`);
+          return;
+        }
+        if (job?.id) processedJobIds.add(job.id);
+
         console.log("🖨️ [GlobalPrinterMonitor] Novo job detectado via Realtime:", job);
-        
-        toast.info("Impressão detectada! Abrindo preview...", { 
+
+        toast.info("Impressão detectada! Abrindo preview...", {
           icon: "🖨️",
           description: job.content?.order_number ? `Pedido: ${job.content.order_number}` : undefined
         });
