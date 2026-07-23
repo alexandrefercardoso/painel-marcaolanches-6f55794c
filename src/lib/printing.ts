@@ -83,8 +83,9 @@ export async function processPrintingForOrder(orderId: string) {
         await supabase.from("printing_jobs").insert([{
           printer_id: printer.id,
           status: 'pending',
+          copies: printer.copies,
           content: JSON.stringify(printContent)
-        }]);
+        } as any]);
         console.log(`[Printing] Job centralizado criado para impressora ${printer.name}`);
       }
     } else {
@@ -135,8 +136,9 @@ export async function processPrintingForOrder(orderId: string) {
           await supabase.from("printing_jobs").insert([{
             printer_id: printer.id,
             status: 'pending',
+            copies: printer.copies,
             content: JSON.stringify(printContent)
-          }]);
+          } as any]);
 
           console.log(`[Printing] Job criado para impressora ${printer.name} (Setor: ${sector.name})`);
         }
