@@ -440,6 +440,7 @@ export default function AdminPage({ user }: { user: any }) {
   const [activeTab, setActiveTab] = useState<string>(
     (user?.is_kds_only === true && user?.role !== 'master') ? "kitchen_dashboard" : firstAllowedTab
   );
+  const [reconciliationOnly, setReconciliationOnly] = useState(false);
   const handleSetActiveTab = (tab: string) => {
     if (user?.is_kds_only && user?.role !== 'master' && tab !== "kitchen_dashboard") return;
     if (tab === "kitchen_dashboard" && user?.role !== 'master' && !user?.is_kds_only) return;
@@ -447,8 +448,18 @@ export default function AdminPage({ user }: { user: any }) {
       toast.error("Acesso não permitido a este módulo");
       return;
     }
+    if (tab !== "cashier") setReconciliationOnly(false);
     setActiveTab(tab);
   };
+  const handleOpenReconciliationOnly = () => {
+    if (!hasTabAccess("cashier")) {
+      toast.error("Acesso não permitido a este módulo");
+      return;
+    }
+    setReconciliationOnly(true);
+    setActiveTab("cashier");
+  };
+
 
   // Se veio do fechamento de mesa pedindo emissão de NFC-e, abre a aba de Histórico/Pedidos.
   useEffect(() => {
