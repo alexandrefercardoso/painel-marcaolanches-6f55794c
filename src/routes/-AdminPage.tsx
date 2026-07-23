@@ -10418,7 +10418,9 @@ table.main thead th.right { text-align:right; }
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+            {!reconciliationOnly && (<>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+
               <div>
                 <h2 className="text-2xl font-bold flex items-center gap-2">
                   <Archive className="text-blue-600 h-6 w-6" /> Gestão de Caixa
