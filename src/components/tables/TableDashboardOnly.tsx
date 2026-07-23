@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { RefreshCw, Check, DollarSign, AlertCircle, Coffee, User, Clock, Lock } from "lucide-react";
 import { TableSessionDialog } from "./TableSessionDialog";
 
-export function TableDashboardOnly() {
+export function TableDashboardOnly({ defaultShowAll = false }: { defaultShowAll?: boolean } = {}) {
   const [tables, setTables] = useState<any[]>([]);
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +15,7 @@ export function TableDashboardOnly() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [storeSettings, setStoreSettings] = useState<any>(null);
   const [activeCashierSession, setActiveCashierSession] = useState<any>(null);
-  const [filterOccupied, setFilterOccupied] = useState(true);
+  const [filterOccupied, setFilterOccupied] = useState(!defaultShowAll);
 
   const fetchData = async () => {
     try {
