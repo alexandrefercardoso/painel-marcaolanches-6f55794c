@@ -533,6 +533,25 @@ export const CompanyForm = React.memo(function CompanyForm({
                 </div>
               </div>
 
+              {/* Configurações de Delivery */}
+              <div className="border-t pt-8 space-y-4">
+                <h3 className="text-sm font-black uppercase tracking-[0.2em] text-primary/70 flex items-center gap-2">
+                  <MapPin className="h-4 w-4" /> Configurações de Delivery
+                </h3>
+                <div className="flex items-center justify-between p-4 bg-muted/20 rounded-2xl border-2 border-primary/5 hover:border-primary/20 transition-all">
+                  <div className="space-y-0.5">
+                    <Label className="text-base font-bold text-primary">Pular atendimento para delivery</Label>
+                    <p className="text-xs text-muted-foreground font-medium">Quando ativado, pedidos delivery vão direto para produção, pulando a tela de atendimento.</p>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={!!formData?.delivery_skip_attendance} 
+                    onChange={e => updateField('delivery_skip_attendance', e.target.checked)} 
+                    className="h-6 w-6 rounded-md border-primary text-primary focus:ring-primary cursor-pointer"
+                  />
+                </div>
+              </div>
+
               <Button type="submit" className="w-full h-14 font-black shadow-lg hover:shadow-xl transition-all uppercase tracking-widest text-lg" disabled={savingCompany}>
                 {savingCompany ? <Loader2 className="h-6 w-6 animate-spin mr-3" /> : <Save className="h-6 w-6 mr-3" />}
                 Salvar Alterações
