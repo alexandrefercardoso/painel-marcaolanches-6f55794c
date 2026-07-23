@@ -103,7 +103,7 @@ export async function processPrintingForDeliveryOrder(orderId: string, isCancell
     const { error: adminError } = await createPrintJob({
       printer_id: adminPrinter.id,
       status: "pending",
-      copies: adminPrinter.copies,
+      copies: Math.max(1, Number(adminPrinter.copies) || 1),
       content: JSON.stringify(content),
     });
 

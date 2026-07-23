@@ -84,7 +84,7 @@ export async function processPrintingForOrder(orderId: string) {
         await createPrintJob({
           printer_id: printer.id,
           status: 'pending',
-          copies: printer.copies,
+          copies: Math.max(1, Number(printer.copies) || 1),
           content: JSON.stringify(printContent)
         });
         console.log(`[Printing] Job centralizado criado para impressora ${printer.name}`);
@@ -137,7 +137,7 @@ export async function processPrintingForOrder(orderId: string) {
           await createPrintJob({
             printer_id: printer.id,
             status: 'pending',
-            copies: printer.copies,
+            copies: Math.max(1, Number(printer.copies) || 1),
             content: JSON.stringify(printContent)
           });
 

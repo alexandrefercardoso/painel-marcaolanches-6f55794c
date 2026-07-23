@@ -119,7 +119,7 @@ export async function processPrintingForTableOrder(sessionId: string, itemIds: s
           const { error } = await createPrintJob({
             printer_id: printer.id,
             status: "pending",
-            copies: printer.copies,
+            copies: Math.max(1, Number(printer.copies) || 1),
             content: JSON.stringify({ ...baseContent, sector_name: "CAIXA GERAL", items: batch }),
           });
           if (error) console.error("[TablePrinting] Erro ao inserir job:", error);
@@ -157,7 +157,7 @@ export async function processPrintingForTableOrder(sessionId: string, itemIds: s
               const { error } = await createPrintJob({
                 printer_id: printer.id,
                 status: "pending",
-                copies: printer.copies,
+                copies: Math.max(1, Number(printer.copies) || 1),
                 content: JSON.stringify({
                   ...baseContent,
                   sector_name: sector.name,
@@ -185,7 +185,7 @@ export async function processPrintingForTableOrder(sessionId: string, itemIds: s
       const { error } = await createPrintJob({
         printer_id: printers[0].id,
         status: "pending",
-        copies: printers[0].copies,
+        copies: Math.max(1, Number(printers[0].copies) || 1),
         content: JSON.stringify({ ...baseSessionInfo, sector_name: "GERAL", items: fallbackItems }),
       });
       if (error) console.error("[TablePrinting] Erro no fallback:", error);
