@@ -106,8 +106,28 @@ export function PrinterConfigManager() {
     sector_ids: []
   });
 
+  const fetchLogs = async () => {
+    const { data } = await supabase
+      .from("printing_jobs")
+      .select("*, printers(name)")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (data) setLogs(data);
+  };
+
   useEffect(() => {
     fetchData();
+
+    const channel = supabase
+      .channel("printer_config_jobs_history")
+      .on("postgres_changes", { event: "*", schema: "public", table: "printing_jobs" }, () => {
+        fetchLogs();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchData = async () => {
@@ -875,12 +895,12 @@ export function PrinterConfigManager() {
                           variant="outline" 
                           className={`text-[10px] font-bold ${
                             log.status === 'printed' ? 'bg-green-50 text-green-700 border-green-200' : 
-                            log.status === 'failed' ? 'bg-red-50 text-red-700 border-red-200' : 
+                            (log.status === 'failed' || log.status === 'error') ? 'bg-red-50 text-red-700 border-red-200' : 
                             'bg-amber-50 text-amber-700 border-amber-200'
                           }`}
                         >
                           {log.status === 'printed' ? 'IMPRESSO' : 
-                           log.status === 'failed' ? 'FALHOU' : 
+                           (log.status === 'failed' || log.status === 'error') ? 'FALHOU' : 
                            log.status === 'pending' ? 'PENDENTE' : log.status.toUpperCase()}
                         </Badge>
                       </TableCell>

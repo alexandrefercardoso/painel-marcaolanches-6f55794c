@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,19 @@ import { toast } from "sonner";
 // Dedupe cross-mount: evita que múltiplas instâncias/assinaturas do monitor
 // processem o mesmo job (o que causava sobrescrita de 'printed' -> 'error').
 const processedJobIds = new Set<string>();
+const processingJobIds = new Set<string>();
+
+function normalizePrintContent(rawContent: any) {
+  if (!rawContent) return {};
+  if (typeof rawContent === 'string') {
+    try {
+      return JSON.parse(rawContent);
+    } catch {
+      return { text: rawContent, items: [] };
+    }
+  }
+  return rawContent;
+}
 
 export function GlobalPrinterMonitor() {
   const [previewContent, setPreviewContent] = useState<any>(null);
@@ -77,6 +90,136 @@ export function GlobalPrinterMonitor() {
 
 
 
+  const processPrintJob = useCallback(async (job: any, source: 'realtime' | 'polling' = 'realtime') => {
+    if (!job?.id) return;
+
+    if (processedJobIds.has(job.id) || processingJobIds.has(job.id)) {
+      console.log(`[GlobalPrinterMonitor] Job ${job.id} já processado/em processamento nesta sessão. Ignorando.`);
+      return;
+    }
+
+    processingJobIds.add(job.id);
+    const content = normalizePrintContent(job.content);
+    console.log(`🖨️ [GlobalPrinterMonitor] Processando job via ${source}:`, { ...job, content });
+
+    toast.info("Impressão detectada!", {
+      icon: "🖨️",
+      description: content?.order_number ? `Pedido: ${content.order_number}` : undefined
+    });
+
+    const markPrinted = async () => {
+      const { error } = await supabase
+        .from('printing_jobs')
+        .update({ status: 'printed', error_message: null })
+        .eq('id', job.id);
+      if (error) throw error;
+      processedJobIds.add(job.id);
+    };
+
+    const markError = async (message: string) => {
+      await supabase
+        .from('printing_jobs')
+        .update({ status: 'error', error_message: message })
+        .eq('id', job.id);
+      processedJobIds.add(job.id);
+    };
+
+    try {
+      const { data: printer, error: printerError } = await supabase
+        .from("printers")
+        .select("connection_type, show_preview, name, auto_print, auto_browser_print, copies")
+        .eq("id", job.printer_id)
+        .maybeSingle();
+
+      if (printerError) {
+        console.warn("[GlobalPrinterMonitor] Erro ao buscar detalhes da impressora:", printerError);
+      }
+
+      const printerName = printer?.name || "Monitor Virtual (Sistema)";
+      const connectionType = String(printer?.connection_type || 'virtual').toLowerCase();
+      const autoPrint = printer?.auto_browser_print === true || printer?.auto_print === true;
+      const showPreview = printer?.show_preview !== false || !printer || printerName.toUpperCase().includes("PDF") || printerName.toUpperCase().includes("VIRTUAL");
+
+      // Fonte única da verdade: usar o número de cópias gravado no job no
+      // momento da criação. Fallback para 1 se ausente.
+      const jobCopies = Math.max(1, Number((job as any).copies) || 1);
+
+      console.log(`[GlobalPrinterMonitor] Impressora: ${printerName}. Tipo: ${connectionType}. Auto: ${autoPrint}. Preview: ${showPreview}. Cópias(job): ${jobCopies}`);
+
+      if (connectionType === 'qz_tray') {
+        try {
+          const { gerarHtmlImpressao } = await import('@/lib/print-template');
+          const { data: storeSettings } = await supabase
+            .from('store_settings')
+            .select('print_paper_format')
+            .maybeSingle();
+
+          const formato = ((storeSettings as any)?.print_paper_format || 'thermal_80mm') as 'a4' | 'thermal_80mm';
+
+          const htmlContent = gerarHtmlImpressao({
+            titulo: `PEDIDO${content?.order_number ? `: ${content.order_number}` : ''}`,
+            formato,
+            content,
+            rodapePersonalizado: `*** ${printerName} ***`,
+          });
+
+          const { printViaQZ } = await import('@/lib/qz-tray');
+          await printViaQZ({
+            printerName,
+            htmlContent,
+            copies: jobCopies,
+          });
+
+          await markPrinted();
+          toast.success(`Impresso em ${printerName}`);
+        } catch (err: any) {
+          console.error('[GlobalPrinterMonitor] Erro QZ Tray:', err);
+
+          // Só marca como 'error' se o job ainda não tiver sido marcado como 'printed'.
+          // Isso evita que erros tardios/duplicados do QZ Tray (ex.: "Cannot find printer"
+          // vindo de uma segunda tentativa) sobrescrevam uma impressão já bem-sucedida.
+          const { data: current } = await supabase
+            .from('printing_jobs')
+            .select('status')
+            .eq('id', job.id)
+            .maybeSingle();
+
+          if (current?.status === 'printed') {
+            console.warn('[GlobalPrinterMonitor] Job já estava como "printed"; ignorando erro tardio do QZ.');
+            processedJobIds.add(job.id);
+            return;
+          }
+
+          await markError(err?.message || 'Erro ao imprimir via QZ Tray');
+          toast.error(`Falha ao imprimir em ${printerName}: ${err?.message || 'Erro desconhecido'}`);
+        }
+        return;
+      }
+
+      if (autoPrint) {
+        await handleAutoPrint(content, printerName, jobCopies);
+        await markPrinted();
+        return;
+      }
+
+      // Se não for QZ e não estiver em auto-print, sempre abre preview como fallback.
+      // Isso evita job parado como PENDENTE quando a impressora está TCP/WiFi/USB,
+      // pois navegador web não imprime direto nessas conexões sem QZ/bridge local.
+      if (showPreview || !autoPrint) {
+        console.log("📄 [GlobalPrinterMonitor] Abrindo preview para:", content?.order_number);
+        setPreviewContent({ ...content, printer_name: printerName });
+        setIsOpen(true);
+        await markPrinted();
+      }
+
+    } catch (err: any) {
+      console.error("[GlobalPrinterMonitor] Erro crítico no processamento do job:", err);
+      await markError(err?.message || 'Erro crítico ao processar impressão');
+    } finally {
+      processingJobIds.delete(job.id);
+    }
+  }, []);
+
   useEffect(() => {
     console.log("[GlobalPrinterMonitor] Iniciando monitoramento global de impressão.");
     
@@ -87,120 +230,43 @@ export function GlobalPrinterMonitor() {
         schema: 'public',
         table: 'printing_jobs'
       }, async (payload) => {
-        const job = payload.new;
-
-        // Dedupe: se este job já foi processado nesta aba, ignora.
-        if (job?.id && processedJobIds.has(job.id)) {
-          console.log(`[GlobalPrinterMonitor] Job ${job.id} já processado nesta sessão. Ignorando.`);
-          return;
-        }
-        if (job?.id) processedJobIds.add(job.id);
-
-        console.log("🖨️ [GlobalPrinterMonitor] Novo job detectado via Realtime:", job);
-
-        toast.info("Impressão detectada! Abrindo preview...", {
-          icon: "🖨️",
-          description: job.content?.order_number ? `Pedido: ${job.content.order_number}` : undefined
-        });
-        
-        try {
-          const { data: printer, error: printerError } = await supabase
-            .from("printers")
-            .select("connection_type, show_preview, name, auto_browser_print, copies")
-            .eq("id", job.printer_id)
-            .maybeSingle();
-
-          if (printerError) {
-            console.warn("[GlobalPrinterMonitor] Erro ao buscar detalhes da impressora:", printerError);
-          }
-
-          const printerName = printer?.name || "Monitor Virtual (Sistema)";
-          const autoPrint = printer?.auto_browser_print === true;
-          const showPreview = printer?.show_preview !== false || !printer || printerName.toUpperCase().includes("PDF") || printerName.toUpperCase().includes("VIRTUAL");
-
-          // Fonte única da verdade: usar o número de cópias gravado no job no
-          // momento da criação. Fallback para 1 se ausente.
-          const jobCopies = Math.max(1, Number((job as any).copies) || 1);
-
-          console.log(`[GlobalPrinterMonitor] Processando job. Impressora: ${printerName}. AutoPrint: ${autoPrint}, Preview: ${showPreview}, Cópias(job): ${jobCopies}`);
-
-          if (printer?.connection_type === 'qz_tray') {
-            try {
-              const { gerarHtmlImpressao } = await import('@/lib/print-template');
-              const { data: storeSettings } = await supabase
-                .from('store_settings')
-                .select('print_paper_format')
-                .maybeSingle();
-
-              const formato = ((storeSettings as any)?.print_paper_format || 'thermal_80mm') as 'a4' | 'thermal_80mm';
-
-              const htmlContent = gerarHtmlImpressao({
-                titulo: `PEDIDO${job.content?.order_number ? `: ${job.content.order_number}` : ''}`,
-                formato,
-                content: job.content,
-                rodapePersonalizado: `*** ${printerName} ***`,
-              });
-
-              const { printViaQZ } = await import('@/lib/qz-tray');
-              await printViaQZ({
-                printerName: printer.name,
-                htmlContent,
-                copies: jobCopies,
-              });
-
-              await supabase.from('printing_jobs').update({ status: 'printed' }).eq('id', job.id);
-              toast.success(`Impresso em ${printer.name}`);
-            } catch (err: any) {
-              console.error('[GlobalPrinterMonitor] Erro QZ Tray:', err);
-
-              // Só marca como 'error' se o job ainda não tiver sido marcado como 'printed'.
-              // Isso evita que erros tardios/duplicados do QZ Tray (ex.: "Cannot find printer"
-              // vindo de uma segunda tentativa) sobrescrevam uma impressão já bem-sucedida.
-              const { data: current } = await supabase
-                .from('printing_jobs')
-                .select('status')
-                .eq('id', job.id)
-                .maybeSingle();
-
-              if (current?.status === 'printed') {
-                console.warn('[GlobalPrinterMonitor] Job já estava como "printed"; ignorando erro tardio do QZ.');
-                return;
-              }
-
-              await supabase
-                .from('printing_jobs')
-                .update({ status: 'error', error_message: err.message })
-                .eq('id', job.id);
-              toast.error(`Falha ao imprimir em ${printer.name}: ${err.message}`);
-            }
-            return;
-          }
-
-          if (autoPrint) {
-            await handleAutoPrint(job.content, printerName, jobCopies);
-            await supabase.from("printing_jobs").update({ status: 'printed' }).eq("id", job.id);
-            return;
-          }
-
-          if (showPreview) {
-            console.log("📄 [GlobalPrinterMonitor] Abrindo preview para:", job.content?.order_number);
-            setPreviewContent({ ...job.content, printer_name: printerName });
-            setIsOpen(true);
-            await supabase.from("printing_jobs").update({ status: 'printed' }).eq("id", job.id);
-          }
-
-        } catch (err) {
-          console.error("[GlobalPrinterMonitor] Erro crítico no processamento do job:", err);
-        }
+        await processPrintJob(payload.new, 'realtime');
       })
       .subscribe((status) => {
         console.log("[GlobalPrinterMonitor] Status da assinatura Realtime:", status);
       });
 
+    // Fallback: se o Realtime perder o INSERT ou o monitor iniciar depois do job,
+    // busca jobs recentes pendentes e processa. Corrige histórico preso em PENDENTE.
+    const pendingJobsInterval = window.setInterval(async () => {
+      try {
+        const recentCutoff = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+        const { data: pendingJobs, error } = await supabase
+          .from('printing_jobs')
+          .select('*')
+          .eq('status', 'pending')
+          .gte('created_at', recentCutoff)
+          .order('created_at', { ascending: true })
+          .limit(5);
+
+        if (error) {
+          console.warn('[GlobalPrinterMonitor] Erro ao buscar pendentes:', error);
+          return;
+        }
+
+        for (const pendingJob of pendingJobs || []) {
+          await processPrintJob(pendingJob, 'polling');
+        }
+      } catch (err) {
+        console.warn('[GlobalPrinterMonitor] Falha no polling de pendentes:', err);
+      }
+    }, 3000);
+
     return () => {
       supabase.removeChannel(channel);
+      window.clearInterval(pendingJobsInterval);
     };
-  }, []);
+  }, [processPrintJob]);
 
   if (!previewContent) return null;
 
