@@ -792,8 +792,21 @@ export function PrinterConfigManager() {
 
         <TabsContent value="logs" className="mt-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Histórico de Impressão</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between gap-4">
+              <div>
+                <CardTitle>Histórico de Impressão</CardTitle>
+                <CardDescription>Jobs concluídos ou com falha há mais de 30 dias podem ser removidos para manter o banco leve.</CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCleanupOldJobs}
+                disabled={cleaningJobs}
+                className="gap-2"
+              >
+                {cleaningJobs ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                Limpar jobs antigos (30d)
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
