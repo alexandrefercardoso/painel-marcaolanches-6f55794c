@@ -832,16 +832,28 @@ export function PrinterConfigManager() {
                 <CardTitle>Histórico de Impressão</CardTitle>
                 <CardDescription>Jobs concluídos ou com falha há mais de 30 dias podem ser removidos para manter o banco leve.</CardDescription>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCleanupOldJobs}
-                disabled={cleaningJobs}
-                className="gap-2"
-              >
-                {cleaningJobs ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                Limpar jobs antigos (30d)
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCleanupOldJobs("days")}
+                  disabled={cleaningJobs}
+                  className="gap-2"
+                >
+                  {cleaningJobs ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                  Limpar por dias
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleCleanupOldJobs("all")}
+                  disabled={cleaningJobs}
+                  className="gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Limpar TODOS
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
