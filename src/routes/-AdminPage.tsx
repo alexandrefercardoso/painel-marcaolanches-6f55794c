@@ -6927,7 +6927,8 @@ table.main thead th.right { text-align:right; }
                             </Button>
                           )}
                           <div className="flex-1 px-2">
-                            <CardTitle className="text-lg flex items-center gap-2">
+                            <CardTitle className="text-lg flex items-center gap-2 flex-wrap">
+                              <Badge className="bg-orange-600 text-white border-none font-mono text-[11px] px-1.5 py-0.5">#{((order as any).order_number || String(order.id).slice(-4)).toString().toUpperCase()}</Badge>
                               {order.customer_name}
                               {order.order_type === 'delivery' ? (
                                 <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200">
@@ -7106,7 +7107,8 @@ table.main thead th.right { text-align:right; }
                             </Button>
                           )}
                           <div className="flex-1 px-2">
-                            <CardTitle className="text-lg flex items-center gap-2">
+                            <CardTitle className="text-lg flex items-center gap-2 flex-wrap">
+                              <Badge className="bg-yellow-600 text-white border-none font-mono text-[11px] px-1.5 py-0.5">#{((order as any).order_number || String(order.id).slice(-4)).toString().toUpperCase()}</Badge>
                               {order.customer_name}
                               {order.order_type === 'delivery' ? (
                                 <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200">
@@ -7277,7 +7279,10 @@ table.main thead th.right { text-align:right; }
                             </Button>
                           )}
                           <div className="flex-1 px-2">
-                            <CardTitle className="text-base leading-tight">{order.customer_name}</CardTitle>
+                            <CardTitle className="text-base leading-tight flex items-center gap-1.5 flex-wrap">
+                              <Badge className={`${order.status === 'delivering' ? 'bg-blue-600' : 'bg-green-600'} text-white border-none font-mono text-[10px] px-1.5 py-0.5`}>#{((order as any).order_number || String(order.id).slice(-4)).toString().toUpperCase()}</Badge>
+                              <span>{order.customer_name}</span>
+                            </CardTitle>
                             <CardDescription className="text-xs text-primary">{order.order_type === 'delivery' ? 'Entrega em Domicílio' : order.order_type === 'pickup' ? 'Retirada' : order.order_type === 'dine_in' ? 'Consumo Local (Mesa)' : 'Pedido Balcão'}</CardDescription>
                           </div>
                           <Badge className={order.status === 'delivering' ? 'bg-blue-500' : 'bg-green-500'}>
