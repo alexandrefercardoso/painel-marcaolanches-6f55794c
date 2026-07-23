@@ -5577,7 +5577,7 @@ table.main thead th.right { text-align:right; }
                 <p className="text-orange-100 font-medium max-w-md">Gerencie seus atendimentos presenciais com agilidade e precisão.</p>
               </div>
             </div>
-            <Suspense fallback={<div className="p-6 text-muted-foreground">Carregando...</div>}><TableDashboardOnly /></Suspense>
+            <Suspense fallback={<div className="p-6 text-muted-foreground">Carregando...</div>}><TableDashboardOnly defaultShowAll /></Suspense>
           </TabsContent>
           
           <TabsContent value="tables_module" className="space-y-6">
