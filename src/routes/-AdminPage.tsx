@@ -11176,7 +11176,9 @@ table.main thead th.right { text-align:right; }
                 </CardContent>
               </Card>
             </div>
+            </>)}
           </TabsContent>
+
 
           <TabsContent value="payment_methods_tab" className="space-y-6 animate-in fade-in duration-500">
             <Card className="border-indigo-100 shadow-xl overflow-hidden">
