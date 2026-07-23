@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { createPrintJob } from "@/lib/printing-jobs";
 
 // Deduplicação em memória por aba (evita múltiplos disparos do mesmo pedido
 // vindos do realtime + criação manual + cliques repetidos na mesma sessão).
@@ -99,12 +100,12 @@ export async function processPrintingForDeliveryOrder(orderId: string, isCancell
       })),
     };
 
-    const { error: adminError } = await supabase.from("printing_jobs").insert([{
+    const { error: adminError } = await createPrintJob({
       printer_id: adminPrinter.id,
       status: "pending",
       copies: adminPrinter.copies,
-      content: content as any,
-    } as any]);
+      content: JSON.stringify(content),
+    });
 
     if (adminError) console.error("[DeliveryPrinting] Erro ao inserir job administrativo:", adminError);
     else console.log("[DeliveryPrinting] Job administrativo inserido com sucesso!");
