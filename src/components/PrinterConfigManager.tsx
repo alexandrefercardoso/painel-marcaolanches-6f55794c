@@ -27,25 +27,31 @@ export function PrinterConfigManager() {
   const [cleaningJobs, setCleaningJobs] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState("printers");
 
-  const handleCleanupOldJobs = async () => {
-    if (!confirm("Remover todos os jobs de impressão concluídos ou com falha há mais de 30 dias?")) return;
+  const handleCleanupOldJobs = async (mode: "days" | "all" = "days") => {
+    let daysToKeep = 30;
+    if (mode === "days") {
+      const answer = prompt("Remover jobs de impressão com mais de quantos dias?", "30");
+      if (answer === null) return;
+      const parsed = parseInt(answer, 10);
+      if (isNaN(parsed) || parsed < 0) {
+        toast.error("Valor inválido.");
+        return;
+      }
+      daysToKeep = parsed;
+    } else {
+      if (!confirm("Tem certeza que deseja remover TODOS os jobs de impressão (independente do status/data)?")) return;
+      daysToKeep = 0;
+    }
+
     setCleaningJobs(true);
     try {
-      // Tenta usar a função SQL (mais eficiente). Se não existir, faz fallback via delete direto.
-      const { data: rpcData, error: rpcError } = await (supabase as any).rpc("cleanup_old_printing_jobs", { days_to_keep: 30 });
-
-      if (rpcError) {
-        const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-        const { error, count } = await (supabase as any)
-          .from("printing_jobs")
-          .delete({ count: "exact" })
-          .in("status", ["completed", "failed", "printed"])
-          .lt("created_at", cutoff);
-        if (error) throw error;
-        toast.success(`${count ?? 0} jobs antigos removidos.`);
-      } else {
-        toast.success(`${rpcData ?? 0} jobs antigos removidos.`);
-      }
+      const cutoff = new Date(Date.now() - daysToKeep * 24 * 60 * 60 * 1000).toISOString();
+      let query = (supabase as any).from("printing_jobs").delete({ count: "exact" });
+      if (daysToKeep > 0) query = query.lt("created_at", cutoff);
+      else query = query.not("id", "is", null); // apaga tudo
+      const { error, count } = await query;
+      if (error) throw error;
+      toast.success(`${count ?? 0} job(s) removido(s).`);
       fetchData();
     } catch (err: any) {
       console.error(err);
@@ -826,16 +832,28 @@ export function PrinterConfigManager() {
                 <CardTitle>Histórico de Impressão</CardTitle>
                 <CardDescription>Jobs concluídos ou com falha há mais de 30 dias podem ser removidos para manter o banco leve.</CardDescription>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCleanupOldJobs}
-                disabled={cleaningJobs}
-                className="gap-2"
-              >
-                {cleaningJobs ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                Limpar jobs antigos (30d)
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCleanupOldJobs("days")}
+                  disabled={cleaningJobs}
+                  className="gap-2"
+                >
+                  {cleaningJobs ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                  Limpar por dias
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleCleanupOldJobs("all")}
+                  disabled={cleaningJobs}
+                  className="gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Limpar TODOS
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
