@@ -62,7 +62,7 @@ export function AppSidebar({ activeTab, setActiveTab, storeSettings, userProfile
   const { data: company } = useCompany();
   const isKdsOnly = userProfile?.is_kds_only && userProfile?.role !== 'master';
   const isAdmin = userProfile?.role === 'master' || userProfile?.role === 'administrador';
-  const [openGroups, setOpenGroups] = React.useState<string[]>(["atendimento", "fiscal"]);
+  const [openGroups, setOpenGroups] = React.useState<string[]>(["atendimento"]);
 
   const toggleGroup = (group: string) => {
     setOpenGroups(prev => 
