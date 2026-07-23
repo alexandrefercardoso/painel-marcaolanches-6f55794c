@@ -185,12 +185,22 @@ export function QuickActionsBar({
             >
               <span
                 className={cn(
-                  "p-1.5 rounded-lg transition-colors",
+                  "relative p-1.5 rounded-lg transition-colors",
                   active ? action.activeIconColor : action.iconColor,
                   active && !isActionButton && "bg-white/60"
                 )}
               >
                 <Icon className={cn("h-5 w-5", active && "scale-110")} />
+                {(action.badgeCount ?? 0) > 0 && (
+                  <Badge
+                    className={cn(
+                      "absolute -top-2 -right-2 h-4 min-w-[1rem] px-1 text-[9px] font-black text-white flex items-center justify-center rounded-full border-2 border-white",
+                      active ? "bg-red-600" : "bg-red-500"
+                    )}
+                  >
+                    {action.badgeCount}
+                  </Badge>
+                )}
               </span>
               <span
                 className={cn(
