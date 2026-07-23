@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { createPrintJob } from "@/lib/printing-jobs";
 
 /**
  * Processa a impressão de um pedido, gerando os trabalhos na fila (printing_jobs)
@@ -80,12 +81,12 @@ export async function processPrintingForOrder(orderId: string) {
           printing_type: 'full'
         };
 
-        await supabase.from("printing_jobs").insert([{
+        await createPrintJob({
           printer_id: printer.id,
           status: 'pending',
-          copies: printer.copies,
+          copies: Math.max(1, Number(printer.copies) || 1),
           content: JSON.stringify(printContent)
-        } as any]);
+        });
         console.log(`[Printing] Job centralizado criado para impressora ${printer.name}`);
       }
     } else {
@@ -133,12 +134,12 @@ export async function processPrintingForOrder(orderId: string) {
             printing_type: 'full'
           };
 
-          await supabase.from("printing_jobs").insert([{
+          await createPrintJob({
             printer_id: printer.id,
             status: 'pending',
-            copies: printer.copies,
+            copies: Math.max(1, Number(printer.copies) || 1),
             content: JSON.stringify(printContent)
-          } as any]);
+          });
 
           console.log(`[Printing] Job criado para impressora ${printer.name} (Setor: ${sector.name})`);
         }

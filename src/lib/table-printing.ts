@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { gerarHtmlImpressao } from "@/lib/print-template";
+import { createPrintJob } from "@/lib/printing-jobs";
 
 
 export async function processPrintingForTableOrder(sessionId: string, itemIds: string[], isCancellation: boolean = false) {
@@ -115,12 +116,12 @@ export async function processPrintingForTableOrder(sessionId: string, itemIds: s
 
         const batches = printSeparately ? mappedItems.map((it) => [it]) : [mappedItems];
         for (const batch of batches) {
-          const { error } = await supabase.from("printing_jobs").insert([{
+          const { error } = await createPrintJob({
             printer_id: printer.id,
             status: "pending",
-            copies: printer.copies,
+            copies: Math.max(1, Number(printer.copies) || 1),
             content: JSON.stringify({ ...baseContent, sector_name: "CAIXA GERAL", items: batch }),
-          } as any]);
+          });
           if (error) console.error("[TablePrinting] Erro ao inserir job:", error);
           else totalJobsInserted++;
         }
@@ -153,17 +154,17 @@ export async function processPrintingForTableOrder(sessionId: string, itemIds: s
               ? itemsToPrint.map((it: any) => [mapItem(it)])
               : [itemsToPrint.map(mapItem)];
             for (const batch of batches) {
-              const { error } = await supabase.from("printing_jobs").insert([{
+              const { error } = await createPrintJob({
                 printer_id: printer.id,
                 status: "pending",
-                copies: printer.copies,
+                copies: Math.max(1, Number(printer.copies) || 1),
                 content: JSON.stringify({
                   ...baseContent,
                   sector_name: sector.name,
                   printing_type: isCancellation ? "cancellation" : "full",
                   items: batch,
                 }),
-              } as any]);
+              });
               if (!error) totalJobsInserted++;
               else console.error("[TablePrinting] Erro ao inserir job:", error);
             }
@@ -181,12 +182,12 @@ export async function processPrintingForTableOrder(sessionId: string, itemIds: s
         notes: item.observations,
         complements: item.selected_complements,
       }));
-      const { error } = await supabase.from("printing_jobs").insert([{
+      const { error } = await createPrintJob({
         printer_id: printers[0].id,
         status: "pending",
-        copies: printers[0].copies,
+        copies: Math.max(1, Number(printers[0].copies) || 1),
         content: JSON.stringify({ ...baseSessionInfo, sector_name: "GERAL", items: fallbackItems }),
-      } as any]);
+      });
       if (error) console.error("[TablePrinting] Erro no fallback:", error);
     }
 
