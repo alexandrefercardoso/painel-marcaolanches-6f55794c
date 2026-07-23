@@ -39,6 +39,7 @@ export function QuickActionsBar({
   onChangeTab,
   onNewOrder,
   storeSettings,
+  pendingReconciliationCount = 0,
 }: QuickActionsBarProps) {
   const handleOpenDigitalMenu = () => {
     const url = storeSettings?.digital_menu_url?.trim();
