@@ -4,7 +4,6 @@ import {
   Plus,
   Wallet,
   LayoutGrid,
-  RefreshCw,
   Smartphone,
   Bike,
   ClipboardList,
@@ -64,8 +63,8 @@ export function QuickActionsBar({
       tab: "delivery_module",
       variant: "outline",
       iconColor: "text-emerald-500",
-      activeIconColor: "text-emerald-700",
-      activeBg: "bg-emerald-50 border-emerald-300 text-emerald-800 ring-emerald-200",
+      activeIconColor: "text-emerald-700 dark:text-emerald-300",
+      activeBg: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 ring-emerald-200 dark:ring-emerald-900",
     },
     {
       id: "new-order",
@@ -84,8 +83,8 @@ export function QuickActionsBar({
       tab: "cashier",
       variant: "outline",
       iconColor: "text-green-500",
-      activeIconColor: "text-green-700",
-      activeBg: "bg-green-50 border-green-300 text-green-800 ring-green-200",
+      activeIconColor: "text-green-700 dark:text-green-300",
+      activeBg: "bg-green-50 dark:bg-green-950/40 border-green-300 dark:border-green-800 text-green-800 dark:text-green-300 ring-green-200 dark:ring-green-900",
     },
     {
       id: "tables_quick_view",
@@ -94,8 +93,8 @@ export function QuickActionsBar({
       tab: "tables_quick_view",
       variant: "outline",
       iconColor: "text-blue-500",
-      activeIconColor: "text-blue-700",
-      activeBg: "bg-blue-50 border-blue-300 text-blue-800 ring-blue-200",
+      activeIconColor: "text-blue-700 dark:text-blue-300",
+      activeBg: "bg-blue-50 dark:bg-blue-950/40 border-blue-300 dark:border-blue-800 text-blue-800 dark:text-blue-300 ring-blue-200 dark:ring-blue-900",
     },
     {
       id: "motoboy-voltou",
@@ -104,8 +103,8 @@ export function QuickActionsBar({
       onClick: () => (onOpenReconciliationOnly ? onOpenReconciliationOnly() : onChangeTab("cashier")),
       variant: "outline",
       iconColor: "text-cyan-500",
-      activeIconColor: "text-cyan-700",
-      activeBg: "bg-cyan-50 border-cyan-300 text-cyan-800 ring-cyan-200",
+      activeIconColor: "text-cyan-700 dark:text-cyan-300",
+      activeBg: "bg-cyan-50 dark:bg-cyan-950/40 border-cyan-300 dark:border-cyan-800 text-cyan-800 dark:text-cyan-300 ring-cyan-200 dark:ring-cyan-900",
       badgeCount: pendingReconciliationCount,
     },
 
@@ -116,8 +115,8 @@ export function QuickActionsBar({
       onClick: handleOpenDigitalMenu,
       variant: "outline",
       iconColor: "text-indigo-500",
-      activeIconColor: "text-indigo-700",
-      activeBg: "bg-indigo-50 border-indigo-300 text-indigo-800 ring-indigo-200",
+      activeIconColor: "text-indigo-700 dark:text-indigo-300",
+      activeBg: "bg-indigo-50 dark:bg-indigo-950/40 border-indigo-300 dark:border-indigo-800 text-indigo-800 dark:text-indigo-300 ring-indigo-200 dark:ring-indigo-900",
     },
     {
       id: "live_deliveries",
@@ -126,8 +125,8 @@ export function QuickActionsBar({
       tab: "live_deliveries",
       variant: "outline",
       iconColor: "text-amber-500",
-      activeIconColor: "text-amber-700",
-      activeBg: "bg-amber-50 border-amber-300 text-amber-800 ring-amber-200",
+      activeIconColor: "text-amber-700 dark:text-amber-300",
+      activeBg: "bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300 ring-amber-200 dark:ring-amber-900",
     },
     {
       id: "history_module",
@@ -136,8 +135,8 @@ export function QuickActionsBar({
       tab: "history_module",
       variant: "outline",
       iconColor: "text-slate-500",
-      activeIconColor: "text-slate-700",
-      activeBg: "bg-slate-100 border-slate-300 text-slate-800 ring-slate-200",
+      activeIconColor: "text-slate-700 dark:text-slate-300",
+      activeBg: "bg-slate-100 dark:bg-slate-800/60 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-300 ring-slate-200 dark:ring-slate-800",
     },
   ];
 
@@ -172,7 +171,7 @@ export function QuickActionsBar({
                 isActionButton &&
                   "bg-orange-600 hover:bg-orange-700 text-white border-orange-600 hover:border-orange-700 shadow-md",
                 !isActionButton &&
-                  "border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300",
+                  "border-border bg-card hover:bg-muted/60 hover:border-border",
                 active && !isActionButton && action.activeBg,
                 active && isActionButton && "ring-2 ring-orange-300"
               )}
@@ -182,14 +181,14 @@ export function QuickActionsBar({
                 className={cn(
                   "relative p-1.5 rounded-lg transition-colors",
                   active ? action.activeIconColor : action.iconColor,
-                  active && !isActionButton && "bg-white/60"
+                  active && !isActionButton && "bg-background/60"
                 )}
               >
                 <Icon className={cn("h-5 w-5", active && "scale-110")} />
                 {(action.badgeCount ?? 0) > 0 && (
                   <Badge
                     className={cn(
-                      "absolute -top-2 -right-2 h-4 min-w-[1rem] px-1 text-[9px] font-black text-white flex items-center justify-center rounded-full border-2 border-white",
+                      "absolute -top-2 -right-2 h-4 min-w-[1rem] px-1 text-[9px] font-black text-white flex items-center justify-center rounded-full border-2 border-background",
                       active ? "bg-red-600" : "bg-red-500"
                     )}
                   >
@@ -200,7 +199,7 @@ export function QuickActionsBar({
               <span
                 className={cn(
                   "text-[10px] leading-tight text-center hidden md:block",
-                  isActionButton ? "text-white" : active ? "text-current" : "text-slate-600"
+                  isActionButton ? "text-white" : active ? "text-current" : "text-muted-foreground"
                 )}
               >
                 {action.label}
