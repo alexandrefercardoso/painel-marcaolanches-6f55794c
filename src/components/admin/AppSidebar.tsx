@@ -29,6 +29,7 @@ import {
   ShieldCheck,
   MessageCircle,
   Boxes,
+  LogOut,
 } from "lucide-react";
 import { 
   Sidebar as SidebarUI, 
