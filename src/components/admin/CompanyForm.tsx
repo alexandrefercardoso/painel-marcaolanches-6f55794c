@@ -56,6 +56,7 @@ export const CompanyForm = React.memo(function CompanyForm({
         auto_manage_menu: false,
         fixed_delivery_fee: null,
         kds_enabled: true,
+        delivery_skip_attendance: false,
         latitude: null,
         longitude: null
       };
