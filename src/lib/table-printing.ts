@@ -118,8 +118,9 @@ export async function processPrintingForTableOrder(sessionId: string, itemIds: s
           const { error } = await supabase.from("printing_jobs").insert([{
             printer_id: printer.id,
             status: "pending",
+            copies: printer.copies,
             content: JSON.stringify({ ...baseContent, sector_name: "CAIXA GERAL", items: batch }),
-          }]);
+          } as any]);
           if (error) console.error("[TablePrinting] Erro ao inserir job:", error);
           else totalJobsInserted++;
         }
@@ -155,13 +156,14 @@ export async function processPrintingForTableOrder(sessionId: string, itemIds: s
               const { error } = await supabase.from("printing_jobs").insert([{
                 printer_id: printer.id,
                 status: "pending",
+                copies: printer.copies,
                 content: JSON.stringify({
                   ...baseContent,
                   sector_name: sector.name,
                   printing_type: isCancellation ? "cancellation" : "full",
                   items: batch,
                 }),
-              }]);
+              } as any]);
               if (!error) totalJobsInserted++;
               else console.error("[TablePrinting] Erro ao inserir job:", error);
             }
@@ -182,8 +184,9 @@ export async function processPrintingForTableOrder(sessionId: string, itemIds: s
       const { error } = await supabase.from("printing_jobs").insert([{
         printer_id: printers[0].id,
         status: "pending",
+        copies: printers[0].copies,
         content: JSON.stringify({ ...baseSessionInfo, sector_name: "GERAL", items: fallbackItems }),
-      }]);
+      } as any]);
       if (error) console.error("[TablePrinting] Erro no fallback:", error);
     }
 
@@ -356,6 +359,7 @@ export async function forceTestPrint() {
     const { error } = await supabase.from("printing_jobs").insert([{
       printer_id: printer.id,
       status: "pending",
+      copies: printer.copies,
       content: JSON.stringify({
         order_number: "TESTE MESA",
         customer_name: "TESTE MANUAL",
@@ -365,7 +369,7 @@ export async function forceTestPrint() {
         waiter_name: "SISTEMA",
         total: 0,
       }),
-    }]);
+    } as any]);
 
     if (error) { console.error("[TablePrinting] Erro no teste:", error); return false; }
     console.log("[TablePrinting] Job de teste inserido com sucesso!");
