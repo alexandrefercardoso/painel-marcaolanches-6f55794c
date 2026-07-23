@@ -631,17 +631,35 @@ export default function AdminPage({ user }: { user: any }) {
         event: 'INSERT',
         schema: 'public',
         table: 'delivery_orders'
-      }, (payload) => {
+      }, async (payload) => {
         console.log("🚀 NOVO PEDIDO DETECTADO VIA REALTIME:", payload);
+        const newOrder: any = payload.new;
         try {
           toast.success("🔔 NOVO PEDIDO RECEBIDO!", {
-            description: `Cliente: ${(payload.new as any)?.customer_name || ''}`,
+            description: `Cliente: ${newOrder?.customer_name || ''}`,
             duration: 10000,
           });
           playNotificationSound();
-          processPrintingForDeliveryOrder((payload.new as any).id).catch(err => {
+          processPrintingForDeliveryOrder(newOrder.id).catch(err => {
             console.error("Erro ao processar impressão de delivery via Realtime:", err);
           });
+
+          // Aplica regra delivery_skip_attendance para pedidos vindos de fora (mobile/web).
+          // Se o flag estiver ativo e o pedido chegou como 'pending' delivery, promove para 'production'.
+          try {
+            const { data: settings } = await supabase
+              .from("store_settings")
+              .select("delivery_skip_attendance")
+              .maybeSingle();
+            const skip = !!(settings as any)?.delivery_skip_attendance;
+            const isDelivery = (newOrder?.order_type ?? 'delivery') === 'delivery';
+            if (skip && isDelivery && newOrder?.status === 'pending') {
+              console.log(`⏭️ Pulando atendimento (flag ativo). Promovendo pedido ${newOrder.id} para 'production'.`);
+              await supabase.from("delivery_orders").update({ status: 'production' } as any).eq("id", newOrder.id);
+            }
+          } catch (err) {
+            console.error("Erro ao aplicar delivery_skip_attendance:", err);
+          }
         } catch (e) {
           console.error("Erro ao notificar novo pedido:", e);
         }
