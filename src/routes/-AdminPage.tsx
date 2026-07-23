@@ -3967,10 +3967,10 @@ table.main thead th.right { text-align:right; }
       const fullAddress = `${newDeliveryOrder.customer_address}${newDeliveryOrder.address_number ? ', ' + newDeliveryOrder.address_number : ''}${newDeliveryOrder.address_complement ? ' (' + newDeliveryOrder.address_complement + ')' : ''}${(newDeliveryOrder as any).neighborhood ? ' - ' + (newDeliveryOrder as any).neighborhood : ''}${newDeliveryOrder.city ? ' - ' + newDeliveryOrder.city : ''}`;
 
       // Regra de fluxo: pedidos delivery podem pular atendimento se a configuração estiver ativa.
-      // Se delivery_skip_attendance = true, o pedido entra direto em 'preparing' (produção).
-      // Caso contrário, segue o fluxo atual: 'pending' (atendimento).
+      // Se delivery_skip_attendance = true, o pedido entra direto em 'production' (coluna Produção).
+      // Caso contrário, segue o fluxo atual: 'pending' (coluna Atendimento).
       const shouldSkipAttendance = newDeliveryOrder.order_type === 'delivery' && !!storeSettings?.delivery_skip_attendance;
-      const initialStatus: 'pending' | 'preparing' = shouldSkipAttendance ? 'preparing' : 'pending';
+      const initialStatus: 'pending' | 'production' = shouldSkipAttendance ? 'production' : 'pending';
       console.log(`🚀 Criando pedido. Initial Status: ${initialStatus} (skip attendance: ${shouldSkipAttendance})`);
 
 
