@@ -279,6 +279,18 @@ export function AppSidebar({ activeTab, setActiveTab, storeSettings, userProfile
               </SidebarMenuItem>
             </Collapsible>
           ))}
+          <SidebarMenuItem className="mt-2 pt-2 border-t border-orange-100 dark:border-slate-800">
+            <SidebarMenuButton
+              tooltip="Sair"
+              onClick={handleLogout}
+              className="w-full justify-start hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 dark:hover:text-red-400 text-red-600 dark:text-red-400 transition-all"
+            >
+              <div className="flex items-center gap-2">
+                <LogOut className="w-4 h-4 shrink-0" />
+                <span className="group-data-[collapsible=icon]:hidden">Sair</span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarContent>
     </SidebarUI>
