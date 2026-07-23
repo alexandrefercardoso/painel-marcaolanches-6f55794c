@@ -4962,9 +4962,11 @@ table.main thead th.right { text-align:right; }
                 activeTab={activeTab}
                 onChangeTab={handleSetActiveTab}
                 onNewOrder={() => setIsOrderDialogOpen(true)}
+                onOpenReconciliationOnly={handleOpenReconciliationOnly}
                 storeSettings={storeSettings}
                 pendingReconciliationCount={deliveryOrders.filter(o => o.status === "awaiting_reconciliation").length}
               />
+
             </div>
             <Tabs value={activeTab} onValueChange={handleSetActiveTab} className="space-y-6">
               <TabsList className="hidden" />
