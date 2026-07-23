@@ -18,9 +18,11 @@ interface QuickActionsBarProps {
   activeTab: string;
   onChangeTab: (tab: string) => void;
   onNewOrder: () => void;
+  onOpenReconciliationOnly?: () => void;
   storeSettings?: any;
   pendingReconciliationCount?: number;
 }
+
 
 type ActionItem = {
   id: string;
