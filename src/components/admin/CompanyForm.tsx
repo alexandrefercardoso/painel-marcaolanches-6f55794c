@@ -168,6 +168,7 @@ export const CompanyForm = React.memo(function CompanyForm({
         auto_manage_menu: !!formData.auto_manage_menu,
         fixed_delivery_fee: formData.fixed_delivery_fee ? Number(formData.fixed_delivery_fee) : null,
         kds_enabled: formData.kds_enabled !== false,
+        delivery_skip_attendance: !!formData.delivery_skip_attendance,
         latitude: formData.latitude === "" || formData.latitude === null || formData.latitude === undefined ? null : Number(formData.latitude),
         longitude: formData.longitude === "" || formData.longitude === null || formData.longitude === undefined ? null : Number(formData.longitude),
         is_menu_active: !!isMenuOpen
