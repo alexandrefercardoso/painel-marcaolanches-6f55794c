@@ -87,6 +87,11 @@ export function AppSidebar({ activeTab, setActiveTab, storeSettings, userProfile
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("admin_session");
+    window.location.href = "/login";
+  };
+
   const menuGroups = [
     ...(isKdsOnly ? [] : [
       {
