@@ -10544,8 +10544,11 @@ table.main thead th.right { text-align:right; }
               </div>
             )}
 
+            </>)}
+
             {/* Novo Módulo de Conciliação de Caixa */}
             <div className="bg-blue-50/50 border border-blue-100 rounded-3xl p-6 shadow-sm mb-6">
+
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className="text-xl font-black text-blue-900 flex items-center gap-2">
