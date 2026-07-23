@@ -5633,12 +5633,6 @@ table.main thead th.right { text-align:right; }
           <TabsContent value="delivery_module" className="animate-in fade-in duration-500">
             <div className="flex gap-4 items-start">
               <div className="flex-1 min-w-0 space-y-6">
-                <QuickActionsBar
-                  activeTab={activeTab}
-                  onChangeTab={handleSetActiveTab}
-                  onNewOrder={() => setIsOrderDialogOpen(true)}
-                  storeSettings={storeSettings}
-                />
             <div className="mb-6">
               <Suspense fallback={<div className="p-6 text-muted-foreground">Carregando...</div>}><TableDashboardOnly /></Suspense>
             </div>
