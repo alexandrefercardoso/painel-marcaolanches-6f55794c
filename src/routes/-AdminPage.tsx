@@ -10526,7 +10526,7 @@ table.main thead th.right { text-align:right; }
                   <h3 className="text-xl font-black text-blue-900 flex items-center gap-2">
                     <CheckCircle2 className="h-6 w-6" /> Conciliação de Caixa
                   </h3>
-                  <p className="text-blue-600/70 text-sm font-medium">Pedidos entregues aguardando acerto financeiro.</p>
+                  <p className="text-blue-600/70 text-sm font-medium">Baixe a conta dos pedidos quando o motoboy retornar da entrega.</p>
                 </div>
                 <Badge className="bg-blue-600 text-white px-4 py-1 rounded-full animate-pulse">
                   {deliveryOrders.filter(o => o.status === "awaiting_reconciliation").length} Pendentes
@@ -10694,8 +10694,8 @@ table.main thead th.right { text-align:right; }
                   <div className="bg-blue-100 p-4 rounded-full mb-4">
                     <CheckCircle2 className="h-8 w-8 text-blue-600" />
                   </div>
-                  <h4 className="text-lg font-bold text-blue-900">Tudo em ordem!</h4>
-                  <p className="text-blue-600/70 text-sm max-w-xs">Não há novos pedidos aguardando conciliação no momento.</p>
+                  <h4 className="text-lg font-bold text-blue-900">Tudo certo por aqui!</h4>
+                  <p className="text-blue-600/70 text-sm max-w-xs">Assim que o motoboy voltar com pedidos entregues, eles aparecem aqui pra você baixar a conta.</p>
                 </div>
               )}
             </div>
