@@ -98,16 +98,6 @@ export function QuickActionsBar({
       activeBg: "bg-blue-50 border-blue-300 text-blue-800 ring-blue-200",
     },
     {
-      id: "reconciliation",
-      label: "Conciliar Caixa",
-      icon: RefreshCw,
-      tab: "cashier",
-      variant: "outline",
-      iconColor: "text-teal-500",
-      activeIconColor: "text-teal-700",
-      activeBg: "bg-teal-50 border-teal-300 text-teal-800 ring-teal-200",
-    },
-    {
       id: "motoboy-voltou",
       label: "Motoboy Voltou",
       icon: Bike,
