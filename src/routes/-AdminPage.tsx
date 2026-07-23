@@ -4946,6 +4946,14 @@ table.main thead th.right { text-align:right; }
           </header>
 
           <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
+            <div className="mb-4">
+              <QuickActionsBar
+                activeTab={activeTab}
+                onChangeTab={handleSetActiveTab}
+                onNewOrder={() => setIsOrderDialogOpen(true)}
+                storeSettings={storeSettings}
+              />
+            </div>
             <Tabs value={activeTab} onValueChange={handleSetActiveTab} className="space-y-6">
               <TabsList className="hidden" />
 
