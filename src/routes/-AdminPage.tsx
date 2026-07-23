@@ -10728,8 +10728,10 @@ table.main thead th.right { text-align:right; }
               )}
             </div>
 
+            {!reconciliationOnly && (<>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <Card className="lg:col-span-1">
+
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Bike className="h-5 w-5 text-primary" /> Registrar Viagem
