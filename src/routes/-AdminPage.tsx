@@ -440,6 +440,7 @@ export default function AdminPage({ user }: { user: any }) {
   const [activeTab, setActiveTab] = useState<string>(
     (user?.is_kds_only === true && user?.role !== 'master') ? "kitchen_dashboard" : firstAllowedTab
   );
+  const [reconciliationOnly, setReconciliationOnly] = useState(false);
   const handleSetActiveTab = (tab: string) => {
     if (user?.is_kds_only && user?.role !== 'master' && tab !== "kitchen_dashboard") return;
     if (tab === "kitchen_dashboard" && user?.role !== 'master' && !user?.is_kds_only) return;
@@ -447,8 +448,18 @@ export default function AdminPage({ user }: { user: any }) {
       toast.error("Acesso não permitido a este módulo");
       return;
     }
+    if (tab !== "cashier") setReconciliationOnly(false);
     setActiveTab(tab);
   };
+  const handleOpenReconciliationOnly = () => {
+    if (!hasTabAccess("cashier")) {
+      toast.error("Acesso não permitido a este módulo");
+      return;
+    }
+    setReconciliationOnly(true);
+    setActiveTab("cashier");
+  };
+
 
   // Se veio do fechamento de mesa pedindo emissão de NFC-e, abre a aba de Histórico/Pedidos.
   useEffect(() => {
@@ -4951,9 +4962,11 @@ table.main thead th.right { text-align:right; }
                 activeTab={activeTab}
                 onChangeTab={handleSetActiveTab}
                 onNewOrder={() => setIsOrderDialogOpen(true)}
+                onOpenReconciliationOnly={handleOpenReconciliationOnly}
                 storeSettings={storeSettings}
                 pendingReconciliationCount={deliveryOrders.filter(o => o.status === "awaiting_reconciliation").length}
               />
+
             </div>
             <Tabs value={activeTab} onValueChange={handleSetActiveTab} className="space-y-6">
               <TabsList className="hidden" />
@@ -10405,7 +10418,9 @@ table.main thead th.right { text-align:right; }
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+            {!reconciliationOnly && (<>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+
               <div>
                 <h2 className="text-2xl font-bold flex items-center gap-2">
                   <Archive className="text-blue-600 h-6 w-6" /> Gestão de Caixa
@@ -10529,8 +10544,11 @@ table.main thead th.right { text-align:right; }
               </div>
             )}
 
+            </>)}
+
             {/* Novo Módulo de Conciliação de Caixa */}
             <div className="bg-blue-50/50 border border-blue-100 rounded-3xl p-6 shadow-sm mb-6">
+
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className="text-xl font-black text-blue-900 flex items-center gap-2">
@@ -10710,8 +10728,10 @@ table.main thead th.right { text-align:right; }
               )}
             </div>
 
+            {!reconciliationOnly && (<>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <Card className="lg:col-span-1">
+
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Bike className="h-5 w-5 text-primary" /> Registrar Viagem
@@ -11156,7 +11176,9 @@ table.main thead th.right { text-align:right; }
                 </CardContent>
               </Card>
             </div>
+            </>)}
           </TabsContent>
+
 
           <TabsContent value="payment_methods_tab" className="space-y-6 animate-in fade-in duration-500">
             <Card className="border-indigo-100 shadow-xl overflow-hidden">

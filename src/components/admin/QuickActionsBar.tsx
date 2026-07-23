@@ -18,9 +18,11 @@ interface QuickActionsBarProps {
   activeTab: string;
   onChangeTab: (tab: string) => void;
   onNewOrder: () => void;
+  onOpenReconciliationOnly?: () => void;
   storeSettings?: any;
   pendingReconciliationCount?: number;
 }
+
 
 type ActionItem = {
   id: string;
@@ -39,9 +41,11 @@ export function QuickActionsBar({
   activeTab,
   onChangeTab,
   onNewOrder,
+  onOpenReconciliationOnly,
   storeSettings,
   pendingReconciliationCount = 0,
 }: QuickActionsBarProps) {
+
   const handleOpenDigitalMenu = () => {
     const url = storeSettings?.digital_menu_url?.trim();
     if (!url) {
@@ -107,13 +111,14 @@ export function QuickActionsBar({
       id: "motoboy-voltou",
       label: "Motoboy Voltou",
       icon: Bike,
-      tab: "cashier",
+      onClick: () => (onOpenReconciliationOnly ? onOpenReconciliationOnly() : onChangeTab("cashier")),
       variant: "outline",
       iconColor: "text-cyan-500",
       activeIconColor: "text-cyan-700",
       activeBg: "bg-cyan-50 border-cyan-300 text-cyan-800 ring-cyan-200",
       badgeCount: pendingReconciliationCount,
     },
+
     {
       id: "digital-menu",
       label: "Cardápio Digital",
