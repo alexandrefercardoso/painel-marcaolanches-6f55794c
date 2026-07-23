@@ -165,13 +165,13 @@ export function GlobalPrinterMonitor() {
 
           const { printViaQZ } = await import('@/lib/qz-tray');
           await printViaQZ({
-            printerName: printer.name,
+            printerName,
             htmlContent,
             copies: jobCopies,
           });
 
           await markPrinted();
-          toast.success(`Impresso em ${printer.name}`);
+          toast.success(`Impresso em ${printerName}`);
         } catch (err: any) {
           console.error('[GlobalPrinterMonitor] Erro QZ Tray:', err);
 
@@ -191,7 +191,7 @@ export function GlobalPrinterMonitor() {
           }
 
           await markError(err?.message || 'Erro ao imprimir via QZ Tray');
-          toast.error(`Falha ao imprimir em ${printer.name}: ${err?.message || 'Erro desconhecido'}`);
+          toast.error(`Falha ao imprimir em ${printerName}: ${err?.message || 'Erro desconhecido'}`);
         }
         return;
       }
