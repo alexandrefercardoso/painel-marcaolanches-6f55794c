@@ -646,149 +646,109 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
         </div>
       </div>
 
-      {/* BOTTOM floating panel: Entregas em Andamento */}
+      {/* BOTTOM-LEFT floating panel: Entregas em Andamento (expands upward) */}
       <div
-        className="absolute left-0 right-0 bottom-0 z-[950] pointer-events-none"
+        className={cn(
+          "absolute bottom-3 left-3 z-[950] max-w-[calc(100vw-1.5rem)] flex flex-col-reverse",
+          panelWidth
+        )}
       >
-        <div
-          className="mx-auto pointer-events-auto bg-white shadow-2xl border border-emerald-100 border-b-0 rounded-t-2xl overflow-hidden transition-all duration-300"
-          style={{
-            width: "min(100%, 1400px)",
-            height: bottomOpen
-              ? (typeof window !== "undefined" && window.innerWidth < 768
-                  ? "60vh"
-                  : `${bottomExpandedDesktop}px`)
-              : `${bottomBarHeight}px`,
-          }}
-        >
-          {/* Compact header bar (always visible) */}
+        <div className="bg-white/95 backdrop-blur-sm border border-emerald-100 rounded-xl shadow-2xl overflow-hidden flex flex-col">
+          {/* Compact tab (always visible) */}
           <button
             type="button"
             onClick={() => setBottomOpen((v) => !v)}
-            className="w-full flex items-center gap-3 px-4 bg-gradient-to-r from-emerald-50 to-white border-b border-emerald-100 hover:bg-emerald-50 transition-colors"
-            style={{ height: `${bottomBarHeight}px` }}
+            className="w-full flex items-center gap-2 px-3 py-2 bg-emerald-50/80 border-b border-emerald-100 hover:bg-emerald-100/70 transition-colors"
           >
-            <div className={cn(
-              "rounded-full bg-emerald-600 text-white flex items-center justify-center shadow shrink-0",
-              tvMode ? "w-9 h-9" : "w-8 h-8"
-            )}>
-              <Bike className={cn(tvMode ? "w-5 h-5" : "w-4 h-4")} />
-            </div>
+            <Bike className="w-4 h-4 text-emerald-700 shrink-0" />
             <span className={cn("font-black text-emerald-900 uppercase", titleTextSize)}>
-              Entregas em Andamento
+              Entregas
             </span>
             <span className={cn(
-              "ml-auto bg-emerald-600 text-white font-bold rounded-full px-3 py-1",
-              bodyTextSize
+              "ml-auto bg-emerald-600 text-white font-bold rounded-full min-w-[22px] h-[22px] px-1.5 flex items-center justify-center",
+              tinyTextSize
             )}>
-              {enrichedDeliveries.length} ativo{enrichedDeliveries.length === 1 ? "" : "(s)"}
+              {enrichedDeliveries.length}
             </span>
-            {bottomOpen ? <ChevronDown className="w-4 h-4 text-emerald-700" /> : <ChevronUp className="w-4 h-4 text-emerald-700" />}
+            {bottomOpen
+              ? <ChevronDown className="w-4 h-4 text-emerald-700" />
+              : <ChevronUp className="w-4 h-4 text-emerald-700" />}
           </button>
 
-          {/* Expanded content */}
+          {/* Expanded content — grows upward via flex-col-reverse on the outer */}
           {bottomOpen && (
-            <div className="h-[calc(100%-50px)] overflow-hidden flex flex-col">
-              {/* Inner header */}
-              <div className="px-4 py-2 bg-emerald-50/60 border-b border-emerald-100 flex items-center gap-2 shrink-0">
-                <span className={cn("text-emerald-800", smallTextSize)}>
-                  Pedidos a caminho — atualização em tempo real
-                </span>
-              </div>
-
-              {/* Body */}
+            <div
+              className="overflow-y-auto p-2 space-y-2"
+              style={{
+                maxHeight:
+                  typeof window !== "undefined" && window.innerWidth < 768
+                    ? "50vh"
+                    : `${tvMode ? 340 : 380}px`,
+              }}
+            >
               {enrichedDeliveries.length === 0 ? (
-                <div className="flex-1 flex flex-col items-center justify-center text-center text-muted-foreground p-4">
-                  <Package className="h-10 w-10 mb-2 opacity-40" />
+                <div className="flex flex-col items-center justify-center text-center text-muted-foreground py-6">
+                  <Package className="h-8 w-8 mb-2 opacity-40" />
                   <p className={cn("font-semibold text-slate-700", bodyTextSize)}>
                     Nenhuma entrega em andamento
                   </p>
-                  <p className={cn("text-slate-500 mt-0.5", smallTextSize)}>
-                    Assim que um entregador iniciar a rota, o pedido aparece aqui.
-                  </p>
                 </div>
               ) : (
-                <div
-                  className={cn(
-                    "flex-1 p-3",
-                    tvMode
-                      ? "overflow-x-auto overflow-y-hidden flex gap-3"
-                      : "overflow-y-auto grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-                  )}
-                >
-                  {enrichedDeliveries.map((d) => {
-                    const numLabel = d.order_number || `#${d.id.slice(0, 6).toUpperCase()}`;
-                    return (
-                      <div
-                        key={d.id}
-                        onMouseEnter={() => setPulseDeliveryId(d.id)}
-                        onMouseLeave={() =>
-                          setPulseDeliveryId((cur) => (cur === d.id ? null : cur))
-                        }
-                        onClick={() => handleFocusDelivery(d)}
-                        className={cn(
-                          "cursor-pointer border rounded-xl bg-white p-3 transition-all hover:shadow-md hover:border-emerald-400",
-                          "border-emerald-100",
-                          tvMode ? "min-w-[280px] shrink-0" : ""
-                        )}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={cn("font-black text-slate-900", bodyTextSize)}>
-                            {String(numLabel).startsWith("#") ? numLabel : `#${numLabel}`}
-                          </span>
-                          <span className={cn(
-                            "ml-auto flex items-center gap-1 bg-emerald-600 text-white font-bold rounded-full px-2 py-0.5",
-                            tinyTextSize
-                          )}>
-                            <Clock className={cn(tvMode ? "w-3 h-3" : "w-2.5 h-2.5")} />
-                            {d.minutes} min
-                          </span>
-                        </div>
-                        <div className={cn("flex items-center gap-1.5 text-slate-700 font-semibold truncate", smallTextSize)}>
-                          <Bike className="w-3 h-3 text-emerald-600 shrink-0" />
-                          <span className="truncate">{d.driver_name}</span>
-                        </div>
-                        <div className={cn("flex items-start gap-1.5 text-slate-600 mt-1", smallTextSize)}>
-                          <MapPin className="w-3 h-3 mt-0.5 shrink-0" />
-                          <span className="line-clamp-2">
-                            {d.customer_address || d.customer_name || "Endereço não informado"}
-                          </span>
-                        </div>
-                        {/* Progress bar */}
-                        <div className="mt-2 h-1.5 rounded-full bg-emerald-100 overflow-hidden">
-                          <div
-                            className="h-full bg-emerald-500 transition-all"
-                            style={{ width: `${d.progress}%` }}
-                          />
-                        </div>
-                        <div className="mt-2 flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); handleFocusDelivery(d); }}
-                            className={cn(
-                              "flex-1 flex items-center justify-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-800 font-bold py-1.5 hover:bg-emerald-100 transition-colors",
-                              tinyTextSize
-                            )}
-                          >
-                            <Navigation className="w-3 h-3" />
-                            Ver rota
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); handleMarkDelivered(d); }}
-                            className={cn(
-                              "flex-1 flex items-center justify-center gap-1 rounded-lg border border-emerald-500 bg-emerald-600 text-white font-bold py-1.5 hover:bg-emerald-700 transition-colors",
-                              tinyTextSize
-                            )}
-                          >
-                            <CheckCircle2 className="w-3 h-3" />
-                            Entregue
-                          </button>
-                        </div>
+                enrichedDeliveries.map((d) => {
+                  const numLabel = d.order_number || `#${d.id.slice(0, 6).toUpperCase()}`;
+                  return (
+                    <div
+                      key={d.id}
+                      onMouseEnter={() => setPulseDeliveryId(d.id)}
+                      onMouseLeave={() =>
+                        setPulseDeliveryId((cur) => (cur === d.id ? null : cur))
+                      }
+                      onClick={() => handleFocusDelivery(d)}
+                      className="cursor-pointer border border-emerald-100 rounded-lg bg-white p-2 transition-all hover:shadow-md hover:border-emerald-400"
+                    >
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className={cn("font-black text-slate-900", bodyTextSize)}>
+                          {String(numLabel).startsWith("#") ? numLabel : `#${numLabel}`}
+                        </span>
+                        <span className={cn(
+                          "ml-auto flex items-center gap-1 bg-emerald-600 text-white font-bold rounded-full px-1.5 py-0.5",
+                          tinyTextSize
+                        )}>
+                          <Clock className="w-2.5 h-2.5" />
+                          {d.minutes}min
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
+                      <div className={cn("flex items-center gap-1 text-slate-700 font-semibold truncate", smallTextSize)}>
+                        <Bike className="w-3 h-3 text-emerald-600 shrink-0" />
+                        <span className="truncate">{d.driver_name}</span>
+                      </div>
+                      <div className="mt-1.5 flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); handleFocusDelivery(d); }}
+                          className={cn(
+                            "flex-1 flex items-center justify-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 text-emerald-800 font-bold py-1 hover:bg-emerald-100 transition-colors",
+                            tinyTextSize
+                          )}
+                        >
+                          <Navigation className="w-3 h-3" />
+                          Rota
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); handleMarkDelivered(d); }}
+                          className={cn(
+                            "flex-1 flex items-center justify-center gap-1 rounded-md border border-emerald-500 bg-emerald-600 text-white font-bold py-1 hover:bg-emerald-700 transition-colors",
+                            tinyTextSize
+                          )}
+                        >
+                          <CheckCircle2 className="w-3 h-3" />
+                          Entregue
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
               )}
             </div>
           )}
