@@ -840,7 +840,9 @@ export default function AdminPage({ user }: { user: any }) {
     } | null,
     search_value: "",
     tipo_venda: "",
-    frete: 0 as number
+    frete: 0 as number,
+    customer_lat: null as number | null,
+    customer_lng: null as number | null,
   });
   const [newChartAccount, setNewChartAccount] = useState<any>({
     id: "",
