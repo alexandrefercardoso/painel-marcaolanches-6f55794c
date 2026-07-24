@@ -11988,8 +11988,10 @@ table.main thead th.right { text-align:right; }
                     setEditingCustomer(null);
                     setNewCustomer({ 
                       name: "", email: "", phone: "", address: "", address_number: "", neighborhood: "", city: "", state: "", zip_code: "", address_complement: "",
-                      person_type: "fisica", cpf: "", cnpj: "", allow_fiado: false
+                      person_type: "fisica", cpf: "", cnpj: "", allow_fiado: false,
+                      lat: null, lng: null, geocode_status: null,
                     });
+                    setGeocodeFailed(false);
                   }
                 }}>
                   <Button
