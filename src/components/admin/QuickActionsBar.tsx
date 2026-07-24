@@ -165,7 +165,7 @@ export function QuickActionsBar({
 
   return (
     <div className="w-full">
-      <div className="flex md:grid md:grid-cols-4 lg:grid-cols-8 gap-2 overflow-x-auto pb-2 md:pb-0">
+      <div className="flex flex-nowrap items-center gap-1.5 overflow-x-auto pb-2">
         {actions.map((action) => {
           const Icon = action.icon;
           const active = isActive(action);
@@ -177,7 +177,7 @@ export function QuickActionsBar({
               variant={action.variant}
               onClick={() => handleClick(action)}
               className={cn(
-                "flex-shrink-0 flex-col items-center justify-center gap-1 h-auto py-2.5 px-2 rounded-xl border-2 font-bold transition-all active:scale-95 min-w-[72px] md:min-w-0",
+                "flex-shrink-0 flex-1 basis-0 min-w-[88px] flex-col items-center justify-center gap-1 h-auto py-2 px-1.5 rounded-xl border-2 font-bold transition-all active:scale-95",
                 isActionButton &&
                   "bg-orange-600 hover:bg-orange-700 text-white border-orange-600 hover:border-orange-700 shadow-md",
                 !isActionButton &&
@@ -189,7 +189,7 @@ export function QuickActionsBar({
             >
               <span
                 className={cn(
-                  "relative p-1.5 rounded-lg transition-colors",
+                  "relative p-1 rounded-lg transition-colors",
                   active ? action.activeIconColor : action.iconColor,
                   active && !isActionButton && "bg-background/60"
                 )}
@@ -208,7 +208,7 @@ export function QuickActionsBar({
               </span>
               <span
                 className={cn(
-                  "text-[10px] leading-tight text-center hidden md:block",
+                  "text-[10px] leading-tight text-center whitespace-nowrap",
                   isActionButton ? "text-white" : active ? "text-current" : "text-muted-foreground"
                 )}
               >
@@ -221,3 +221,4 @@ export function QuickActionsBar({
     </div>
   );
 }
+
