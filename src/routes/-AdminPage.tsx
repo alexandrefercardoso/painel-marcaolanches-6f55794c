@@ -5983,10 +5983,11 @@ table.main thead th.right { text-align:right; }
                                   const val = e.target.value;
                                   // Se o valor for puramente numérico ou começar com número, prioriza telefone
                                   if (/^\d/.test(val)) {
-                                    setNewDeliveryOrder(prev => ({...prev, customer_phone: val, customer_name: "", search_value: val, customer_id: undefined} as any));
+                                    setNewDeliveryOrder(prev => ({...prev, customer_phone: val, customer_name: "", search_value: val, customer_id: undefined, customer_lat: null, customer_lng: null} as any));
                                   } else {
-                                    setNewDeliveryOrder(prev => ({...prev, customer_name: val, customer_phone: "", search_value: val, customer_id: undefined} as any));
+                                    setNewDeliveryOrder(prev => ({...prev, customer_name: val, customer_phone: "", search_value: val, customer_id: undefined, customer_lat: null, customer_lng: null} as any));
                                   }
+                                  setOrderMapExpanded(false);
                                 }} 
                               />
                               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
