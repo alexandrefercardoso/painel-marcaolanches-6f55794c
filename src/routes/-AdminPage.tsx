@@ -12247,8 +12247,12 @@ table.main thead th.right { text-align:right; }
                             person_type: (c as any).person_type || "fisica",
                             cpf: (c as any).cpf || "",
                             cnpj: (c as any).cnpj || "",
-                            allow_fiado: (c as any).allow_fiado || false
+                            allow_fiado: (c as any).allow_fiado || false,
+                            lat: (c as any).lat ?? null,
+                            lng: (c as any).lng ?? null,
+                            geocode_status: (c as any).geocode_status ?? null,
                           });
+                          setGeocodeFailed(false);
                           setIsCustomerDialogOpen(true);
                         }}><Pencil className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="icon" className="rounded-full text-destructive" onClick={async (e) => {
