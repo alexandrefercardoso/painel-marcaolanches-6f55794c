@@ -840,7 +840,9 @@ export default function AdminPage({ user }: { user: any }) {
     } | null,
     search_value: "",
     tipo_venda: "",
-    frete: 0 as number
+    frete: 0 as number,
+    customer_lat: null as number | null,
+    customer_lng: null as number | null,
   });
   const [newChartAccount, setNewChartAccount] = useState<any>({
     id: "",
@@ -948,6 +950,7 @@ export default function AdminPage({ user }: { user: any }) {
   const [geocoding, setGeocoding] = useState(false);
   const [geocodeFailed, setGeocodeFailed] = useState(false);
   const [mapExpanded, setMapExpanded] = useState(false);
+  const [orderMapExpanded, setOrderMapExpanded] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<any | null>(null);
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
   const [customerFilter, setCustomerFilter] = useState({ search: "", person_type: "all" });
@@ -3987,15 +3990,21 @@ table.main thead th.right { text-align:right; }
       };
 
       // Se não tem ID, tenta buscar por telefone ou cria um novo
+      let inheritedLat: number | null = (newDeliveryOrder as any).customer_lat ?? null;
+      let inheritedLng: number | null = (newDeliveryOrder as any).customer_lng ?? null;
       if (!customerId && newDeliveryOrder.customer_phone) {
         const { data: existingCust } = await supabase
           .from("customers")
-          .select("id")
+          .select("*")
           .eq("phone", newDeliveryOrder.customer_phone)
           .maybeSingle();
         
         if (existingCust) {
-          customerId = existingCust.id;
+          customerId = (existingCust as any).id;
+          if (inheritedLat == null && inheritedLng == null) {
+            inheritedLat = (existingCust as any).lat ?? null;
+            inheritedLng = (existingCust as any).lng ?? null;
+          }
         } else {
           // Criar novo cliente automaticamente
           const { data: newCust, error: custError } = await supabase
@@ -4014,6 +4023,17 @@ table.main thead th.right { text-align:right; }
           .from("customers")
           .update(customerPayload)
           .eq("id", customerId);
+        if (inheritedLat == null && inheritedLng == null) {
+          const { data: existingCust } = await supabase
+            .from("customers")
+            .select("*")
+            .eq("id", customerId)
+            .maybeSingle();
+          if (existingCust) {
+            inheritedLat = (existingCust as any).lat ?? null;
+            inheritedLng = (existingCust as any).lng ?? null;
+          }
+        }
       }
 
       // Calcular subtotal dos itens
@@ -4059,6 +4079,8 @@ table.main thead th.right { text-align:right; }
         cashier_session_id: activeSession?.id,
         tipo_venda: (newDeliveryOrder as any).tipo_venda || null,
         frete: Number((newDeliveryOrder as any).frete) || 0,
+        customer_lat: inheritedLat,
+        customer_lng: inheritedLng,
         created_at: brNowISOStr
       } as any).select();
 
@@ -4128,8 +4150,11 @@ table.main thead th.right { text-align:right; }
           delivery_fee: 0,
           items: [],
           activeItem: null,
-          search_value: ""
+          search_value: "",
+          customer_lat: null,
+          customer_lng: null,
         } as any);
+        setOrderMapExpanded(false);
       }, 100);
 
       // Forçamos o recarregamento dos dados
@@ -5741,8 +5766,11 @@ table.main thead th.right { text-align:right; }
                     items: [] as any[],
                     activeItem: null,
                     customer_id: undefined,
+                    customer_lat: null,
+                    customer_lng: null,
                     search_value: ""
                   } as any);
+                  setOrderMapExpanded(false);
                 }
                 if (open && !activeSession) {
                   toast.error("Opa! O caixa está dormindo. 😴", {
@@ -5838,9 +5866,12 @@ table.main thead th.right { text-align:right; }
                                         cpf: (c as any).cpf || "",
                                         cnpj: (c as any).cnpj || "",
                                         customer_id: c.id,
+                                        customer_lat: (c as any).lat ?? null,
+                                        customer_lng: (c as any).lng ?? null,
                                         search_value: c.phone || c.name,
                                       };
                                       setNewDeliveryOrder(selectedCustomer);
+                                      setOrderMapExpanded(false);
                                       if (selectedCustomer.order_type === 'delivery') handleCalcDeliveryFee(selectedCustomer);
                                       setBrowseCustomerOpen(false);
                                     }}
@@ -5954,8 +5985,11 @@ table.main thead th.right { text-align:right; }
                                   items: [],
                                   activeItem: null,
                                   customer_id: undefined,
+                                  customer_lat: null,
+                                  customer_lng: null,
                                   search_value: ""
                                 } as any);
+                                setOrderMapExpanded(false);
                                 toast.info("Formulário limpo!");
                               }}
                             >
@@ -5977,10 +6011,11 @@ table.main thead th.right { text-align:right; }
                                   const val = e.target.value;
                                   // Se o valor for puramente numérico ou começar com número, prioriza telefone
                                   if (/^\d/.test(val)) {
-                                    setNewDeliveryOrder(prev => ({...prev, customer_phone: val, customer_name: "", search_value: val, customer_id: undefined} as any));
+                                    setNewDeliveryOrder(prev => ({...prev, customer_phone: val, customer_name: "", search_value: val, customer_id: undefined, customer_lat: null, customer_lng: null} as any));
                                   } else {
-                                    setNewDeliveryOrder(prev => ({...prev, customer_name: val, customer_phone: "", search_value: val, customer_id: undefined} as any));
+                                    setNewDeliveryOrder(prev => ({...prev, customer_name: val, customer_phone: "", search_value: val, customer_id: undefined, customer_lat: null, customer_lng: null} as any));
                                   }
+                                  setOrderMapExpanded(false);
                                 }} 
                               />
                               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -6006,8 +6041,11 @@ table.main thead th.right { text-align:right; }
                                   cpf: "",
                                   cnpj: "",
                                   customer_id: undefined,
+                                  customer_lat: null,
+                                  customer_lng: null,
                                   search_value: "",
                                 } as any));
+                                setOrderMapExpanded(true);
                                 setClientFormExpanded(true);
                               }}
                             >
@@ -6077,9 +6115,12 @@ table.main thead th.right { text-align:right; }
                                         cpf: (c as any).cpf || "",
                                         cnpj: (c as any).cnpj || "",
                                         customer_id: c.id,
+                                        customer_lat: (c as any).lat ?? null,
+                                        customer_lng: (c as any).lng ?? null,
                                         search_value: c.phone || c.name
                                       };
                                       setNewDeliveryOrder(selectedCustomer as any);
+                                      setOrderMapExpanded(false);
 
                                       // Auto-calculate delivery fee if customer has address
                                       if (selectedCustomer.order_type === 'delivery') {
@@ -6351,7 +6392,62 @@ table.main thead th.right { text-align:right; }
 
                         </div>
                       </div>
+
+                      {/* Localização de Entrega (herdada do cliente ou ajustável) */}
+                      {newDeliveryOrder.order_type === "delivery" && (
+                        <div className="border-2 border-blue-100 rounded-xl bg-gradient-to-br from-blue-50/40 via-card to-card shadow-sm p-3 space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 text-blue-700 font-black uppercase text-xs tracking-wide">
+                              <MapPin className="h-3.5 w-3.5" />
+                              Localização de Entrega
+                            </div>
+                            {(newDeliveryOrder as any).customer_lat != null && (newDeliveryOrder as any).customer_lng != null && !orderMapExpanded && (
+                              <button
+                                type="button"
+                                className="text-[11px] text-blue-600 hover:text-blue-800 underline font-medium"
+                                onClick={() => setOrderMapExpanded(true)}
+                              >
+                                Entrega em outro endereço
+                              </button>
+                            )}
+                          </div>
+                          {(newDeliveryOrder as any).customer_lat != null && (newDeliveryOrder as any).customer_lng != null && !orderMapExpanded ? (
+                            <p className="text-[11px] text-muted-foreground">
+                              Coordenadas herdadas do cadastro do cliente.
+                            </p>
+                          ) : (
+                            <>
+                              {(newDeliveryOrder as any).customer_lat == null && (
+                                <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                                  Sem coordenada salva — ajuste o pino no mapa para este pedido.
+                                </p>
+                              )}
+                              <CustomerLocationMap
+                                lat={(newDeliveryOrder as any).customer_lat ?? Number((currentCompany as any)?.latitude) ?? -23.55}
+                                lng={(newDeliveryOrder as any).customer_lng ?? Number((currentCompany as any)?.longitude) ?? -46.63}
+                                onChange={(lat, lng) => {
+                                  setNewDeliveryOrder(prev => ({
+                                    ...prev,
+                                    customer_lat: lat,
+                                    customer_lng: lng,
+                                  } as any));
+                                }}
+                              />
+                              {orderMapExpanded && (
+                                <button
+                                  type="button"
+                                  className="text-[11px] text-muted-foreground hover:text-foreground underline"
+                                  onClick={() => setOrderMapExpanded(false)}
+                                >
+                                  Fechar mapa
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
+
 
                     {/* Coluna 2: Itens do Pedido (Centro - 50-55%) */}
                     <div className="flex-1 space-y-4 min-w-0 md:h-[calc(90vh-200px)] overflow-hidden">
