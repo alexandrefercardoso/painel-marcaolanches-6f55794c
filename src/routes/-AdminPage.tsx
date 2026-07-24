@@ -3990,15 +3990,21 @@ table.main thead th.right { text-align:right; }
       };
 
       // Se não tem ID, tenta buscar por telefone ou cria um novo
+      let inheritedLat: number | null = (newDeliveryOrder as any).customer_lat ?? null;
+      let inheritedLng: number | null = (newDeliveryOrder as any).customer_lng ?? null;
       if (!customerId && newDeliveryOrder.customer_phone) {
         const { data: existingCust } = await supabase
           .from("customers")
-          .select("id")
+          .select("id, lat, lng")
           .eq("phone", newDeliveryOrder.customer_phone)
           .maybeSingle();
         
         if (existingCust) {
           customerId = existingCust.id;
+          if (inheritedLat == null && inheritedLng == null) {
+            inheritedLat = (existingCust as any).lat ?? null;
+            inheritedLng = (existingCust as any).lng ?? null;
+          }
         } else {
           // Criar novo cliente automaticamente
           const { data: newCust, error: custError } = await supabase
@@ -4017,6 +4023,17 @@ table.main thead th.right { text-align:right; }
           .from("customers")
           .update(customerPayload)
           .eq("id", customerId);
+        if (inheritedLat == null && inheritedLng == null) {
+          const { data: existingCust } = await supabase
+            .from("customers")
+            .select("lat, lng")
+            .eq("id", customerId)
+            .maybeSingle();
+          if (existingCust) {
+            inheritedLat = (existingCust as any).lat ?? null;
+            inheritedLng = (existingCust as any).lng ?? null;
+          }
+        }
       }
 
       // Calcular subtotal dos itens
