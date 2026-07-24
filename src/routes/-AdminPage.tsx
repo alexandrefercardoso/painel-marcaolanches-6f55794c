@@ -4026,7 +4026,7 @@ table.main thead th.right { text-align:right; }
         if (inheritedLat == null && inheritedLng == null) {
           const { data: existingCust } = await supabase
             .from("customers")
-            .select("lat, lng")
+            .select("*")
             .eq("id", customerId)
             .maybeSingle();
           if (existingCust) {
