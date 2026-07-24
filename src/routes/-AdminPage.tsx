@@ -5841,9 +5841,12 @@ table.main thead th.right { text-align:right; }
                                         cpf: (c as any).cpf || "",
                                         cnpj: (c as any).cnpj || "",
                                         customer_id: c.id,
+                                        customer_lat: (c as any).lat ?? null,
+                                        customer_lng: (c as any).lng ?? null,
                                         search_value: c.phone || c.name,
                                       };
                                       setNewDeliveryOrder(selectedCustomer);
+                                      setOrderMapExpanded(false);
                                       if (selectedCustomer.order_type === 'delivery') handleCalcDeliveryFee(selectedCustomer);
                                       setBrowseCustomerOpen(false);
                                     }}
