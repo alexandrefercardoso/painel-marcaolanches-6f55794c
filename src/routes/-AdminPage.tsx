@@ -4150,8 +4150,11 @@ table.main thead th.right { text-align:right; }
           delivery_fee: 0,
           items: [],
           activeItem: null,
-          search_value: ""
+          search_value: "",
+          customer_lat: null,
+          customer_lng: null,
         } as any);
+        setOrderMapExpanded(false);
       }, 100);
 
       // Forçamos o recarregamento dos dados
