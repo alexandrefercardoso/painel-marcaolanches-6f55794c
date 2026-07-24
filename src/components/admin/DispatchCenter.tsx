@@ -386,7 +386,7 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
       <div className="flex flex-col bg-card border border-orange-100 rounded-xl shadow-sm overflow-hidden">
         <div className="px-3 py-2 border-b bg-orange-50/60 flex items-center gap-2">
           <Bike className="w-4 h-4 text-orange-600" />
-          <h3 className="text-sm font-black text-orange-900 uppercase">Entregadores</h3>
+          <h3 className="text-sm font-black text-orange-900 uppercase">Motoqueiros</h3>
           <span className="ml-auto text-xs font-bold text-orange-700">{drivers.length}</span>
         </div>
         {selectedOrder && (
