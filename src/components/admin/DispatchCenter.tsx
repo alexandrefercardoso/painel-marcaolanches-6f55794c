@@ -133,8 +133,8 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
   const loadDrivers = useCallback(async () => {
     const { data, error } = await supabase
       .from("drivers")
-      .select("id, name, active, motoqueiro_lat, motoqueiro_lng")
-      .eq("active", true)
+      .select("id, name, is_active, motoqueiro_lat, motoqueiro_lng")
+      .eq("is_active", true)
       .order("name");
     if (error) {
       console.error("[Dispatch] load drivers", error);
