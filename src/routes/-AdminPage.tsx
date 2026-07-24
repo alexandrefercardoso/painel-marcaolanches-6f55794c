@@ -3995,12 +3995,12 @@ table.main thead th.right { text-align:right; }
       if (!customerId && newDeliveryOrder.customer_phone) {
         const { data: existingCust } = await supabase
           .from("customers")
-          .select("id, lat, lng")
+          .select("*")
           .eq("phone", newDeliveryOrder.customer_phone)
           .maybeSingle();
         
         if (existingCust) {
-          customerId = existingCust.id;
+          customerId = (existingCust as any).id;
           if (inheritedLat == null && inheritedLng == null) {
             inheritedLat = (existingCust as any).lat ?? null;
             inheritedLng = (existingCust as any).lng ?? null;
