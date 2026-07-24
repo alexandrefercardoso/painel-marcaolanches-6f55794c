@@ -947,6 +947,7 @@ export default function AdminPage({ user }: { user: any }) {
   });
   const [geocoding, setGeocoding] = useState(false);
   const [geocodeFailed, setGeocodeFailed] = useState(false);
+  const [mapExpanded, setMapExpanded] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<any | null>(null);
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
   const [customerFilter, setCustomerFilter] = useState({ search: "", person_type: "all" });
@@ -12018,6 +12019,7 @@ table.main thead th.right { text-align:right; }
                       lat: null, lng: null, geocode_status: null,
                     });
                     setGeocodeFailed(false);
+                    setMapExpanded(false);
                   }
                 }}>
                   <Button
@@ -12032,13 +12034,13 @@ table.main thead th.right { text-align:right; }
                       <Plus className="h-5 w-5" /> Novo Cliente
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
+                  <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0">
+                    <DialogHeader className="px-6 pt-6 pb-3 border-b shrink-0">
                       <DialogTitle>{editingCustomer ? "Editar Cliente" : "Cadastrar Novo Cliente"}</DialogTitle>
                       <DialogDescription>{editingCustomer ? "Atualize os dados do cliente no banco de dados." : "Preencha os dados para salvar no banco de dados."}</DialogDescription>
                     </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-3 px-6 py-4 overflow-y-auto flex-1 min-h-0">
+                      <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-2">
                           <Label>Tipo de Pessoa</Label>
                           <Select 
@@ -12091,7 +12093,7 @@ table.main thead th.right { text-align:right; }
                           )}
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-2">
                           <Label>Nome Completo / Razão Social</Label>
                           <Input value={newCustomer.name} onChange={e => setNewCustomer({...newCustomer, name: e.target.value})} />
@@ -12101,7 +12103,7 @@ table.main thead th.right { text-align:right; }
                           <Input value={newCustomer.phone} onChange={e => setNewCustomer({...newCustomer, phone: e.target.value})} />
                         </div>
                       </div>
-                      <div className="grid grid-cols-12 gap-4">
+                      <div className="grid grid-cols-12 gap-3">
                         <div className="col-span-8 space-y-2">
                           <Label>Endereço</Label>
                           <Input value={newCustomer.address} onChange={e => setNewCustomer({...newCustomer, address: e.target.value})} />
@@ -12111,7 +12113,7 @@ table.main thead th.right { text-align:right; }
                           <Input value={newCustomer.address_number} onChange={e => setNewCustomer({...newCustomer, address_number: e.target.value})} />
                         </div>
                       </div>
-                      <div className="grid grid-cols-12 gap-4 bg-blue-50/30 p-4 rounded-xl border border-blue-100 shadow-sm">
+                      <div className="grid grid-cols-12 gap-3 bg-blue-50/30 p-3 rounded-xl border border-blue-100 shadow-sm">
                         <div className="col-span-4 space-y-2">
                           <Label className="text-blue-700 font-bold">CEP (Pesquisar)</Label>
                           <Input 
@@ -12144,6 +12146,7 @@ table.main thead th.right { text-align:right; }
                         <Label>Complemento</Label>
                         <Input value={newCustomer.address_complement} onChange={e => setNewCustomer({...newCustomer, address_complement: e.target.value})} />
                       </div>
+
                       {/* Mini-mapa de geolocalização do cliente */}
                       {(() => {
                         const storeLat = Number((currentCompany as any)?.latitude) || null;
@@ -12151,17 +12154,37 @@ table.main thead th.right { text-align:right; }
                         const fallbackLat = storeLat ?? -23.55;
                         const fallbackLng = storeLng ?? -46.63;
                         const hasCoords = newCustomer.lat != null && newCustomer.lng != null;
-                        const showMap = hasCoords || geocodeFailed || newCustomer.geocode_status === "manual";
-                        if (!showMap && !geocoding) return null;
+                        const isAutoSuccess = newCustomer.geocode_status === "auto" && hasCoords;
+                        const needsAdjust = geocodeFailed || newCustomer.geocode_status === "manual";
+                        const shouldShowMap = needsAdjust || (isAutoSuccess && mapExpanded);
+                        if (geocoding) {
+                          return (
+                            <div className="text-[11px] text-muted-foreground italic">Localizando endereço no mapa…</div>
+                          );
+                        }
+                        if (isAutoSuccess && !mapExpanded) {
+                          return (
+                            <div className="flex items-center justify-between text-[11px] bg-green-50 border border-green-200 rounded-md px-2 py-1.5">
+                              <span className="text-green-700 font-medium">✓ Localização encontrada automaticamente</span>
+                              <button
+                                type="button"
+                                onClick={() => setMapExpanded(true)}
+                                className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
+                              >
+                                Ajustar no mapa
+                              </button>
+                            </div>
+                          );
+                        }
+                        if (!shouldShowMap) return null;
                         return (
-                          <div className="space-y-2">
+                          <div className="space-y-1.5">
                             <div className="flex items-center justify-between">
                               <Label className="text-xs text-muted-foreground">Localização no mapa (arraste o pino para ajustar)</Label>
-                              {geocoding && <span className="text-[10px] text-muted-foreground">Localizando endereço…</span>}
-                              {!geocoding && newCustomer.geocode_status === "auto" && (
+                              {newCustomer.geocode_status === "auto" && (
                                 <span className="text-[10px] text-green-600 font-medium">✓ localizado automaticamente</span>
                               )}
-                              {!geocoding && newCustomer.geocode_status === "manual" && (
+                              {newCustomer.geocode_status === "manual" && (
                                 <span className="text-[10px] text-blue-600 font-medium">📍 ajustado manualmente</span>
                               )}
                             </div>
@@ -12170,15 +12193,13 @@ table.main thead th.right { text-align:right; }
                                 Não localizamos esse endereço automaticamente — ajuste o pino no mapa abaixo.
                               </div>
                             )}
-                            {showMap && (
-                              <CustomerLocationMap
-                                lat={newCustomer.lat ?? fallbackLat}
-                                lng={newCustomer.lng ?? fallbackLng}
-                                onChange={(lat, lng) =>
-                                  setNewCustomer((prev) => ({ ...prev, lat, lng, geocode_status: "manual" }))
-                                }
-                              />
-                            )}
+                            <CustomerLocationMap
+                              lat={newCustomer.lat ?? fallbackLat}
+                              lng={newCustomer.lng ?? fallbackLng}
+                              onChange={(lat, lng) =>
+                                setNewCustomer((prev) => ({ ...prev, lat, lng, geocode_status: "manual" }))
+                              }
+                            />
                           </div>
                         );
                       })()}
@@ -12193,6 +12214,8 @@ table.main thead th.right { text-align:right; }
                           <p className="text-[10px] text-orange-600 font-medium">Habilita esta forma de pagamento para este cliente.</p>
                         </div>
                       </div>
+                    </div>
+                    <div className="px-6 py-3 border-t shrink-0 bg-background">
                       <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={async () => {
                         const required: Array<[string, string]> = [
                           ["name", "Nome"],
@@ -12227,6 +12250,7 @@ table.main thead th.right { text-align:right; }
                             lat: null, lng: null, geocode_status: null,
                           });
                           setGeocodeFailed(false);
+                          setMapExpanded(false);
                           setEditingCustomer(null);
                           setIsCustomerDialogOpen(false);
                           fetchData();
@@ -12317,6 +12341,7 @@ table.main thead th.right { text-align:right; }
                             geocode_status: (c as any).geocode_status ?? null,
                           });
                           setGeocodeFailed(false);
+                          setMapExpanded(false);
                           setIsCustomerDialogOpen(true);
                         }}><Pencil className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="icon" className="rounded-full text-destructive" onClick={async (e) => {
