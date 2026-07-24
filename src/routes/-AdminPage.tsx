@@ -6423,8 +6423,8 @@ table.main thead th.right { text-align:right; }
                                 </p>
                               )}
                               <CustomerLocationMap
-                                lat={(newDeliveryOrder as any).customer_lat ?? null}
-                                lng={(newDeliveryOrder as any).customer_lng ?? null}
+                                lat={(newDeliveryOrder as any).customer_lat ?? Number((currentCompany as any)?.latitude) ?? -23.55}
+                                lng={(newDeliveryOrder as any).customer_lng ?? Number((currentCompany as any)?.longitude) ?? -46.63}
                                 onChange={(lat, lng) => {
                                   setNewDeliveryOrder(prev => ({
                                     ...prev,
