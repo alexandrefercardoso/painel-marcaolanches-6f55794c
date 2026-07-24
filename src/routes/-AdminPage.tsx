@@ -6392,7 +6392,62 @@ table.main thead th.right { text-align:right; }
 
                         </div>
                       </div>
+
+                      {/* Localização de Entrega (herdada do cliente ou ajustável) */}
+                      {newDeliveryOrder.order_type === "delivery" && (
+                        <div className="border-2 border-blue-100 rounded-xl bg-gradient-to-br from-blue-50/40 via-card to-card shadow-sm p-3 space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 text-blue-700 font-black uppercase text-xs tracking-wide">
+                              <MapPin className="h-3.5 w-3.5" />
+                              Localização de Entrega
+                            </div>
+                            {(newDeliveryOrder as any).customer_lat != null && (newDeliveryOrder as any).customer_lng != null && !orderMapExpanded && (
+                              <button
+                                type="button"
+                                className="text-[11px] text-blue-600 hover:text-blue-800 underline font-medium"
+                                onClick={() => setOrderMapExpanded(true)}
+                              >
+                                Entrega em outro endereço
+                              </button>
+                            )}
+                          </div>
+                          {(newDeliveryOrder as any).customer_lat != null && (newDeliveryOrder as any).customer_lng != null && !orderMapExpanded ? (
+                            <p className="text-[11px] text-muted-foreground">
+                              Coordenadas herdadas do cadastro do cliente.
+                            </p>
+                          ) : (
+                            <>
+                              {(newDeliveryOrder as any).customer_lat == null && (
+                                <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                                  Sem coordenada salva — ajuste o pino no mapa para este pedido.
+                                </p>
+                              )}
+                              <CustomerLocationMap
+                                lat={(newDeliveryOrder as any).customer_lat ?? null}
+                                lng={(newDeliveryOrder as any).customer_lng ?? null}
+                                onChange={(lat, lng) => {
+                                  setNewDeliveryOrder(prev => ({
+                                    ...prev,
+                                    customer_lat: lat,
+                                    customer_lng: lng,
+                                  } as any));
+                                }}
+                              />
+                              {orderMapExpanded && (
+                                <button
+                                  type="button"
+                                  className="text-[11px] text-muted-foreground hover:text-foreground underline"
+                                  onClick={() => setOrderMapExpanded(false)}
+                                >
+                                  Fechar mapa
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
+
 
                     {/* Coluna 2: Itens do Pedido (Centro - 50-55%) */}
                     <div className="flex-1 space-y-4 min-w-0 md:h-[calc(90vh-200px)] overflow-hidden">
