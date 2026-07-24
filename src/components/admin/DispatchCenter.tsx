@@ -117,9 +117,7 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
   const loadOrders = useCallback(async () => {
     const { data, error } = await supabase
       .from("delivery_orders")
-      .select(
-        "id, order_number, customer_name, customer_address, neighborhood, customer_lat, customer_lng, order_type, status, driver_id, created_at, ready_at"
-      )
+      .select("*")
       .eq("status", "ready")
       .is("driver_id", null)
       .order("created_at", { ascending: true });
@@ -131,24 +129,21 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
   }, []);
 
   const loadDrivers = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("drivers")
-      .select("id, name, is_active, motoqueiro_lat, motoqueiro_lng")
-      .eq("is_active", true)
+    const { data, error } = await (supabase.from as any)("drivers")
+      .select("*")
       .order("name");
     if (error) {
       console.error("[Dispatch] load drivers", error);
       return;
     }
-    setDrivers((data as any) || []);
+    const list = (data || []).filter((d: any) => d.is_active !== false && d.active !== false);
+    setDrivers(list as any);
   }, []);
 
   const loadDriverLoads = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("delivery_orders")
-      .select("driver_id")
+    const { data, error } = await (supabase.from as any)("delivery_orders")
+      .select("driver_id, status, driver_status")
       .eq("status", "delivering")
-      .in("driver_status", ["aguardando", "a_caminho"])
       .not("driver_id", "is", null);
     if (error) {
       console.error("[Dispatch] load loads", error);
@@ -156,6 +151,8 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
     }
     const counts: Record<string, number> = {};
     (data || []).forEach((r: any) => {
+      const ds = r.driver_status;
+      if (ds && !["aguardando", "a_caminho"].includes(ds)) return;
       if (r.driver_id) counts[r.driver_id] = (counts[r.driver_id] || 0) + 1;
     });
     setDriverLoads(counts);
@@ -389,7 +386,7 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
       <div className="flex flex-col bg-card border border-orange-100 rounded-xl shadow-sm overflow-hidden">
         <div className="px-3 py-2 border-b bg-orange-50/60 flex items-center gap-2">
           <Bike className="w-4 h-4 text-orange-600" />
-          <h3 className="text-sm font-black text-orange-900 uppercase">Entregadores</h3>
+          <h3 className="text-sm font-black text-orange-900 uppercase">Motoqueiros</h3>
           <span className="ml-auto text-xs font-bold text-orange-700">{drivers.length}</span>
         </div>
         {selectedOrder && (
@@ -398,12 +395,12 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
             <span className="font-black">
               #{(selectedOrder.order_number || selectedOrder.id.slice(0, 6)).toString().toUpperCase()}
             </span>
-            — clique num entregador
+            — clique num motoqueiro
           </div>
         )}
         <div className="flex-1 overflow-y-auto p-2 space-y-2">
           {drivers.length === 0 && (
-            <div className="text-xs text-muted-foreground text-center py-6">Nenhum entregador ativo.</div>
+            <div className="text-xs text-muted-foreground text-center py-6">Nenhum motoqueiro ativo.</div>
           )}
           {drivers.map((d) => {
             const load = driverLoads[d.id] || 0;
