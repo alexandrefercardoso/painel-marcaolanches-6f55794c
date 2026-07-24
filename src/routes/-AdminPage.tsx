@@ -7820,6 +7820,15 @@ table.main thead th.right { text-align:right; }
             {activeTab === "live_deliveries" && <LiveDeliveriesPanel />}
           </TabsContent>
 
+          <TabsContent value="dispatch_center" className="animate-in fade-in duration-500">
+            {activeTab === "dispatch_center" && (
+              <DispatchCenter
+                storeSettings={storeSettings}
+                assignMotoqueiroToOrder={assignMotoqueiroToOrder}
+              />
+            )}
+          </TabsContent>
+
           <TabsContent value="history_module" className="space-y-6">
             <Card className="border-orange-100 shadow-xl overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-orange-50 to-white border-b border-orange-100 pb-6">
