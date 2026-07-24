@@ -7,6 +7,7 @@ import {
   Smartphone,
   Bike,
   ClipboardList,
+  Radar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -107,7 +108,16 @@ export function QuickActionsBar({
       activeBg: "bg-cyan-50 dark:bg-cyan-950/40 border-cyan-300 dark:border-cyan-800 text-cyan-800 dark:text-cyan-300 ring-cyan-200 dark:ring-cyan-900",
       badgeCount: pendingReconciliationCount,
     },
-
+    {
+      id: "dispatch-center",
+      label: "Central de Despacho",
+      icon: Radar,
+      tab: "dispatch_center",
+      variant: "outline",
+      iconColor: "text-rose-500",
+      activeIconColor: "text-rose-700 dark:text-rose-300",
+      activeBg: "bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-300 ring-rose-200 dark:ring-rose-900",
+    },
     {
       id: "digital-menu",
       label: "Cardápio Digital",
