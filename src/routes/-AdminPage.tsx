@@ -124,6 +124,7 @@ import { AppSidebar } from "@/components/admin/AppSidebar";
 import { QuickActionsBar } from "@/components/admin/QuickActionsBar";
 import { AssignDriverButton } from "@/components/delivery/AssignDriverButton";
 import { LiveDeliveriesPanel } from "@/components/delivery/LiveDeliveriesPanel";
+import { DispatchCenter } from "@/components/admin/DispatchCenter";
 import { ProductMovementsView } from "@/components/admin/ProductMovementsView";
 import { Clock as HeaderClock } from "@/components/admin/Clock";
 const TaxRulesManager = lazy(() => import("@/components/admin/TaxRulesManager").then(m => ({ default: m.TaxRulesManager })));
@@ -7817,6 +7818,15 @@ table.main thead th.right { text-align:right; }
 
           <TabsContent value="live_deliveries" className="space-y-6 animate-in fade-in duration-500">
             {activeTab === "live_deliveries" && <LiveDeliveriesPanel />}
+          </TabsContent>
+
+          <TabsContent value="dispatch_center" className="animate-in fade-in duration-500">
+            {activeTab === "dispatch_center" && (
+              <DispatchCenter
+                storeSettings={storeSettings}
+                assignMotoqueiroToOrder={assignMotoqueiroToOrder}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="history_module" className="space-y-6">
