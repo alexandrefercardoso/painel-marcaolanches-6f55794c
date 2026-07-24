@@ -12039,7 +12039,7 @@ table.main thead th.right { text-align:right; }
                       <DialogDescription>{editingCustomer ? "Atualize os dados do cliente no banco de dados." : "Preencha os dados para salvar no banco de dados."}</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-3 px-6 py-4 overflow-y-auto flex-1 min-h-0">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-2">
                           <Label>Tipo de Pessoa</Label>
                           <Select 
@@ -12092,7 +12092,7 @@ table.main thead th.right { text-align:right; }
                           )}
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-2">
                           <Label>Nome Completo / Razão Social</Label>
                           <Input value={newCustomer.name} onChange={e => setNewCustomer({...newCustomer, name: e.target.value})} />
@@ -12102,7 +12102,7 @@ table.main thead th.right { text-align:right; }
                           <Input value={newCustomer.phone} onChange={e => setNewCustomer({...newCustomer, phone: e.target.value})} />
                         </div>
                       </div>
-                      <div className="grid grid-cols-12 gap-4">
+                      <div className="grid grid-cols-12 gap-3">
                         <div className="col-span-8 space-y-2">
                           <Label>Endereço</Label>
                           <Input value={newCustomer.address} onChange={e => setNewCustomer({...newCustomer, address: e.target.value})} />
@@ -12112,7 +12112,7 @@ table.main thead th.right { text-align:right; }
                           <Input value={newCustomer.address_number} onChange={e => setNewCustomer({...newCustomer, address_number: e.target.value})} />
                         </div>
                       </div>
-                      <div className="grid grid-cols-12 gap-4 bg-blue-50/30 p-4 rounded-xl border border-blue-100 shadow-sm">
+                      <div className="grid grid-cols-12 gap-3 bg-blue-50/30 p-3 rounded-xl border border-blue-100 shadow-sm">
                         <div className="col-span-4 space-y-2">
                           <Label className="text-blue-700 font-bold">CEP (Pesquisar)</Label>
                           <Input 
@@ -12145,6 +12145,7 @@ table.main thead th.right { text-align:right; }
                         <Label>Complemento</Label>
                         <Input value={newCustomer.address_complement} onChange={e => setNewCustomer({...newCustomer, address_complement: e.target.value})} />
                       </div>
+
                       {/* Mini-mapa de geolocalização do cliente */}
                       {(() => {
                         const storeLat = Number((currentCompany as any)?.latitude) || null;
