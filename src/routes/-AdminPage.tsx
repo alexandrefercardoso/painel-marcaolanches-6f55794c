@@ -104,6 +104,7 @@ import { useCompany } from "@/hooks/useCompany";
 import { useModulePermissions, ALL_MODULES, DEFAULT_FUNCIONARIO_MODULES, TAB_TO_MODULE } from "@/hooks/useModulePermissions";
 import { useFieldVisibility, ALL_FIELDS, DEFAULT_FUNCIONARIO_VISIBLE_FIELDS, type FieldId } from "@/hooks/useFieldVisibility";
 import { geocodeAddress } from "@/lib/geocoding";
+import { CustomerLocationMap } from "@/components/CustomerLocationMap";
 import { supabase } from "@/integrations/supabase/client";
 import { toSupabaseDateTime, fromSupabaseDateTime, formatDisplayDate } from "@/lib/dateUtils";
 
@@ -940,11 +941,40 @@ export default function AdminPage({ user }: { user: any }) {
   
   const [newCustomer, setNewCustomer] = useState({ 
     name: "", email: "", phone: "", address: "", address_number: "", neighborhood: "", city: "", state: "", zip_code: "", address_complement: "",
-    person_type: "fisica" as "fisica" | "juridica", cpf: "", cnpj: "", allow_fiado: false
+    person_type: "fisica" as "fisica" | "juridica", cpf: "", cnpj: "", allow_fiado: false,
+    lat: null as number | null, lng: null as number | null,
+    geocode_status: null as "auto" | "manual" | "failed" | null,
   });
+  const [geocoding, setGeocoding] = useState(false);
+  const [geocodeFailed, setGeocodeFailed] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<any | null>(null);
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
   const [customerFilter, setCustomerFilter] = useState({ search: "", person_type: "all" });
+
+  // Auto-geocode customer address (debounced) — runs when address fields are complete.
+  useEffect(() => {
+    if (!isCustomerDialogOpen) return;
+    const { address, address_number, neighborhood, city, state } = newCustomer;
+    if (!address?.trim() || !address_number?.trim() || !city?.trim()) return;
+    // Skip if user already positioned marker manually.
+    if (newCustomer.geocode_status === "manual") return;
+
+    const handle = setTimeout(async () => {
+      setGeocoding(true);
+      setGeocodeFailed(false);
+      const full = `${address}, ${address_number}${neighborhood ? " - " + neighborhood : ""}, ${city}${state ? " - " + state : ""}, Brasil`;
+      const res = await geocodeAddress(full, { street: `${address_number} ${address}`, neighborhood, city, state });
+      setGeocoding(false);
+      if (res) {
+        setNewCustomer((prev) => ({ ...prev, lat: res.lat, lng: res.lng, geocode_status: "auto" }));
+      } else {
+        setGeocodeFailed(true);
+        setNewCustomer((prev) => ({ ...prev, geocode_status: prev.geocode_status === "manual" ? "manual" : "failed" }));
+      }
+    }, 700);
+    return () => clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newCustomer.address, newCustomer.address_number, newCustomer.neighborhood, newCustomer.city, newCustomer.state, isCustomerDialogOpen]);
 
   const [newPayMethod, setNewPayMethod] = useState({ name: "", chart_account_id: "" });
   const [editingPayMethod, setEditingPayMethod] = useState<any | null>(null);
@@ -11984,8 +12014,10 @@ table.main thead th.right { text-align:right; }
                     setEditingCustomer(null);
                     setNewCustomer({ 
                       name: "", email: "", phone: "", address: "", address_number: "", neighborhood: "", city: "", state: "", zip_code: "", address_complement: "",
-                      person_type: "fisica", cpf: "", cnpj: "", allow_fiado: false
+                      person_type: "fisica", cpf: "", cnpj: "", allow_fiado: false,
+                      lat: null, lng: null, geocode_status: null,
                     });
+                    setGeocodeFailed(false);
                   }
                 }}>
                   <Button
@@ -12112,6 +12144,44 @@ table.main thead th.right { text-align:right; }
                         <Label>Complemento</Label>
                         <Input value={newCustomer.address_complement} onChange={e => setNewCustomer({...newCustomer, address_complement: e.target.value})} />
                       </div>
+                      {/* Mini-mapa de geolocalização do cliente */}
+                      {(() => {
+                        const storeLat = Number((currentCompany as any)?.latitude) || null;
+                        const storeLng = Number((currentCompany as any)?.longitude) || null;
+                        const fallbackLat = storeLat ?? -23.55;
+                        const fallbackLng = storeLng ?? -46.63;
+                        const hasCoords = newCustomer.lat != null && newCustomer.lng != null;
+                        const showMap = hasCoords || geocodeFailed || newCustomer.geocode_status === "manual";
+                        if (!showMap && !geocoding) return null;
+                        return (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <Label className="text-xs text-muted-foreground">Localização no mapa (arraste o pino para ajustar)</Label>
+                              {geocoding && <span className="text-[10px] text-muted-foreground">Localizando endereço…</span>}
+                              {!geocoding && newCustomer.geocode_status === "auto" && (
+                                <span className="text-[10px] text-green-600 font-medium">✓ localizado automaticamente</span>
+                              )}
+                              {!geocoding && newCustomer.geocode_status === "manual" && (
+                                <span className="text-[10px] text-blue-600 font-medium">📍 ajustado manualmente</span>
+                              )}
+                            </div>
+                            {geocodeFailed && !hasCoords && (
+                              <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5">
+                                Não localizamos esse endereço automaticamente — ajuste o pino no mapa abaixo.
+                              </div>
+                            )}
+                            {showMap && (
+                              <CustomerLocationMap
+                                lat={newCustomer.lat ?? fallbackLat}
+                                lng={newCustomer.lng ?? fallbackLng}
+                                onChange={(lat, lng) =>
+                                  setNewCustomer((prev) => ({ ...prev, lat, lng, geocode_status: "manual" }))
+                                }
+                              />
+                            )}
+                          </div>
+                        );
+                      })()}
                       <div className="flex items-center space-x-2 bg-orange-50 p-3 rounded-lg border border-orange-100">
                         <Switch 
                           id="allow-fiado" 
@@ -12141,10 +12211,10 @@ table.main thead th.right { text-align:right; }
                         
                         let error;
                         if (editingCustomer) {
-                          const { error: updateError } = await supabase.from("customers").update(newCustomer).eq("id", editingCustomer.id);
+                          const { error: updateError } = await supabase.from("customers").update(newCustomer as any).eq("id", editingCustomer.id);
                           error = updateError;
                         } else {
-                          const { error: insertError } = await supabase.from("customers").insert([newCustomer]);
+                          const { error: insertError } = await supabase.from("customers").insert([newCustomer as any]);
                           error = insertError;
                         }
 
@@ -12153,8 +12223,10 @@ table.main thead th.right { text-align:right; }
                           toast.success(editingCustomer ? "Cliente atualizado!" : "Cliente cadastrado!");
                           setNewCustomer({ 
                             name: "", email: "", phone: "", address: "", address_number: "", neighborhood: "", city: "", state: "", zip_code: "", address_complement: "",
-                            person_type: "fisica", cpf: "", cnpj: "", allow_fiado: false
+                            person_type: "fisica", cpf: "", cnpj: "", allow_fiado: false,
+                            lat: null, lng: null, geocode_status: null,
                           });
+                          setGeocodeFailed(false);
                           setEditingCustomer(null);
                           setIsCustomerDialogOpen(false);
                           fetchData();
@@ -12239,8 +12311,12 @@ table.main thead th.right { text-align:right; }
                             person_type: (c as any).person_type || "fisica",
                             cpf: (c as any).cpf || "",
                             cnpj: (c as any).cnpj || "",
-                            allow_fiado: (c as any).allow_fiado || false
+                            allow_fiado: (c as any).allow_fiado || false,
+                            lat: (c as any).lat ?? null,
+                            lng: (c as any).lng ?? null,
+                            geocode_status: (c as any).geocode_status ?? null,
                           });
+                          setGeocodeFailed(false);
                           setIsCustomerDialogOpen(true);
                         }}><Pencil className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="icon" className="rounded-full text-destructive" onClick={async (e) => {
@@ -12922,7 +12998,8 @@ table.main thead th.right { text-align:right; }
                             setEditingCustomer(null);
                             setNewCustomer({ 
                               name: "", email: "", phone: "", address: "", address_number: "", neighborhood: "", city: "", state: "", zip_code: "", address_complement: "",
-                              person_type: "fisica", cpf: "", cnpj: "", allow_fiado: false
+                              person_type: "fisica", cpf: "", cnpj: "", allow_fiado: false,
+                              lat: null, lng: null, geocode_status: null,
                             });
                             setIsQuickCustomerDialogOpen(true);
                           }}
@@ -13066,7 +13143,7 @@ table.main thead th.right { text-align:right; }
                       return;
                     }
                     try {
-                      const { data, error } = await supabase.from("customers").insert([newCustomer]).select().single();
+                      const { data, error } = await supabase.from("customers").insert([newCustomer as any]).select().single();
                       if (error) throw error;
                       
                       const { data: custs } = await supabase.from("customers").select("*").order("name");
