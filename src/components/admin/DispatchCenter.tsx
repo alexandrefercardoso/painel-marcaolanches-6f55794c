@@ -164,6 +164,33 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
     loadDriverLoads();
   }, [loadOrders, loadDrivers, loadDriverLoads]);
 
+  // Polling fallback (garante atualização mesmo sem Realtime configurado no banco)
+  useEffect(() => {
+    const t = setInterval(() => {
+      loadOrders();
+      loadDrivers();
+      loadDriverLoads();
+    }, 5000);
+    return () => clearInterval(t);
+  }, [loadOrders, loadDrivers, loadDriverLoads]);
+
+  // Refresh quando a aba/janela volta a ficar visível
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === "visible") {
+        loadOrders();
+        loadDrivers();
+        loadDriverLoads();
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("focus", onVis);
+    return () => {
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("focus", onVis);
+    };
+  }, [loadOrders, loadDrivers, loadDriverLoads]);
+
   // Realtime
   useEffect(() => {
     const ch = supabase
@@ -181,7 +208,6 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
         { event: "*", schema: "public", table: "drivers" },
         (payload) => {
           loadDrivers();
-          // Update just the moving driver in state for smoothness
           const n: any = payload.new;
           if (n?.id) {
             setDrivers((prev) =>
@@ -194,7 +220,9 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("[Dispatch] realtime status:", status);
+      });
     return () => {
       supabase.removeChannel(ch);
     };
