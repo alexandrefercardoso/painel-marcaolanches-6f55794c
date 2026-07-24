@@ -951,6 +951,31 @@ export default function AdminPage({ user }: { user: any }) {
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
   const [customerFilter, setCustomerFilter] = useState({ search: "", person_type: "all" });
 
+  // Auto-geocode customer address (debounced) — runs when address fields are complete.
+  useEffect(() => {
+    if (!isCustomerDialogOpen) return;
+    const { address, address_number, neighborhood, city, state } = newCustomer;
+    if (!address?.trim() || !address_number?.trim() || !city?.trim()) return;
+    // Skip if user already positioned marker manually.
+    if (newCustomer.geocode_status === "manual") return;
+
+    const handle = setTimeout(async () => {
+      setGeocoding(true);
+      setGeocodeFailed(false);
+      const full = `${address}, ${address_number}${neighborhood ? " - " + neighborhood : ""}, ${city}${state ? " - " + state : ""}, Brasil`;
+      const res = await geocodeAddress(full, { street: `${address_number} ${address}`, neighborhood, city, state });
+      setGeocoding(false);
+      if (res) {
+        setNewCustomer((prev) => ({ ...prev, lat: res.lat, lng: res.lng, geocode_status: "auto" }));
+      } else {
+        setGeocodeFailed(true);
+        setNewCustomer((prev) => ({ ...prev, geocode_status: prev.geocode_status === "manual" ? "manual" : "failed" }));
+      }
+    }, 700);
+    return () => clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newCustomer.address, newCustomer.address_number, newCustomer.neighborhood, newCustomer.city, newCustomer.state, isCustomerDialogOpen]);
+
   const [newPayMethod, setNewPayMethod] = useState({ name: "", chart_account_id: "" });
   const [editingPayMethod, setEditingPayMethod] = useState<any | null>(null);
   const [isPayMethodDialogOpen, setIsPayMethodDialogOpen] = useState(false);
