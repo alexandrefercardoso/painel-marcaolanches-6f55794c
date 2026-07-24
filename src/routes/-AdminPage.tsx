@@ -950,6 +950,7 @@ export default function AdminPage({ user }: { user: any }) {
   const [geocoding, setGeocoding] = useState(false);
   const [geocodeFailed, setGeocodeFailed] = useState(false);
   const [mapExpanded, setMapExpanded] = useState(false);
+  const [orderMapExpanded, setOrderMapExpanded] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<any | null>(null);
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
   const [customerFilter, setCustomerFilter] = useState({ search: "", person_type: "all" });
