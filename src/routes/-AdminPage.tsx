@@ -12147,10 +12147,10 @@ table.main thead th.right { text-align:right; }
                         
                         let error;
                         if (editingCustomer) {
-                          const { error: updateError } = await supabase.from("customers").update(newCustomer).eq("id", editingCustomer.id);
+                          const { error: updateError } = await supabase.from("customers").update(newCustomer as any).eq("id", editingCustomer.id);
                           error = updateError;
                         } else {
-                          const { error: insertError } = await supabase.from("customers").insert([newCustomer]);
+                          const { error: insertError } = await supabase.from("customers").insert([newCustomer as any]);
                           error = insertError;
                         }
 
@@ -12159,8 +12159,10 @@ table.main thead th.right { text-align:right; }
                           toast.success(editingCustomer ? "Cliente atualizado!" : "Cliente cadastrado!");
                           setNewCustomer({ 
                             name: "", email: "", phone: "", address: "", address_number: "", neighborhood: "", city: "", state: "", zip_code: "", address_complement: "",
-                            person_type: "fisica", cpf: "", cnpj: "", allow_fiado: false
+                            person_type: "fisica", cpf: "", cnpj: "", allow_fiado: false,
+                            lat: null, lng: null, geocode_status: null,
                           });
+                          setGeocodeFailed(false);
                           setEditingCustomer(null);
                           setIsCustomerDialogOpen(false);
                           fetchData();
