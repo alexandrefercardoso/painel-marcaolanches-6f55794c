@@ -165,7 +165,7 @@ export function QuickActionsBar({
 
   return (
     <div className="w-full">
-      <div className="flex flex-nowrap items-center gap-1.5 overflow-x-auto pb-2">
+      <div className="grid grid-cols-3 md:grid-cols-5 lg:flex lg:flex-nowrap lg:items-center gap-1.5">
         {actions.map((action) => {
           const Icon = action.icon;
           const active = isActive(action);
@@ -177,7 +177,7 @@ export function QuickActionsBar({
               variant={action.variant}
               onClick={() => handleClick(action)}
               className={cn(
-                "flex-shrink-0 flex-1 basis-0 min-w-[88px] flex-col items-center justify-center gap-1 h-auto py-2 px-1.5 rounded-xl border-2 font-bold transition-all active:scale-95",
+                "w-full lg:flex-1 lg:basis-0 lg:min-w-0 flex-col items-center justify-center gap-1 h-auto py-2 px-1.5 rounded-xl border-2 font-bold transition-all active:scale-95",
                 isActionButton &&
                   "bg-orange-600 hover:bg-orange-700 text-white border-orange-600 hover:border-orange-700 shadow-md",
                 !isActionButton &&
@@ -221,4 +221,5 @@ export function QuickActionsBar({
     </div>
   );
 }
+
 
