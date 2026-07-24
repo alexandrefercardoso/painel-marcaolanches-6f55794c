@@ -12153,17 +12153,37 @@ table.main thead th.right { text-align:right; }
                         const fallbackLat = storeLat ?? -23.55;
                         const fallbackLng = storeLng ?? -46.63;
                         const hasCoords = newCustomer.lat != null && newCustomer.lng != null;
-                        const showMap = hasCoords || geocodeFailed || newCustomer.geocode_status === "manual";
-                        if (!showMap && !geocoding) return null;
+                        const isAutoSuccess = newCustomer.geocode_status === "auto" && hasCoords;
+                        const needsAdjust = geocodeFailed || newCustomer.geocode_status === "manual";
+                        const shouldShowMap = needsAdjust || (isAutoSuccess && mapExpanded);
+                        if (geocoding) {
+                          return (
+                            <div className="text-[11px] text-muted-foreground italic">Localizando endereço no mapa…</div>
+                          );
+                        }
+                        if (isAutoSuccess && !mapExpanded) {
+                          return (
+                            <div className="flex items-center justify-between text-[11px] bg-green-50 border border-green-200 rounded-md px-2 py-1.5">
+                              <span className="text-green-700 font-medium">✓ Localização encontrada automaticamente</span>
+                              <button
+                                type="button"
+                                onClick={() => setMapExpanded(true)}
+                                className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
+                              >
+                                Ajustar no mapa
+                              </button>
+                            </div>
+                          );
+                        }
+                        if (!shouldShowMap) return null;
                         return (
-                          <div className="space-y-2">
+                          <div className="space-y-1.5">
                             <div className="flex items-center justify-between">
                               <Label className="text-xs text-muted-foreground">Localização no mapa (arraste o pino para ajustar)</Label>
-                              {geocoding && <span className="text-[10px] text-muted-foreground">Localizando endereço…</span>}
-                              {!geocoding && newCustomer.geocode_status === "auto" && (
+                              {newCustomer.geocode_status === "auto" && (
                                 <span className="text-[10px] text-green-600 font-medium">✓ localizado automaticamente</span>
                               )}
-                              {!geocoding && newCustomer.geocode_status === "manual" && (
+                              {newCustomer.geocode_status === "manual" && (
                                 <span className="text-[10px] text-blue-600 font-medium">📍 ajustado manualmente</span>
                               )}
                             </div>
@@ -12172,15 +12192,13 @@ table.main thead th.right { text-align:right; }
                                 Não localizamos esse endereço automaticamente — ajuste o pino no mapa abaixo.
                               </div>
                             )}
-                            {showMap && (
-                              <CustomerLocationMap
-                                lat={newCustomer.lat ?? fallbackLat}
-                                lng={newCustomer.lng ?? fallbackLng}
-                                onChange={(lat, lng) =>
-                                  setNewCustomer((prev) => ({ ...prev, lat, lng, geocode_status: "manual" }))
-                                }
-                              />
-                            )}
+                            <CustomerLocationMap
+                              lat={newCustomer.lat ?? fallbackLat}
+                              lng={newCustomer.lng ?? fallbackLng}
+                              onChange={(lat, lng) =>
+                                setNewCustomer((prev) => ({ ...prev, lat, lng, geocode_status: "manual" }))
+                              }
+                            />
                           </div>
                         );
                       })()}
@@ -12195,6 +12213,8 @@ table.main thead th.right { text-align:right; }
                           <p className="text-[10px] text-orange-600 font-medium">Habilita esta forma de pagamento para este cliente.</p>
                         </div>
                       </div>
+                    </div>
+                    <div className="px-6 py-3 border-t shrink-0 bg-background">
                       <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={async () => {
                         const required: Array<[string, string]> = [
                           ["name", "Nome"],
@@ -12229,6 +12249,7 @@ table.main thead th.right { text-align:right; }
                             lat: null, lng: null, geocode_status: null,
                           });
                           setGeocodeFailed(false);
+                          setMapExpanded(false);
                           setEditingCustomer(null);
                           setIsCustomerDialogOpen(false);
                           fetchData();
