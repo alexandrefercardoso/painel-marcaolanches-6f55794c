@@ -104,6 +104,7 @@ import { useCompany } from "@/hooks/useCompany";
 import { useModulePermissions, ALL_MODULES, DEFAULT_FUNCIONARIO_MODULES, TAB_TO_MODULE } from "@/hooks/useModulePermissions";
 import { useFieldVisibility, ALL_FIELDS, DEFAULT_FUNCIONARIO_VISIBLE_FIELDS, type FieldId } from "@/hooks/useFieldVisibility";
 import { geocodeAddress } from "@/lib/geocoding";
+import { CustomerLocationMap } from "@/components/CustomerLocationMap";
 import { supabase } from "@/integrations/supabase/client";
 import { toSupabaseDateTime, fromSupabaseDateTime, formatDisplayDate } from "@/lib/dateUtils";
 
