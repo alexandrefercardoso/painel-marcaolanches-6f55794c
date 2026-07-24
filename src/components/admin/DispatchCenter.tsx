@@ -117,9 +117,7 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
   const loadOrders = useCallback(async () => {
     const { data, error } = await supabase
       .from("delivery_orders")
-      .select(
-        "id, order_number, customer_name, customer_address, neighborhood, customer_lat, customer_lng, order_type, status, driver_id, created_at, ready_at"
-      )
+      .select("*")
       .eq("status", "ready")
       .is("driver_id", null)
       .order("created_at", { ascending: true });
@@ -131,16 +129,15 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
   }, []);
 
   const loadDrivers = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("drivers")
-      .select("id, name, is_active, motoqueiro_lat, motoqueiro_lng")
-      .eq("is_active", true)
+    const { data, error } = await (supabase.from as any)("drivers")
+      .select("*")
       .order("name");
     if (error) {
       console.error("[Dispatch] load drivers", error);
       return;
     }
-    setDrivers((data as any) || []);
+    const list = (data || []).filter((d: any) => d.is_active !== false && d.active !== false);
+    setDrivers(list as any);
   }, []);
 
   const loadDriverLoads = useCallback(async () => {
