@@ -12019,6 +12019,7 @@ table.main thead th.right { text-align:right; }
                       lat: null, lng: null, geocode_status: null,
                     });
                     setGeocodeFailed(false);
+                    setMapExpanded(false);
                   }
                 }}>
                   <Button
