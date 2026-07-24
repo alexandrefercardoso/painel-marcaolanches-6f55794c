@@ -5766,8 +5766,11 @@ table.main thead th.right { text-align:right; }
                     items: [] as any[],
                     activeItem: null,
                     customer_id: undefined,
+                    customer_lat: null,
+                    customer_lng: null,
                     search_value: ""
                   } as any);
+                  setOrderMapExpanded(false);
                 }
                 if (open && !activeSession) {
                   toast.error("Opa! O caixa está dormindo. 😴", {
