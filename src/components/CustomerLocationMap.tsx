@@ -46,14 +46,14 @@ export const CustomerLocationMap = memo(function CustomerLocationMap({
 
   if (!ready) {
     return (
-      <div className="w-full h-52 rounded-lg border border-border bg-muted/40 flex items-center justify-center text-xs text-muted-foreground">
+      <div className="w-full h-40 rounded-lg border border-border bg-muted/40 flex items-center justify-center text-xs text-muted-foreground">
         Carregando mapa...
       </div>
     );
   }
 
   return (
-    <div className="w-full h-52 rounded-lg overflow-hidden border border-border">
+    <div className="w-full h-40 rounded-lg overflow-hidden border border-border">
       <MapContainer
         center={[lat, lng]}
         zoom={16}
