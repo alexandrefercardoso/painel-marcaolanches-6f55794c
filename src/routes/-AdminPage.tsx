@@ -4079,6 +4079,8 @@ table.main thead th.right { text-align:right; }
         cashier_session_id: activeSession?.id,
         tipo_venda: (newDeliveryOrder as any).tipo_venda || null,
         frete: Number((newDeliveryOrder as any).frete) || 0,
+        customer_lat: inheritedLat,
+        customer_lng: inheritedLng,
         created_at: brNowISOStr
       } as any).select();
 
