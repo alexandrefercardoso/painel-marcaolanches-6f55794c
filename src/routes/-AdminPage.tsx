@@ -12144,6 +12144,44 @@ table.main thead th.right { text-align:right; }
                         <Label>Complemento</Label>
                         <Input value={newCustomer.address_complement} onChange={e => setNewCustomer({...newCustomer, address_complement: e.target.value})} />
                       </div>
+                      {/* Mini-mapa de geolocalização do cliente */}
+                      {(() => {
+                        const storeLat = Number((currentCompany as any)?.latitude) || null;
+                        const storeLng = Number((currentCompany as any)?.longitude) || null;
+                        const fallbackLat = storeLat ?? -23.55;
+                        const fallbackLng = storeLng ?? -46.63;
+                        const hasCoords = newCustomer.lat != null && newCustomer.lng != null;
+                        const showMap = hasCoords || geocodeFailed || newCustomer.geocode_status === "manual";
+                        if (!showMap && !geocoding) return null;
+                        return (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <Label className="text-xs text-muted-foreground">Localização no mapa (arraste o pino para ajustar)</Label>
+                              {geocoding && <span className="text-[10px] text-muted-foreground">Localizando endereço…</span>}
+                              {!geocoding && newCustomer.geocode_status === "auto" && (
+                                <span className="text-[10px] text-green-600 font-medium">✓ localizado automaticamente</span>
+                              )}
+                              {!geocoding && newCustomer.geocode_status === "manual" && (
+                                <span className="text-[10px] text-blue-600 font-medium">📍 ajustado manualmente</span>
+                              )}
+                            </div>
+                            {geocodeFailed && !hasCoords && (
+                              <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5">
+                                Não localizamos esse endereço automaticamente — ajuste o pino no mapa abaixo.
+                              </div>
+                            )}
+                            {showMap && (
+                              <CustomerLocationMap
+                                lat={newCustomer.lat ?? fallbackLat}
+                                lng={newCustomer.lng ?? fallbackLng}
+                                onChange={(lat, lng) =>
+                                  setNewCustomer((prev) => ({ ...prev, lat, lng, geocode_status: "manual" }))
+                                }
+                              />
+                            )}
+                          </div>
+                        );
+                      })()}
                       <div className="flex items-center space-x-2 bg-orange-50 p-3 rounded-lg border border-orange-100">
                         <Switch 
                           id="allow-fiado" 
