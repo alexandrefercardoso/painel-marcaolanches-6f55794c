@@ -5985,8 +5985,11 @@ table.main thead th.right { text-align:right; }
                                   items: [],
                                   activeItem: null,
                                   customer_id: undefined,
+                                  customer_lat: null,
+                                  customer_lng: null,
                                   search_value: ""
                                 } as any);
+                                setOrderMapExpanded(false);
                                 toast.info("Formulário limpo!");
                               }}
                             >
