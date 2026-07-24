@@ -13079,7 +13079,7 @@ table.main thead th.right { text-align:right; }
                       return;
                     }
                     try {
-                      const { data, error } = await supabase.from("customers").insert([newCustomer]).select().single();
+                      const { data, error } = await supabase.from("customers").insert([newCustomer as any]).select().single();
                       if (error) throw error;
                       
                       const { data: custs } = await supabase.from("customers").select("*").order("name");
