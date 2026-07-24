@@ -12033,12 +12033,12 @@ table.main thead th.right { text-align:right; }
                       <Plus className="h-5 w-5" /> Novo Cliente
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
+                  <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0">
+                    <DialogHeader className="px-6 pt-6 pb-3 border-b shrink-0">
                       <DialogTitle>{editingCustomer ? "Editar Cliente" : "Cadastrar Novo Cliente"}</DialogTitle>
                       <DialogDescription>{editingCustomer ? "Atualize os dados do cliente no banco de dados." : "Preencha os dados para salvar no banco de dados."}</DialogDescription>
                     </DialogHeader>
-                    <div className="grid gap-4 py-4">
+                    <div className="grid gap-3 px-6 py-4 overflow-y-auto flex-1 min-h-0">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>Tipo de Pessoa</Label>
