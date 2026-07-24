@@ -6041,8 +6041,11 @@ table.main thead th.right { text-align:right; }
                                   cpf: "",
                                   cnpj: "",
                                   customer_id: undefined,
+                                  customer_lat: null,
+                                  customer_lng: null,
                                   search_value: "",
                                 } as any));
+                                setOrderMapExpanded(true);
                                 setClientFormExpanded(true);
                               }}
                             >
