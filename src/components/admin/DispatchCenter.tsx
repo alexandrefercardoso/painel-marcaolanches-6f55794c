@@ -400,7 +400,7 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
         )}
         <div className="flex-1 overflow-y-auto p-2 space-y-2">
           {drivers.length === 0 && (
-            <div className="text-xs text-muted-foreground text-center py-6">Nenhum entregador ativo.</div>
+            <div className="text-xs text-muted-foreground text-center py-6">Nenhum motoqueiro ativo.</div>
           )}
           {drivers.map((d) => {
             const load = driverLoads[d.id] || 0;
