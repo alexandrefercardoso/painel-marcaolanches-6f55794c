@@ -940,8 +940,12 @@ export default function AdminPage({ user }: { user: any }) {
   
   const [newCustomer, setNewCustomer] = useState({ 
     name: "", email: "", phone: "", address: "", address_number: "", neighborhood: "", city: "", state: "", zip_code: "", address_complement: "",
-    person_type: "fisica" as "fisica" | "juridica", cpf: "", cnpj: "", allow_fiado: false
+    person_type: "fisica" as "fisica" | "juridica", cpf: "", cnpj: "", allow_fiado: false,
+    lat: null as number | null, lng: null as number | null,
+    geocode_status: null as "auto" | "manual" | "failed" | null,
   });
+  const [geocoding, setGeocoding] = useState(false);
+  const [geocodeFailed, setGeocodeFailed] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<any | null>(null);
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
   const [customerFilter, setCustomerFilter] = useState({ search: "", person_type: "all" });
