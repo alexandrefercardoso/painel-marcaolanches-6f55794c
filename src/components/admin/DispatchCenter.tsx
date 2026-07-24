@@ -4,7 +4,19 @@ import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Bike, MapPin, Package, Maximize2, Minimize2, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  Bike,
+  MapPin,
+  Package,
+  Maximize2,
+  Minimize2,
+  ChevronUp,
+  ChevronDown,
+  Clock,
+  CheckCircle2,
+  Navigation,
+  Zap,
+} from "lucide-react";
 
 // Dynamic leaflet import (client only)
 let L: typeof import("leaflet") | null = null;
@@ -32,6 +44,19 @@ interface DispatchDriver {
   motoqueiro_lng?: number | null;
 }
 
+interface ActiveDelivery {
+  id: string;
+  order_number?: string | null;
+  customer_name?: string | null;
+  customer_address?: string | null;
+  customer_lat?: number | null;
+  customer_lng?: number | null;
+  driver_id?: string | null;
+  driver_status?: string | null;
+  delivery_started_at?: string | null;
+  driver_name?: string | null;
+}
+
 interface Props {
   storeSettings?: any;
   assignMotoqueiroToOrder: (orderId: string, driverId: string) => Promise<void>;
@@ -39,6 +64,7 @@ interface Props {
 
 const WAIT_YELLOW = 10;
 const WAIT_RED = 20;
+const DELIVERY_ETA_MIN = 30; // rough ETA for progress bar
 
 function waitColor(minutes: number): { bg: string; hex: string; label: string } {
   if (minutes >= WAIT_RED) return { bg: "bg-red-500", hex: "#ef4444", label: "atrasado" };
@@ -74,6 +100,7 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
   const [orders, setOrders] = useState<DispatchOrder[]>([]);
   const [drivers, setDrivers] = useState<DispatchDriver[]>([]);
   const [driverLoads, setDriverLoads] = useState<Record<string, number>>({});
+  const [activeDeliveries, setActiveDeliveries] = useState<ActiveDelivery[]>([]);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [leafletReady, setLeafletReady] = useState(false);
   const [now, setNow] = useState<number>(Date.now());
@@ -81,6 +108,8 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
   const [tvMode, setTvMode] = useState(false);
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
+  const [bottomOpen, setBottomOpen] = useState(false);
+  const [pulseDeliveryId, setPulseDeliveryId] = useState<string | null>(null);
   const iconCache = useRef<Record<string, any>>({});
 
   const storeLat = Number(storeSettings?.latitude) || -23.5505;
@@ -147,21 +176,42 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
     setDriverLoads(counts);
   }, []);
 
+  const loadActiveDeliveries = useCallback(async () => {
+    const { data, error } = await (supabase.from as any)("delivery_orders")
+      .select("*")
+      .eq("driver_status", "a_caminho")
+      .order("delivery_started_at", { ascending: true });
+    if (error) { console.error("[Dispatch] load active deliveries", error); return; }
+    const list: ActiveDelivery[] = (data || []).map((r: any) => ({
+      id: r.id,
+      order_number: r.order_number,
+      customer_name: r.customer_name,
+      customer_address: r.customer_address,
+      customer_lat: r.customer_lat,
+      customer_lng: r.customer_lng,
+      driver_id: r.driver_id,
+      driver_status: r.driver_status,
+      delivery_started_at: r.delivery_started_at,
+    }));
+    // Attach driver names from drivers state (best-effort)
+    setActiveDeliveries(list);
+  }, []);
+
   useEffect(() => {
-    loadOrders(); loadDrivers(); loadDriverLoads();
-  }, [loadOrders, loadDrivers, loadDriverLoads]);
+    loadOrders(); loadDrivers(); loadDriverLoads(); loadActiveDeliveries();
+  }, [loadOrders, loadDrivers, loadDriverLoads, loadActiveDeliveries]);
 
   useEffect(() => {
     const t = setInterval(() => {
-      loadOrders(); loadDrivers(); loadDriverLoads();
+      loadOrders(); loadDrivers(); loadDriverLoads(); loadActiveDeliveries();
     }, 5000);
     return () => clearInterval(t);
-  }, [loadOrders, loadDrivers, loadDriverLoads]);
+  }, [loadOrders, loadDrivers, loadDriverLoads, loadActiveDeliveries]);
 
   useEffect(() => {
     const onVis = () => {
       if (document.visibilityState === "visible") {
-        loadOrders(); loadDrivers(); loadDriverLoads();
+        loadOrders(); loadDrivers(); loadDriverLoads(); loadActiveDeliveries();
       }
     };
     document.addEventListener("visibilitychange", onVis);
@@ -170,13 +220,13 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
       document.removeEventListener("visibilitychange", onVis);
       window.removeEventListener("focus", onVis);
     };
-  }, [loadOrders, loadDrivers, loadDriverLoads]);
+  }, [loadOrders, loadDrivers, loadDriverLoads, loadActiveDeliveries]);
 
   useEffect(() => {
     const ch = supabase
       .channel(`dispatch-center-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "delivery_orders" }, () => {
-        loadOrders(); loadDriverLoads();
+        loadOrders(); loadDriverLoads(); loadActiveDeliveries();
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "drivers" }, (payload) => {
         loadDrivers();
@@ -189,7 +239,17 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
       })
       .subscribe((status) => { console.log("[Dispatch] realtime status:", status); });
     return () => { supabase.removeChannel(ch); };
-  }, [loadOrders, loadDrivers, loadDriverLoads]);
+  }, [loadOrders, loadDrivers, loadDriverLoads, loadActiveDeliveries]);
+
+  // Auto-open bottom panel when there are active deliveries (once)
+  const autoOpenedRef = useRef(false);
+  useEffect(() => {
+    if (!autoOpenedRef.current && activeDeliveries.length > 0) {
+      setBottomOpen(true);
+      autoOpenedRef.current = true;
+    }
+    if (activeDeliveries.length === 0) autoOpenedRef.current = false;
+  }, [activeDeliveries.length]);
 
   const enrichedOrders = useMemo(() => {
     return orders.map((o) => {
@@ -198,6 +258,32 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
       return { ...o, waitMinutes: minutes, wait: waitColor(minutes) };
     });
   }, [orders, now]);
+
+  const driverNameById = useMemo(() => {
+    const m: Record<string, string> = {};
+    drivers.forEach((d) => { m[d.id] = d.name; });
+    return m;
+  }, [drivers]);
+
+  const enrichedDeliveries = useMemo(() => {
+    return activeDeliveries.map((d) => {
+      const started = d.delivery_started_at ? new Date(d.delivery_started_at).getTime() : now;
+      const mins = Math.max(0, Math.floor((now - started) / 60000));
+      const progress = Math.min(100, Math.round((mins / DELIVERY_ETA_MIN) * 100));
+      return {
+        ...d,
+        driver_name: d.driver_id ? driverNameById[d.driver_id] || "Motoqueiro" : "Motoqueiro",
+        minutes: mins,
+        progress,
+      };
+    });
+  }, [activeDeliveries, driverNameById, now]);
+
+  const driversEnRoute = useMemo(() => {
+    const s = new Set<string>();
+    activeDeliveries.forEach((d) => { if (d.driver_id) s.add(d.driver_id); });
+    return s;
+  }, [activeDeliveries]);
 
   const selectedOrder = enrichedOrders.find((o) => o.id === selectedOrderId) || null;
 
@@ -217,6 +303,29 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
     setSelectedOrderId(o.id);
     if (o.customer_lat && o.customer_lng) {
       setFlyTarget({ lat: Number(o.customer_lat), lng: Number(o.customer_lng) });
+    }
+  };
+
+  const handleFocusDelivery = (d: ActiveDelivery) => {
+    if (d.customer_lat && d.customer_lng) {
+      setFlyTarget({ lat: Number(d.customer_lat), lng: Number(d.customer_lng) });
+    }
+    setPulseDeliveryId(d.id);
+    setTimeout(() => setPulseDeliveryId((cur) => (cur === d.id ? null : cur)), 2000);
+  };
+
+  const handleMarkDelivered = async (d: ActiveDelivery) => {
+    try {
+      const { error } = await (supabase.from as any)("delivery_orders")
+        .update({ driver_status: "entregue", delivered_at: new Date().toISOString() })
+        .eq("id", d.id);
+      if (error) throw error;
+      toast.success(`Pedido #${d.order_number || d.id.slice(0, 6)} marcado como entregue`);
+      setActiveDeliveries((prev) => prev.filter((x) => x.id !== d.id));
+      loadActiveDeliveries(); loadDriverLoads();
+    } catch (e: any) {
+      console.error(e);
+      toast.error("Não foi possível marcar como entregue");
     }
   };
 
@@ -261,6 +370,22 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
     return icon;
   };
 
+  const getDeliveryIcon = (pulsing: boolean) => {
+    if (!L) return undefined;
+    const key = `delivery-${pulsing ? "p" : "n"}-${tvMode ? "tv" : "n"}`;
+    if (iconCache.current[key]) return iconCache.current[key];
+    const size = Math.round((pulsing ? 46 : 38) * markerScale);
+    const pulseStyle = pulsing
+      ? `animation: dispatchPulse 1s ease-out infinite; box-shadow:0 0 0 0 rgba(16,185,129,0.7);`
+      : `box-shadow:0 2px 8px rgba(0,0,0,.3);`;
+    const icon = L.divIcon({
+      html: `<div style="width:${size}px;height:${size}px;background:#10b981;border:3px solid white;border-radius:50%;${pulseStyle}display:flex;align-items:center;justify-content:center;font-size:20px;">🛵</div>`,
+      iconSize: [size, size], iconAnchor: [size / 2, size / 2], className: "dispatch-delivery-marker",
+    });
+    iconCache.current[key] = icon;
+    return icon;
+  };
+
   const containerClass = tvMode
     ? "fixed inset-0 z-[9999] bg-slate-100"
     : "relative h-[calc(100vh-140px)] w-full";
@@ -271,8 +396,21 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
   const tinyTextSize = tvMode ? "text-[11px]" : "text-[10px]";
   const panelWidth = tvMode ? "w-[320px]" : "w-[280px]";
 
+  // Bottom panel sizing
+  const bottomBarHeight = 50;
+  const bottomExpandedDesktop = tvMode ? 200 : 320;
+
   return (
     <div className={containerClass}>
+      {/* pulse keyframes for delivery markers */}
+      <style>{`
+        @keyframes dispatchPulse {
+          0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.7); }
+          70% { box-shadow: 0 0 0 18px rgba(16,185,129,0); }
+          100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+        }
+      `}</style>
+
       {/* Map fills whole area */}
       <div className="absolute inset-0 bg-slate-100">
         {leafletReady ? (
@@ -306,6 +444,17 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
                   key={d.id}
                   position={[Number(d.motoqueiro_lat), Number(d.motoqueiro_lng)]}
                   icon={getDriverIcon() as any}
+                />
+              ))}
+            {/* Active deliveries destination markers (green scooter, pulses on hover/click) */}
+            {enrichedDeliveries
+              .filter((d) => d.customer_lat && d.customer_lng)
+              .map((d) => (
+                <Marker
+                  key={`del-${d.id}`}
+                  position={[Number(d.customer_lat), Number(d.customer_lng)]}
+                  icon={getDeliveryIcon(pulseDeliveryId === d.id) as any}
+                  eventHandlers={{ click: () => handleFocusDelivery(d) }}
                 />
               ))}
             {/* Custom zoom controls, positioned below left panel */}
@@ -447,6 +596,7 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
                   const load = driverLoads[d.id] || 0;
                   const color = loadCountColor(load);
                   const canClick = !!selectedOrderId;
+                  const enRoute = driversEnRoute.has(d.id);
                   return (
                     <button
                       key={d.id}
@@ -462,6 +612,18 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
                     >
                       <Bike className="w-4 h-4 text-slate-500 shrink-0" />
                       <span className={cn("font-bold text-slate-800 truncate flex-1", bodyTextSize)}>{d.name}</span>
+                      {enRoute && (
+                        <span
+                          className={cn(
+                            "flex items-center gap-0.5 bg-orange-500 text-white font-black rounded-full px-1.5 py-0.5 shrink-0",
+                            tinyTextSize
+                          )}
+                          title="Em rota agora"
+                        >
+                          <Zap className="w-2.5 h-2.5" />
+                          ROTA
+                        </span>
+                      )}
                       <span
                         className={cn(
                           "font-black text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0",
@@ -480,6 +642,155 @@ export function DispatchCenter({ storeSettings, assignMotoqueiroToOrder }: Props
                 })}
               </div>
             </>
+          )}
+        </div>
+      </div>
+
+      {/* BOTTOM floating panel: Entregas em Andamento */}
+      <div
+        className="absolute left-0 right-0 bottom-0 z-[950] pointer-events-none"
+      >
+        <div
+          className="mx-auto pointer-events-auto bg-white shadow-2xl border border-emerald-100 border-b-0 rounded-t-2xl overflow-hidden transition-all duration-300"
+          style={{
+            width: "min(100%, 1400px)",
+            height: bottomOpen
+              ? (typeof window !== "undefined" && window.innerWidth < 768
+                  ? "60vh"
+                  : `${bottomExpandedDesktop}px`)
+              : `${bottomBarHeight}px`,
+          }}
+        >
+          {/* Compact header bar (always visible) */}
+          <button
+            type="button"
+            onClick={() => setBottomOpen((v) => !v)}
+            className="w-full flex items-center gap-3 px-4 bg-gradient-to-r from-emerald-50 to-white border-b border-emerald-100 hover:bg-emerald-50 transition-colors"
+            style={{ height: `${bottomBarHeight}px` }}
+          >
+            <div className={cn(
+              "rounded-full bg-emerald-600 text-white flex items-center justify-center shadow shrink-0",
+              tvMode ? "w-9 h-9" : "w-8 h-8"
+            )}>
+              <Bike className={cn(tvMode ? "w-5 h-5" : "w-4 h-4")} />
+            </div>
+            <span className={cn("font-black text-emerald-900 uppercase", titleTextSize)}>
+              Entregas em Andamento
+            </span>
+            <span className={cn(
+              "ml-auto bg-emerald-600 text-white font-bold rounded-full px-3 py-1",
+              bodyTextSize
+            )}>
+              {enrichedDeliveries.length} ativo{enrichedDeliveries.length === 1 ? "" : "(s)"}
+            </span>
+            {bottomOpen ? <ChevronDown className="w-4 h-4 text-emerald-700" /> : <ChevronUp className="w-4 h-4 text-emerald-700" />}
+          </button>
+
+          {/* Expanded content */}
+          {bottomOpen && (
+            <div className="h-[calc(100%-50px)] overflow-hidden flex flex-col">
+              {/* Inner header */}
+              <div className="px-4 py-2 bg-emerald-50/60 border-b border-emerald-100 flex items-center gap-2 shrink-0">
+                <span className={cn("text-emerald-800", smallTextSize)}>
+                  Pedidos a caminho — atualização em tempo real
+                </span>
+              </div>
+
+              {/* Body */}
+              {enrichedDeliveries.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-center text-muted-foreground p-4">
+                  <Package className="h-10 w-10 mb-2 opacity-40" />
+                  <p className={cn("font-semibold text-slate-700", bodyTextSize)}>
+                    Nenhuma entrega em andamento
+                  </p>
+                  <p className={cn("text-slate-500 mt-0.5", smallTextSize)}>
+                    Assim que um entregador iniciar a rota, o pedido aparece aqui.
+                  </p>
+                </div>
+              ) : (
+                <div
+                  className={cn(
+                    "flex-1 p-3",
+                    tvMode
+                      ? "overflow-x-auto overflow-y-hidden flex gap-3"
+                      : "overflow-y-auto grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+                  )}
+                >
+                  {enrichedDeliveries.map((d) => {
+                    const numLabel = d.order_number || `#${d.id.slice(0, 6).toUpperCase()}`;
+                    return (
+                      <div
+                        key={d.id}
+                        onMouseEnter={() => setPulseDeliveryId(d.id)}
+                        onMouseLeave={() =>
+                          setPulseDeliveryId((cur) => (cur === d.id ? null : cur))
+                        }
+                        onClick={() => handleFocusDelivery(d)}
+                        className={cn(
+                          "cursor-pointer border rounded-xl bg-white p-3 transition-all hover:shadow-md hover:border-emerald-400",
+                          "border-emerald-100",
+                          tvMode ? "min-w-[280px] shrink-0" : ""
+                        )}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={cn("font-black text-slate-900", bodyTextSize)}>
+                            {String(numLabel).startsWith("#") ? numLabel : `#${numLabel}`}
+                          </span>
+                          <span className={cn(
+                            "ml-auto flex items-center gap-1 bg-emerald-600 text-white font-bold rounded-full px-2 py-0.5",
+                            tinyTextSize
+                          )}>
+                            <Clock className={cn(tvMode ? "w-3 h-3" : "w-2.5 h-2.5")} />
+                            {d.minutes} min
+                          </span>
+                        </div>
+                        <div className={cn("flex items-center gap-1.5 text-slate-700 font-semibold truncate", smallTextSize)}>
+                          <Bike className="w-3 h-3 text-emerald-600 shrink-0" />
+                          <span className="truncate">{d.driver_name}</span>
+                        </div>
+                        <div className={cn("flex items-start gap-1.5 text-slate-600 mt-1", smallTextSize)}>
+                          <MapPin className="w-3 h-3 mt-0.5 shrink-0" />
+                          <span className="line-clamp-2">
+                            {d.customer_address || d.customer_name || "Endereço não informado"}
+                          </span>
+                        </div>
+                        {/* Progress bar */}
+                        <div className="mt-2 h-1.5 rounded-full bg-emerald-100 overflow-hidden">
+                          <div
+                            className="h-full bg-emerald-500 transition-all"
+                            style={{ width: `${d.progress}%` }}
+                          />
+                        </div>
+                        <div className="mt-2 flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); handleFocusDelivery(d); }}
+                            className={cn(
+                              "flex-1 flex items-center justify-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-800 font-bold py-1.5 hover:bg-emerald-100 transition-colors",
+                              tinyTextSize
+                            )}
+                          >
+                            <Navigation className="w-3 h-3" />
+                            Ver rota
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); handleMarkDelivered(d); }}
+                            className={cn(
+                              "flex-1 flex items-center justify-center gap-1 rounded-lg border border-emerald-500 bg-emerald-600 text-white font-bold py-1.5 hover:bg-emerald-700 transition-colors",
+                              tinyTextSize
+                            )}
+                          >
+                            <CheckCircle2 className="w-3 h-3" />
+                            Entregue
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
