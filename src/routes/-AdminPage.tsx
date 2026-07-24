@@ -12341,6 +12341,7 @@ table.main thead th.right { text-align:right; }
                             geocode_status: (c as any).geocode_status ?? null,
                           });
                           setGeocodeFailed(false);
+                          setMapExpanded(false);
                           setIsCustomerDialogOpen(true);
                         }}><Pencil className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="icon" className="rounded-full text-destructive" onClick={async (e) => {
